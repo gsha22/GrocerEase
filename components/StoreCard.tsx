@@ -8,6 +8,7 @@ export interface StoreData {
   lng: number | null;
   categories: string[];
   hours: unknown;
+  distanceMiles?: number | null;
 }
 
 const CATEGORY_EMOJI: Record<string, string> = {
@@ -26,7 +27,12 @@ function heroEmoji(categories: string[]): string {
   return "\u{1F6D2}";
 }
 
-export default function StoreCard({ store }: { store: StoreData }) {
+interface StoreCardProps {
+  store: StoreData;
+  neighborhood?: string;
+}
+
+export default function StoreCard({ store, neighborhood }: StoreCardProps) {
   return (
     <Link
       href={`/stores/${store.id}`}
@@ -39,8 +45,11 @@ export default function StoreCard({ store }: { store: StoreData }) {
         <div className="font-semibold text-[16px] text-gray-800 mb-1">
           {store.name}
         </div>
-        <div className="text-[13px] text-gray-400 mb-2.5">
-          <span>{store.address}</span>
+        <div className="text-[13px] text-gray-400 mb-2.5 flex gap-3">
+          {store.distanceMiles != null && (
+            <span>📍 {store.distanceMiles} mi</span>
+          )}
+          <span>{neighborhood ?? store.address}</span>
         </div>
         {store.categories.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
