@@ -1,11 +1,11 @@
 "use client";
 
 export const FILTER_OPTIONS = [
-  { key: "asian groceries", label: "Asian Groceries", icon: "\u{1F962}" },
+  { key: "asian", label: "Asian Groceries", icon: "\u{1F962}" },
   { key: "halal", label: "Halal", icon: "\u262A" },
   { key: "organic", label: "Organic", icon: "\u{1F33F}" },
   { key: "produce", label: "Produce", icon: "\u{1F966}" },
-  { key: "ebt accepted", label: "EBT Accepted", icon: "\u{1F4B3}" },
+  { key: "ebt", label: "EBT Accepted", icon: "\u{1F4B3}" },
 ] as const;
 
 export type FilterKey = (typeof FILTER_OPTIONS)[number]["key"];

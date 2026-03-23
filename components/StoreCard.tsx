@@ -11,11 +11,11 @@ export interface StoreData {
 }
 
 const CATEGORY_EMOJI: Record<string, string> = {
-  "asian groceries": "\u{1F962}",
+  asian: "\u{1F962}",
   halal: "\u262A",
   organic: "\u{1F33F}",
   produce: "\u{1F966}",
-  "ebt accepted": "\u{1F4B3}",
+  ebt: "\u{1F4B3}",
 };
 
 function heroEmoji(categories: string[]): string {
