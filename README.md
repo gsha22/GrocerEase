@@ -98,8 +98,20 @@ middleware.ts            — protects /dashboard/* routes
 | `npm run build` | Production build |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
+| `npm run db:seed` | Seed deterministic relational test fixtures |
+| `npm run db:reset` | Reset DB and re-seed deterministic fixtures |
 | `npx prisma studio` | Open Prisma Studio (DB browser) |
 | `npx prisma migrate dev` | Run pending migrations |
+
+## Test Data Fixtures
+
+Use deterministic test data for QA/demo/integration scenarios:
+
+```bash
+npm run db:seed
+```
+
+Full fixture inventory and story coverage mapping: `docs/test-data.md`.
 
 ## Branch Strategy
 
