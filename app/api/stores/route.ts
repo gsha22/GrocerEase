@@ -9,86 +9,92 @@ type StoreResult = {
   lng: number | null;
   categories: string[];
   hours: unknown;
-  isPublished?: boolean;
   is_published?: boolean;
-  createdAt?: Date;
+  isPublished?: boolean;
   created_at?: Date;
+  createdAt?: Date;
   distance_miles?: number;
 };
 
-// Story 3: GET /api/stores?lat=&lng=&radius=&category=
-// Story 12: No auth required
+// Story 3: GET /api/stores?lat=&lng=&radius= — sorted by distance (Haversine)
+// Story 4: GET /api/stores?category=asian,halal — filter by specialty (AND logic)
 export async function GET(req: NextRequest) {
-  const { searchParams } = req.nextUrl;
-  const lat = searchParams.get("lat");
-  const lng = searchParams.get("lng");
-  const radiusMiles = parseFloat(searchParams.get("radius") ?? "10");
-  const categoryParam = searchParams.get("category");
+  try {
+    const { searchParams } = req.nextUrl;
+    const lat = searchParams.get("lat");
+    const lng = searchParams.get("lng");
+    const radiusMiles = parseFloat(searchParams.get("radius") ?? "10");
+    const categoryParam = searchParams.get("category");
 
-  const categories = categoryParam
-    ? categoryParam.split(",").map((c) => c.trim())
-    : [];
+    const categories = categoryParam
+      ? categoryParam.split(",").map((c) => c.trim().toLowerCase()).filter(Boolean)
+      : [];
 
-  let stores: StoreResult[];
+    let stores: StoreResult[];
 
-  if (lat && lng) {
-    const userLat = parseFloat(lat);
-    const userLng = parseFloat(lng);
+    if (lat && lng) {
+      const userLat = parseFloat(lat);
+      const userLng = parseFloat(lng);
 
-    stores = await prisma.$queryRawUnsafe<StoreResult[]>(
-      `
-      SELECT * FROM (
-        SELECT *,
-          (3959 * acos(
-            cos(radians($1)) * cos(radians(lat)) *
-            cos(radians(lng) - radians($2)) +
-            sin(radians($1)) * sin(radians(lat))
-          )) AS distance_miles
-        FROM stores
-        WHERE is_published = true
-      ) AS s
-      WHERE distance_miles <= $3
-      ORDER BY distance_miles ASC
-      `,
-      userLat,
-      userLng,
-      radiusMiles
-    );
-  } else {
-    const rows = await prisma.store.findMany({
-      where: { isPublished: true },
-      orderBy: { createdAt: "desc" },
-    });
-    stores = rows as unknown as StoreResult[];
-  }
+      stores = await prisma.$queryRawUnsafe<StoreResult[]>(
+        `
+        SELECT * FROM (
+          SELECT *,
+            (3959 * acos(
+              cos(radians($1)) * cos(radians(lat)) *
+              cos(radians(lng) - radians($2)) +
+              sin(radians($1)) * sin(radians(lat))
+            )) AS distance_miles
+          FROM stores
+          WHERE is_published = true
+        ) AS s
+        WHERE distance_miles <= $3
+        ORDER BY distance_miles ASC
+        `,
+        userLat,
+        userLng,
+        radiusMiles
+      );
+    } else {
+      const rows = await prisma.store.findMany({
+        where: { isPublished: true },
+        orderBy: { name: "asc" },
+      });
+      stores = rows as unknown as StoreResult[];
+    }
 
-  if (categories.length > 0) {
-    stores = stores.filter((store) =>
-      categories.every((cat) =>
-        (store.categories ?? []).some(
-          (sc) => sc.toLowerCase() === cat.toLowerCase()
+    if (categories.length > 0) {
+      stores = stores.filter((store) =>
+        categories.every((cat) =>
+          (store.categories ?? []).some(
+            (sc) => sc.toLowerCase() === cat
+          )
         )
-      )
+      );
+    }
+
+    const result = stores.map((store) => ({
+      id: store.id,
+      name: store.name,
+      address: store.address,
+      lat: store.lat,
+      lng: store.lng,
+      categories: store.categories,
+      hours: store.hours,
+      distanceMiles:
+        store.distance_miles != null
+          ? Math.round(store.distance_miles * 10) / 10
+          : null,
+    }));
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("GET /api/stores error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch stores" },
+      { status: 500 },
     );
   }
-
-  const result = stores.map((store) => ({
-    id: store.id,
-    name: store.name,
-    address: store.address,
-    lat: store.lat,
-    lng: store.lng,
-    categories: store.categories,
-    hours: store.hours,
-    isPublished: store.is_published ?? store.isPublished,
-    createdAt: store.created_at ?? store.createdAt,
-    distanceMiles:
-      store.distance_miles != null
-        ? Math.round(store.distance_miles * 10) / 10
-        : null,
-  }));
-
-  return NextResponse.json(result);
 }
 
 // Story 7: POST /api/stores — Create store profile (triggers geocoding)

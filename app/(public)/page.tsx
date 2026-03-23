@@ -1,5 +1,5 @@
-// Story 3: Discover Nearby Stores
-// Story 4: Filter Stores by Specialty (UI wired, API filtering)
+// Story 3: Discover Nearby Stores (geolocation, distance sorting, neighborhood fallback)
+// Story 4: Filter Stores by Specialty (filter bar, AND logic)
 // Story 12: Browse Without Account — no auth required
 "use client";
 
@@ -9,40 +9,13 @@ import {
   PITTSBURGH_NEIGHBORHOODS,
   extractNeighborhood,
 } from "@/lib/neighborhoods";
-
-type Store = {
-  id: string;
-  name: string;
-  address: string;
-  lat: number;
-  lng: number;
-  categories: string[];
-  hours: { open?: string; close?: string } | null;
-  distanceMiles: number | null;
-};
-
-const FILTER_OPTIONS = [
-  "Asian groceries",
-  "Halal",
-  "Organic",
-  "Produce",
-  "EBT Accepted",
-];
-
-const FILTER_ICONS: Record<string, string> = {
-  "Asian groceries": "🥢",
-  Halal: "☪",
-  Organic: "🌿",
-  Produce: "🥦",
-  "EBT Accepted": "💳",
-};
-
-const STORE_EMOJIS = ["🥬", "🍜", "🥕", "🫒", "🍣", "🥩"];
+import StoreFilterBar, { type FilterKey } from "@/components/StoreFilterBar";
+import StoreCard, { type StoreData } from "@/components/StoreCard";
 
 export default function HomePage() {
-  const [stores, setStores] = useState<Store[]>([]);
+  const [stores, setStores] = useState<StoreData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [activeFilters, setActiveFilters] = useState<Set<FilterKey>>(new Set());
   const [locationLabel, setLocationLabel] = useState("Pittsburgh");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
     null
@@ -50,7 +23,7 @@ export default function HomePage() {
   const [geoFailed, setGeoFailed] = useState(false);
 
   const fetchStores = useCallback(
-    async (filters: string[], loc: { lat: number; lng: number } | null) => {
+    async (filters: Set<FilterKey>, loc: { lat: number; lng: number } | null) => {
       setLoading(true);
       const params = new URLSearchParams();
       if (loc) {
@@ -58,13 +31,19 @@ export default function HomePage() {
         params.set("lng", loc.lng.toString());
         params.set("radius", "10");
       }
-      if (filters.length > 0) {
-        params.set("category", filters.join(","));
+      if (filters.size > 0) {
+        params.set("category", Array.from(filters).join(","));
       }
-      const res = await fetch(`/api/stores?${params.toString()}`);
-      const data = await res.json();
-      setStores(data);
-      setLoading(false);
+      try {
+        const res = await fetch(`/api/stores?${params.toString()}`);
+        if (!res.ok) throw new Error("fetch failed");
+        const data = await res.json();
+        setStores(data);
+      } catch (err) {
+        console.error("Failed to load stores:", err);
+      } finally {
+        setLoading(false);
+      }
     },
     []
   );
@@ -99,17 +78,9 @@ export default function HomePage() {
     fetchStores(activeFilters, loc);
   }
 
-  function toggleFilter(filter: string) {
-    const next = activeFilters.includes(filter)
-      ? activeFilters.filter((f) => f !== filter)
-      : [...activeFilters, filter];
+  function handleFilterChange(next: Set<FilterKey>) {
     setActiveFilters(next);
     fetchStores(next, coords);
-  }
-
-  function clearFilters() {
-    setActiveFilters([]);
-    fetchStores([], coords);
   }
 
   return (
@@ -133,7 +104,7 @@ export default function HomePage() {
         </Link>
       </div>
 
-      {/* Manual neighborhood fallback */}
+      {/* Manual neighborhood fallback — Story 3 */}
       {geoFailed && (
         <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-6">
           <p className="text-[13px] text-amber-800 font-medium mb-2">
@@ -144,7 +115,7 @@ export default function HomePage() {
               <button
                 key={name}
                 onClick={() => selectNeighborhood(name)}
-                className="px-3 py-1.5 rounded-full text-[12px] font-medium border border-amber-200 bg-white text-gray-700 hover:bg-amber-100 hover:border-amber-400 transition-colors"
+                className="px-3 py-1.5 rounded-full text-[12px] font-medium border border-amber-200 bg-white text-gray-700 hover:bg-amber-100 hover:border-amber-400 transition-colors cursor-pointer"
               >
                 {name}
               </button>
@@ -184,40 +155,7 @@ export default function HomePage() {
       </div>
 
       {/* Filter chips — Story 4 */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        <span className="text-[13px] text-gray-400 flex items-center pr-1">
-          Filter:
-        </span>
-        {FILTER_OPTIONS.map((label) => (
-          <button
-            key={label}
-            onClick={() => toggleFilter(label)}
-            className={`px-3.5 py-1.5 rounded-full text-[13px] border-[1.5px] transition-colors ${
-              activeFilters.includes(label)
-                ? "bg-green-50 border-green-400 text-green-600 font-medium"
-                : "text-gray-600 border-gray-200 bg-white hover:border-green-400 hover:text-green-600"
-            }`}
-          >
-            {FILTER_ICONS[label]} {label}
-          </button>
-        ))}
-        {activeFilters.length > 0 && (
-          <button
-            onClick={clearFilters}
-            className="px-3.5 py-1.5 rounded-full text-[13px] border-[1.5px] border-coral-400 text-coral-400 hover:bg-coral-50 transition-colors"
-          >
-            ✕ Clear
-          </button>
-        )}
-      </div>
-
-      {/* Active filter summary */}
-      {activeFilters.length > 0 && (
-        <div className="text-[13px] text-green-600 bg-green-50 px-3 py-2 rounded-md mb-4">
-          Showing stores matching:{" "}
-          <strong>{activeFilters.join(", ")}</strong>
-        </div>
-      )}
+      <StoreFilterBar active={activeFilters} onChange={handleFilterChange} />
 
       {/* Store grid */}
       {loading ? (
@@ -243,50 +181,19 @@ export default function HomePage() {
             No stores found
           </h3>
           <p className="text-[14px] text-gray-400 max-w-[300px] mx-auto">
-            {activeFilters.length > 0
+            {activeFilters.size > 0
               ? "No stores match your filters. Try removing some filters."
               : "We don't have any registered stores in this area yet. Check back soon."}
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {stores.map((store, i) => (
-            <Link
+          {stores.map((store) => (
+            <StoreCard
               key={store.id}
-              href={`/stores/${store.id}`}
-              className="block bg-white rounded-2xl border border-gray-200 overflow-hidden hover:-translate-y-0.5 hover:shadow-md hover:border-gray-400 transition-all"
-            >
-              <div className="h-[140px] w-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center text-5xl relative">
-                {STORE_EMOJIS[i % STORE_EMOJIS.length]}
-              </div>
-              <div className="p-3.5">
-                <div className="font-semibold text-[16px] text-gray-800 mb-1">
-                  {store.name}
-                </div>
-                <div className="text-[13px] text-gray-400 mb-2.5 flex gap-3">
-                  {store.distanceMiles !== null && (
-                    <span>📍 {store.distanceMiles} mi</span>
-                  )}
-                  <span>{extractNeighborhood(store.address)}</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mb-2.5">
-                  {store.categories.map((tag) => (
-                    <span
-                      key={tag}
-                      className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
-                        tag === "EBT Accepted"
-                          ? "bg-amber-50 text-amber-800"
-                          : tag === "Halal"
-                            ? "bg-blue-50 text-blue-800"
-                            : "bg-green-50 text-green-800"
-                      }`}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </Link>
+              store={store}
+              neighborhood={extractNeighborhood(store.address)}
+            />
           ))}
         </div>
       )}
