@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocalGrocer — UI Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green-50: #EAF3DE; --green-100: #C0DD97; --green-200: #97C459;
+    --green-400: #639922; --green-600: #3B6D11; --green-800: #27500A;
+    --amber-50: #FAEEDA; --amber-100: #FAC775; --amber-400: #BA7517; --amber-800: #633806;
+    --coral-50: #FAECE7; --coral-100: #F5C4B3; --coral-400: #D85A30; --coral-800: #4A1B0C;
+    --blue-50: #E6F1FB; --blue-100: #B5D4F4; --blue-400: #378ADD; --blue-800: #0C447C;
+    --red-50: #FCEBEB; --red-400: #E24B4A; --red-800: #501313;
+    --gray-50: #F8F6F2; --gray-100: #EDEAE3; --gray-200: #D3D1C7;
+    --gray-400: #888780; --gray-600: #5F5E5A; --gray-800: #2C2C2A;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px; --radius-xl: 24px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--gray-50);
+    color: var(--gray-800);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ===== APP SHELL ===== */
+  .app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ===== TOP NAV ===== */
+  .topnav {
+    position: sticky; top: 0; z-index: 100;
+    background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 0 24px;
+    display: flex; align-items: center; gap: 0;
+    height: 58px;
+  }
+  .topnav-logo {
+    font-family: var(--font-display);
+    font-size: 22px; font-weight: 600;
+    color: var(--green-600);
+    letter-spacing: -0.5px;
+    margin-right: 40px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .topnav-logo span { color: var(--green-200); }
+  .topnav-links { display: flex; gap: 4px; flex: 1; }
+  .topnav-link {
+    padding: 6px 14px; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 400; color: var(--gray-600);
+    cursor: pointer; border: none; background: none;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .topnav-link:hover { background: var(--gray-100); color: var(--gray-800); }
+  .topnav-link.active { background: var(--green-50); color: var(--green-600); font-weight: 500; }
+  .topnav-actions { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+  .btn-ghost {
+    padding: 7px 16px; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 500; color: var(--gray-600);
+    cursor: pointer; border: 1px solid var(--gray-200); background: none;
+    transition: all 0.15s;
+  }
+  .btn-ghost:hover { background: var(--gray-100); }
+  .btn-primary {
+    padding: 7px 18px; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 500; color: #fff;
+    cursor: pointer; border: none;
+    background: var(--green-600);
+    transition: all 0.15s;
+  }
+  .btn-primary:hover { background: var(--green-800); }
+
+  /* ===== SIDEBAR NAV ===== */
+  .page-layout { display: flex; flex: 1; }
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    background: #fff;
+    border-right: 1px solid var(--gray-200);
+    padding: 24px 12px;
+    display: flex; flex-direction: column; gap: 4px;
+    position: sticky; top: 58px; height: calc(100vh - 58px); overflow-y: auto;
+  }
+  .sidebar-section {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--gray-400);
+    padding: 12px 8px 6px; margin-top: 8px;
+  }
+  .sidebar-section:first-child { margin-top: 0; }
+  .sidebar-item {
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    font-size: 14px; color: var(--gray-600);
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: all 0.15s; border: none; background: none; width: 100%; text-align: left;
+  }
+  .sidebar-item:hover { background: var(--gray-100); color: var(--gray-800); }
+  .sidebar-item.active { background: var(--green-50); color: var(--green-600); font-weight: 500; }
+  .sidebar-icon { width: 18px; height: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+
+  /* ===== MAIN CONTENT ===== */
+  .main-content { flex: 1; overflow-x: hidden; }
+
+  /* ===== SCREEN SYSTEM ===== */
+  .screen { display: none; padding: 32px; max-width: 1100px; }
+  .screen.active { display: block; }
+
+  /* ===== STORY BADGE ===== */
+  .story-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+  .story-tag {
+    font-size: 11px; font-weight: 500; padding: 3px 8px;
+    border-radius: 20px;
+    background: var(--green-50); color: var(--green-800);
+    border: 1px solid var(--green-100);
+  }
+
+  /* ===== PAGE HEADER ===== */
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-family: var(--font-display); font-size: 28px; font-weight: 500; color: var(--gray-800); letter-spacing: -0.5px; }
+  .page-header p { font-size: 15px; color: var(--gray-600); margin-top: 6px; }
+
+  /* ===== SEARCH BAR ===== */
+  .search-bar-wrap { position: relative; margin-bottom: 24px; }
+  .search-bar {
+    width: 100%; padding: 12px 16px 12px 44px;
+    border: 1.5px solid var(--gray-200); border-radius: var(--radius-lg);
+    font-family: var(--font-body); font-size: 15px; color: var(--gray-800);
+    background: #fff; outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-bar:focus { border-color: var(--green-400); }
+  .search-bar::placeholder { color: var(--gray-400); }
+  .search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--gray-400); width: 20px; height: 20px;
+  }
+  .search-loading { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); }
+
+  /* ===== FILTER CHIPS ===== */
+  .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .filter-chip {
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 13px; font-weight: 400; color: var(--gray-600);
+    border: 1.5px solid var(--gray-200); background: #fff;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .filter-chip:hover { border-color: var(--green-400); color: var(--green-600); }
+  .filter-chip.active {
+    background: var(--green-50); border-color: var(--green-400);
+    color: var(--green-600); font-weight: 500;
+  }
+
+  /* ===== STORE CARD GRID ===== */
+  .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .store-card {
+    background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--gray-200);
+    overflow: hidden; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  }
+  .store-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--gray-400); }
+  .store-card-img {
+    height: 140px; width: 100%;
+    background: linear-gradient(135deg, var(--green-50) 0%, var(--green-100) 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px; position: relative;
+  }
+  .store-card-live-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--green-600); color: #fff;
+    font-size: 11px; font-weight: 600; padding: 3px 8px;
+    border-radius: 20px; display: flex; align-items: center; gap: 4px;
+  }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: pulse 1.4s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .store-card-body { padding: 14px 16px; }
+  .store-card-name { font-weight: 600; font-size: 16px; color: var(--gray-800); margin-bottom: 4px; }
+  .store-card-meta { font-size: 13px; color: var(--gray-400); margin-bottom: 10px; display: flex; gap: 12px; }
+  .store-card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .tag {
+    font-size: 11px; padding: 2px 8px; border-radius: 20px;
+    background: var(--green-50); color: var(--green-800);
+    font-weight: 500;
+  }
+  .tag-ebt { background: var(--amber-50); color: var(--amber-800); }
+  .tag-halal { background: var(--blue-50); color: var(--blue-800); }
+  .store-card-fresh {
+    font-size: 12px; color: var(--green-600); font-weight: 500;
+    border-top: 1px solid var(--gray-100); padding-top: 10px;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  /* ===== MAP MOCK ===== */
+  .map-toggle { display: flex; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 20px; width: fit-content; }
+  .map-toggle-btn { padding: 7px 16px; font-size: 13px; font-weight: 500; border: none; background: none; cursor: pointer; color: var(--gray-600); transition: all 0.15s; }
+  .map-toggle-btn.active { background: var(--green-600); color: #fff; }
+  .map-placeholder {
+    width: 100%; height: 300px; border-radius: var(--radius-lg);
+    background: var(--gray-100); border: 1px solid var(--gray-200);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 24px; position: relative; overflow: hidden;
+  }
+  .map-pin { font-size: 28px; position: absolute; cursor: pointer; transition: transform 0.15s; }
+  .map-pin:hover { transform: scale(1.2); }
+  .map-pin-label {
+    position: absolute; background: #fff; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm); padding: 4px 8px; font-size: 12px; font-weight: 500;
+    box-shadow: var(--shadow-sm); white-space: nowrap; top: -28px; left: 50%; transform: translateX(-50%);
+  }
+
+  /* ===== STORE PROFILE ===== */
+  .profile-hero {
+    background: linear-gradient(135deg, var(--green-50) 0%, #fff 60%);
+    border-radius: var(--radius-xl); border: 1px solid var(--gray-200);
+    padding: 32px; display: flex; align-items: flex-start; gap: 24px;
+    margin-bottom: 24px;
+  }
+  .profile-avatar { font-size: 56px; width: 80px; height: 80px; border-radius: var(--radius-lg); background: var(--green-50); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid var(--green-100); }
+  .profile-name { font-family: var(--font-display); font-size: 26px; font-weight: 600; color: var(--gray-800); }
+  .profile-meta { font-size: 14px; color: var(--gray-400); margin-top: 4px; }
+  .profile-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .profile-hours { display: flex; gap: 8px; align-items: center; margin-top: 8px; font-size: 13px; }
+  .hours-open { color: var(--green-600); font-weight: 500; }
+  .section-card {
+    background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--gray-200);
+    padding: 24px; margin-bottom: 16px;
+  }
+  .section-card h2 { font-size: 17px; font-weight: 600; color: var(--gray-800); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .fresh-item { padding: 12px 0; border-bottom: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: flex-start; }
+  .fresh-item:last-child { border-bottom: none; }
+  .fresh-item-name { font-weight: 500; font-size: 15px; }
+  .fresh-item-note { font-size: 13px; color: var(--gray-400); margin-top: 2px; }
+  .fresh-time { font-size: 12px; color: var(--green-600); background: var(--green-50); padding: 2px 8px; border-radius: 20px; white-space: nowrap; margin-left: 8px; flex-shrink: 0; }
+
+  /* ===== DEAL CARD ===== */
+  .deal-card {
+    display: flex; gap: 14px; padding: 14px;
+    background: var(--amber-50); border-radius: var(--radius-md);
+    border: 1px solid var(--amber-100); margin-bottom: 10px;
+  }
+  .deal-badge { font-size: 22px; }
+  .deal-title { font-weight: 600; font-size: 15px; color: var(--gray-800); }
+  .deal-desc { font-size: 13px; color: var(--gray-600); margin-top: 2px; }
+  .deal-expiry { font-size: 12px; color: var(--amber-400); font-weight: 500; margin-top: 4px; }
+
+  /* ===== FLASH SALE ===== */
+  .flash-card {
+    background: linear-gradient(135deg, #FFF9ED 0%, #FFFDF8 100%);
+    border: 2px solid var(--amber-100); border-radius: var(--radius-lg);
+    padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+    animation: flashPulse 2s ease-in-out infinite;
+  }
+  @keyframes flashPulse { 0%, 100% { border-color: var(--amber-100); } 50% { border-color: var(--amber-400); } }
+  .flash-title { font-weight: 700; font-size: 18px; color: var(--gray-800); }
+  .flash-price { font-size: 22px; font-weight: 700; color: var(--amber-400); }
+  .flash-timer { font-size: 12px; color: var(--coral-400); font-weight: 600; margin-top: 4px; }
+
+  /* ===== ITEM SEARCH ===== */
+  .item-result {
+    background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-md);
+    padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+    cursor: pointer; transition: border-color 0.15s;
+  }
+  .item-result:hover { border-color: var(--green-400); }
+  .item-result-icon { font-size: 28px; width: 48px; height: 48px; border-radius: var(--radius-sm); background: var(--green-50); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .item-result-name { font-weight: 600; font-size: 15px; }
+  .item-result-store { font-size: 13px; color: var(--gray-400); margin-top: 2px; }
+  .stock-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-left: auto; flex-shrink: 0; }
+  .in-stock { background: var(--green-50); color: var(--green-600); }
+  .out-stock { background: var(--red-50); color: var(--red-800); }
+  .notify-btn {
+    font-size: 12px; padding: 4px 10px; border-radius: 20px;
+    border: 1px solid var(--gray-200); background: none; cursor: pointer;
+    color: var(--gray-600); margin-left: 6px;
+    transition: all 0.15s;
+  }
+  .notify-btn:hover { background: var(--green-50); border-color: var(--green-200); color: var(--green-600); }
+  .item-timestamp { font-size: 11px; color: var(--gray-400); margin-top: 3px; }
+
+  /* ===== LOGIN / FORM ===== */
+  .form-card {
+    background: #fff; border-radius: var(--radius-xl);
+    border: 1px solid var(--gray-200); padding: 40px;
+    max-width: 420px; width: 100%;
+    box-shadow: var(--shadow-md);
+  }
+  .form-logo { font-family: var(--font-display); font-size: 24px; font-weight: 600; color: var(--green-600); margin-bottom: 6px; }
+  .form-subtitle { font-size: 14px; color: var(--gray-400); margin-bottom: 28px; }
+  .field-label { font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 6px; display: block; }
+  .field-input {
+    width: 100%; padding: 10px 14px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--gray-200); font-family: var(--font-body); font-size: 15px;
+    background: #fff; color: var(--gray-800); outline: none;
+    transition: border-color 0.15s;
+  }
+  .field-input:focus { border-color: var(--green-400); }
+  .field-input.error { border-color: var(--red-400); }
+  .field-error { font-size: 12px; color: var(--red-400); margin-top: 4px; }
+  .field-group { margin-bottom: 18px; }
+  .btn-full { width: 100%; padding: 12px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; color: #fff; background: var(--green-600); border: none; cursor: pointer; transition: background 0.15s; margin-top: 4px; }
+  .btn-full:hover { background: var(--green-800); }
+  .form-link { font-size: 13px; color: var(--green-600); text-decoration: none; cursor: pointer; }
+  .form-divider { border: none; border-top: 1px solid var(--gray-100); margin: 20px 0; }
+  .alert-box { padding: 12px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; }
+  .alert-error { background: var(--red-50); color: var(--red-800); border: 1px solid #F7C1C1; }
+  .alert-success { background: var(--green-50); color: var(--green-800); border: 1px solid var(--green-100); }
+
+  /* ===== DASHBOARD ===== */
+  .dashboard-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 18px 20px; }
+  .stat-label { font-size: 12px; color: var(--gray-400); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 500; color: var(--gray-800); }
+  .stat-change { font-size: 12px; margin-top: 4px; }
+  .change-up { color: var(--green-600); }
+  .change-down { color: var(--coral-400); }
+
+  /* ===== POST MANAGER ===== */
+  .post-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; background: #fff; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md); margin-bottom: 8px;
+    transition: border-color 0.15s;
+  }
+  .post-row:hover { border-color: var(--gray-400); }
+  .post-row-icon { font-size: 24px; width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--gray-50); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .post-row-title { font-weight: 500; font-size: 15px; }
+  .post-row-meta { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+  .post-row-actions { margin-left: auto; display: flex; gap: 6px; }
+  .action-btn { padding: 5px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; border: 1px solid var(--gray-200); background: none; cursor: pointer; transition: all 0.15s; color: var(--gray-600); }
+  .action-btn:hover { background: var(--gray-100); }
+  .action-btn.danger:hover { background: var(--red-50); color: var(--red-800); border-color: #F7C1C1; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: #fff; border-radius: var(--radius-xl);
+    padding: 32px; max-width: 460px; width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    transform: translateY(8px); transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal h3 { font-family: var(--font-display); font-size: 20px; font-weight: 500; margin-bottom: 6px; }
+  .modal p { font-size: 14px; color: var(--gray-600); margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .btn-cancel { padding: 9px 20px; border-radius: var(--radius-sm); font-size: 14px; color: var(--gray-600); border: 1px solid var(--gray-200); background: none; cursor: pointer; }
+  .btn-danger { padding: 9px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; color: #fff; background: var(--red-400); border: none; cursor: pointer; }
+
+  /* ===== FLASH SALE FORM ===== */
+  .flash-form {
+    background: #fff; border-radius: var(--radius-xl);
+    border: 2px solid var(--amber-100); padding: 32px; max-width: 420px;
+  }
+  .flash-form-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .flash-form-header h2 { font-family: var(--font-display); font-size: 22px; font-weight: 500; }
+  .flash-icon { font-size: 26px; }
+  .duration-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+  .duration-btn {
+    padding: 10px; border-radius: var(--radius-md); border: 2px solid var(--gray-200);
+    background: none; font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: all 0.15s; color: var(--gray-600);
+  }
+  .duration-btn.selected { border-color: var(--amber-400); background: var(--amber-50); color: var(--amber-800); }
+  .timer-badge { background: var(--amber-50); border: 1px solid var(--amber-100); border-radius: var(--radius-sm); padding: 10px 14px; text-align: center; font-size: 12px; color: var(--amber-800); margin-top: 16px; }
+
+  /* ===== STATE INDICATORS ===== */
+  .empty-state { text-align: center; padding: 60px 20px; }
+  .empty-state-icon { font-size: 52px; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 18px; font-weight: 600; color: var(--gray-800); margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; color: var(--gray-400); max-width: 300px; margin: 0 auto; }
+  .loading-row { display: flex; flex-direction: column; gap: 10px; }
+  .skeleton { background: var(--gray-100); border-radius: var(--radius-sm); animation: shimmer 1.5s infinite; }
+  @keyframes shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  /* ===== MOBILE NAV ===== */
+  .mobile-nav { display: none; }
+
+  /* ===== STATE TAB SYSTEM ===== */
+  .state-tabs { display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap; }
+  .state-tab {
+    padding: 5px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500;
+    border: 1px solid var(--gray-200); background: none; cursor: pointer;
+    color: var(--gray-600); transition: all 0.15s;
+  }
+  .state-tab:hover { background: var(--gray-100); }
+  .state-tab.active { background: var(--gray-800); color: #fff; border-color: var(--gray-800); }
+  .state-panel { display: none; }
+  .state-panel.active { display: block; }
+
+  /* ===== BREADCRUMB ===== */
+  .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--gray-400); margin-bottom: 20px; }
+  .breadcrumb-link { color: var(--green-600); cursor: pointer; }
+  .breadcrumb-sep { color: var(--gray-300); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .screen { padding: 20px 16px; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .mobile-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: #fff; border-top: 1px solid var(--gray-200); padding: 8px 0; justify-content: space-around; }
+    .mobile-nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: var(--gray-400); cursor: pointer; padding: 4px 12px; border-radius: var(--radius-sm); }
+    .mobile-nav-item.active { color: var(--green-600); }
+    body { padding-bottom: 70px; }
+    .topnav-links { display: none; }
+    .profile-hero { flex-direction: column; }
+  }
+
+  /* ===== PROFILE PROGRESS ===== */
+  .progress-bar-wrap { height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+  .progress-bar { height: 100%; background: var(--green-400); border-radius: 3px; transition: width 0.5s; }
+  .profile-complete { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
+
+  /* ===== NOTIFICATION ===== */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 300;
+    background: var(--gray-800); color: #fff; border-radius: var(--radius-md);
+    padding: 12px 18px; font-size: 14px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: var(--shadow-md);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .toast-success { background: var(--green-600); }
+  .toast-error { background: var(--red-400); }
+
+  /* ===== SECTION HEADER ===== */
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .section-header h2 { font-size: 18px; font-weight: 600; color: var(--gray-800); }
+  .see-all { font-size: 13px; color: var(--green-600); cursor: pointer; font-weight: 500; }
+
+  /* ===== GUEST BANNER ===== */
+  .guest-banner { background: linear-gradient(135deg, var(--green-50) 0%, #fff 100%); border: 1px solid var(--green-100); border-radius: var(--radius-lg); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .guest-banner h3 { font-size: 15px; font-weight: 600; color: var(--gray-800); }
+  .guest-banner p { font-size: 13px; color: var(--gray-600); margin-top: 3px; }
+
+  /* ===== INLINE EDIT ===== */
+  .inline-edit { display: flex; gap: 8px; align-items: center; }
+  .inline-input { padding: 7px 12px; border: 1.5px solid var(--green-400); border-radius: var(--radius-sm); font-size: 14px; background: #fff; color: var(--gray-800); outline: none; flex: 1; }
+  .save-btn { padding: 7px 16px; background: var(--green-600); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV — Stories 3, 6, 11, 12 -->
+<nav class="topnav">
+  <div class="topnav-logo" onclick="navigate('directory')">Local<span>Grocer</span></div>
+  <div class="topnav-links">
+    <button class="topnav-link active" id="nav-directory" onclick="navigate('directory')">Discover Stores</button>
+    <button class="topnav-link" id="nav-search" onclick="navigate('search')">Search Items</button>
+    <button class="topnav-link" id="nav-deals" onclick="navigate('deals')">Deals</button>
+    <button class="topnav-link" id="nav-dashboard" onclick="navigate('dashboard')">Owner Dashboard</button>
+  </div>
+  <div class="topnav-actions">
+    <button class="btn-ghost" onclick="navigate('login')">Log in</button>
+    <button class="btn-primary" onclick="navigate('signup')">Sign up free</button>
+  </div>
+</nav>
+
+<div class="app-shell">
+<div class="page-layout">
+
+<!-- SIDEBAR — Stories 3, 4 -->
+<aside class="sidebar">
+  <div class="sidebar-section">Shopper</div>
+  <button class="sidebar-item active" id="side-directory" onclick="navigate('directory')">
+    <div class="sidebar-icon">🗺</div> Discover Stores
+  </button>
+  <button class="sidebar-item" id="side-search" onclick="navigate('search')">
+    <div class="sidebar-icon">🔍</div> Search Items
+  </button>
+  <button class="sidebar-item" id="side-deals" onclick="navigate('deals')">
+    <div class="sidebar-icon">🏷</div> Weekly Deals
+  </button>
+  <div class="sidebar-section">Store Owner</div>
+  <button class="sidebar-item" id="side-login" onclick="navigate('login')">
+    <div class="sidebar-icon">🔐</div> Owner Login
+  </button>
+  <button class="sidebar-item" id="side-dashboard" onclick="navigate('dashboard')">
+    <div class="sidebar-icon">📊</div> Dashboard
+  </button>
+  <button class="sidebar-item" id="side-profile-setup" onclick="navigate('profile-setup')">
+    <div class="sidebar-icon">🏪</div> Store Profile
+  </button>
+  <button class="sidebar-item" id="side-reuse" onclick="navigate('reuse')">
+    <div class="sidebar-icon">♻️</div> Reuse a Deal
+  </button>
+  <button class="sidebar-item" id="side-post-fresh" onclick="navigate('post-fresh')">
+    <div class="sidebar-icon">🌿</div> Post Fresh Update
+  </button>
+  <button class="sidebar-item" id="side-manage" onclick="navigate('manage')">
+    <div class="sidebar-icon">📝</div> Manage Posts
+  </button>
+  <div class="sidebar-section">Design Notes</div>
+  <button class="sidebar-item" onclick="navigate('rationale')">
+    <div class="sidebar-icon">📋</div> UI Rationale
+  </button>
+</aside>
+
+<main class="main-content">
+
+<!-- ==================== SCREEN: DIRECTORY (Story 3, 4, 12) ==================== -->
+<div class="screen active" id="screen-directory">
+  <div class="story-tags"><span class="story-tag">Story 3: Discover Nearby Stores</span><span class="story-tag">Story 4: Filter by Specialty</span><span class="story-tag">Story 12: Browse Without Account</span></div>
+
+  <!-- Guest Banner: Story 12 — no login required -->
+  <div class="guest-banner">
+    <div>
+      <h3>Discover your neighborhood's best grocers</h3>
+      <p>Browse stores and deals without signing up. Create an account to set stock alerts.</p>
+    </div>
+    <button class="btn-ghost" onclick="navigate('login')">Sign up for alerts →</button>
+  </div>
+
+  <div class="page-header">
+    <h1>Stores near you</h1>
+    <p>Showing stores within 10 miles of Sewickley, PA</p>
+  </div>
+
+  <!-- Map/List Toggle: Story 3 -->
+  <div class="map-toggle">
+    <button class="map-toggle-btn active" onclick="setView('list', this)">List</button>
+    <button class="map-toggle-btn" onclick="setView('map', this)">Map</button>
+  </div>
+
+  <!-- Map View: Story 3 -->
+  <div id="map-view" style="display:none;">
+    <div class="map-placeholder" style="font-size:14px; color: var(--gray-400); flex-direction: column; gap: 12px;">
+      <div style="position:absolute; top:30%; left:25%;" class="map-pin" onclick="navigate('store')">
+        <div class="map-pin-label">Sultan Bey (0.4 mi)</div>📍
+      </div>
+      <div style="position:absolute; top:45%; left:55%;" class="map-pin" onclick="navigate('store')">
+        <div class="map-pin-label">Lotus Market (1.2 mi)</div>📍
+      </div>
+      <div style="position:absolute; top:60%; left:35%;" class="map-pin" onclick="navigate('store')">
+        <div class="map-pin-label">Fresh Harvest (2.1 mi)</div>📍
+      </div>
+      <svg width="40" height="40" viewBox="0 0 40 40" style="opacity:0.25; position:absolute; inset:0; margin:auto;">
+        <circle cx="20" cy="20" r="18" stroke="#639922" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+      </svg>
+      <span style="position:absolute; bottom:14px; right:14px; font-size:12px; background:#fff; padding:4px 8px; border-radius:4px; border:1px solid var(--gray-200);">Map view — 3 stores found</span>
+    </div>
+  </div>
+
+  <!-- Search: Story 3 -->
+  <div class="search-bar-wrap">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="search-bar" placeholder="Search by store name or neighborhood…" id="store-search" oninput="filterStores(this.value)">
+  </div>
+
+  <!-- Filter Chips: Story 4 -->
+  <div class="filter-row" id="filter-row">
+    <span style="font-size:13px; color:var(--gray-400); display:flex; align-items:center; padding-right:4px;">Filter:</span>
+    <button class="filter-chip" onclick="toggleFilter(this, 'asian')">🥢 Asian groceries</button>
+    <button class="filter-chip" onclick="toggleFilter(this, 'halal')">☪ Halal</button>
+    <button class="filter-chip" onclick="toggleFilter(this, 'organic')">🌿 Organic</button>
+    <button class="filter-chip" onclick="toggleFilter(this, 'produce')">🥦 Produce</button>
+    <button class="filter-chip" onclick="toggleFilter(this, 'ebt')">💳 EBT Accepted</button>
+    <button class="filter-chip" id="clear-filters" style="display:none; color:var(--coral-400); border-color:var(--coral-400);" onclick="clearFilters()">✕ Clear filters</button>
+  </div>
+
+  <!-- State Tabs -->
+  <div class="state-tabs">
+    <button class="state-tab active" onclick="showState('directory', 'loaded', this)">Loaded (3 stores)</button>
+    <button class="state-tab" onclick="showState('directory', 'loading', this)">Loading</button>
+    <button class="state-tab" onclick="showState('directory', 'empty', this)">Empty state</button>
+    <button class="state-tab" onclick="showState('directory', 'filtered', this)">Filtered result</button>
+  </div>
+
+  <!-- Loaded State -->
+  <div class="state-panel active" id="directory-loaded">
+    <div class="store-grid" id="store-grid">
+      <div class="store-card" onclick="navigate('store')">
+        <div class="store-card-img">🥬<div class="store-card-live-badge"><div class="live-dot"></div>Updated today</div></div>
+        <div class="store-card-body">
+          <div class="store-card-name">Sultan Bey International</div>
+          <div class="store-card-meta"><span>📍 0.4 mi</span><span>Sewickley</span></div>
+          <div class="store-card-tags"><span class="tag">Halal</span><span class="tag">Middle Eastern</span><span class="tag-ebt tag">EBT</span></div>
+          <div class="store-card-fresh">🌿 Fresh today: Bok choy, Lamb shoulder, Pomegranates</div>
+        </div>
+      </div>
+      <div class="store-card" onclick="navigate('store')">
+        <div class="store-card-img">🍜<div class="store-card-live-badge"><div class="live-dot"></div>Updated 3h ago</div></div>
+        <div class="store-card-body">
+          <div class="store-card-name">Lotus Asian Market</div>
+          <div class="store-card-meta"><span>📍 1.2 mi</span><span>McKees Rocks</span></div>
+          <div class="store-card-tags"><span class="tag">Asian groceries</span><span class="tag">Produce</span></div>
+          <div class="store-card-fresh">🌿 Fresh today: Shin ramen, Lychee, Daikon</div>
+        </div>
+      </div>
+      <div class="store-card" onclick="navigate('store')">
+        <div class="store-card-img" style="background: linear-gradient(135deg, var(--green-100) 0%, var(--amber-50) 100%);">🥕</div>
+        <div class="store-card-body">
+          <div class="store-card-name">Fresh Harvest Co-op</div>
+          <div class="store-card-meta"><span>📍 2.1 mi</span><span>Edgeworth</span></div>
+          <div class="store-card-tags"><span class="tag">Organic</span><span class="tag">Produce</span><span class="tag-ebt tag">EBT</span></div>
+          <div class="store-card-fresh" style="color:var(--gray-400);">No updates in 7 days</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="state-panel" id="directory-loading">
+    <div class="store-grid">
+      <div style="background:#fff; border-radius:var(--radius-lg); border:1px solid var(--gray-200); overflow:hidden;">
+        <div class="skeleton" style="height:140px; width:100%;"></div>
+        <div style="padding:14px 16px;">
+          <div class="skeleton" style="height:18px; width:60%; margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:13px; width:40%; margin-bottom:10px;"></div>
+          <div class="skeleton" style="height:13px; width:80%;"></div>
+        </div>
+      </div>
+      <div style="background:#fff; border-radius:var(--radius-lg); border:1px solid var(--gray-200); overflow:hidden;">
+        <div class="skeleton" style="height:140px; width:100%;"></div>
+        <div style="padding:14px 16px;">
+          <div class="skeleton" style="height:18px; width:70%; margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:13px; width:45%; margin-bottom:10px;"></div>
+          <div class="skeleton" style="height:13px; width:75%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State: Story 3 -->
+  <div class="state-panel" id="directory-empty">
+    <div class="empty-state">
+      <div class="empty-state-icon">🗺</div>
+      <h3>No stores found nearby</h3>
+      <p>We don't have any registered stores in this area yet. Try expanding your search radius or check back soon.</p>
+      <button class="btn-primary" style="margin-top:16px;">Get notified when stores join</button>
+    </div>
+  </div>
+
+  <!-- Filtered Result -->
+  <div class="state-panel" id="directory-filtered">
+    <div style="font-size:13px; color:var(--green-600); background:var(--green-50); padding:8px 12px; border-radius:var(--radius-sm); margin-bottom:14px;">
+      Showing 1 store matching: <strong>Halal</strong> · <a style="color:var(--coral-400); cursor:pointer;" onclick="showState('directory','loaded',document.querySelector('.state-tab'))">Clear</a>
+    </div>
+    <div class="store-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); max-width: 360px;">
+      <div class="store-card" onclick="navigate('store')">
+        <div class="store-card-img">🥬<div class="store-card-live-badge"><div class="live-dot"></div>Updated today</div></div>
+        <div class="store-card-body">
+          <div class="store-card-name">Sultan Bey International</div>
+          <div class="store-card-meta"><span>📍 0.4 mi</span><span>Sewickley</span></div>
+          <div class="store-card-tags"><span class="tag">Halal</span><span class="tag">Middle Eastern</span></div>
+          <div class="store-card-fresh">🌿 Fresh today: Bok choy, Lamb shoulder</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN: STORE PROFILE (Story 1, 2) ==================== -->
+<div class="screen" id="screen-store">
+  <div class="story-tags"><span class="story-tag">Story 1: Fresh Today Updates</span><span class="story-tag">Story 2: Deals This Week</span><span class="story-tag">Story 12: Browse Without Account</span></div>
+  <div class="breadcrumb"><span class="breadcrumb-link" onclick="navigate('directory')">Discover Stores</span><span class="breadcrumb-sep">›</span><span>Sultan Bey International</span></div>
+
+  <!-- State Tabs -->
+  <div class="state-tabs">
+    <button class="state-tab active" onclick="showState('store', 'loaded', this)">Loaded</button>
+    <button class="state-tab" onclick="showState('store', 'loading', this)">Loading</button>
+    <button class="state-tab" onclick="showState('store', 'empty', this)">No recent updates</button>
+  </div>
+
+  <!-- Loaded -->
+  <div class="state-panel active" id="store-loaded">
+    <div class="profile-hero">
+      <div class="profile-avatar">🥬</div>
+      <div>
+        <div class="profile-name">Sultan Bey International</div>
+        <div class="profile-meta">📍 142 Beaver St, Sewickley, PA &nbsp;·&nbsp; 0.4 mi away</div>
+        <div class="profile-hours"><span class="hours-open">Open now</span><span style="color:var(--gray-400); font-size:13px;">· Closes 8 PM</span></div>
+        <div class="profile-tags">
+          <span class="tag">Halal</span>
+          <span class="tag">Middle Eastern</span>
+          <span class="tag-ebt tag">EBT Accepted</span>
+          <span class="tag-halal tag">Organic produce</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fresh Today: Story 1 -->
+    <div class="section-card">
+      <h2>🌿 Fresh Today</h2>
+      <div class="fresh-item">
+        <div>
+          <div class="fresh-item-name">Bok Choy</div>
+          <div class="fresh-item-note">Just arrived from local farm — very limited</div>
+        </div>
+        <div class="fresh-time">posted 1h ago</div>
+      </div>
+      <div class="fresh-item">
+        <div>
+          <div class="fresh-item-name">Lamb Shoulder</div>
+          <div class="fresh-item-note">Halal certified, whole and half cuts available</div>
+        </div>
+        <div class="fresh-time">posted 2h ago</div>
+      </div>
+      <div class="fresh-item">
+        <div>
+          <div class="fresh-item-name">Pomegranates</div>
+          <div class="fresh-item-note">Fresh from California, great for juicing</div>
+        </div>
+        <div class="fresh-time">posted 5h ago</div>
+      </div>
+      <!-- Item updated > 24h is de-emphasized -->
+      <div class="fresh-item" style="opacity:0.45;">
+        <div>
+          <div class="fresh-item-name" style="font-size:13px;">Persian Cucumbers</div>
+          <div class="fresh-item-note">Still in stock</div>
+        </div>
+        <div class="fresh-time" style="background:var(--gray-100); color:var(--gray-400);">38h ago</div>
+      </div>
+    </div>
+
+    <!-- Flash Sale active -->
+    <div class="flash-card">
+      <div>
+        <div style="font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--amber-400); margin-bottom:4px;">⚡ Flash Sale</div>
+        <div class="flash-title">Shin Ramen — 5-pack</div>
+        <div class="flash-timer">Ends in 1h 23m</div>
+      </div>
+      <div class="flash-price">$4.99</div>
+    </div>
+
+    <!-- Deals: Story 2 -->
+    <div class="section-card">
+      <h2>🏷 Deals This Week</h2>
+      <div class="deal-card">
+        <div class="deal-badge">🥩</div>
+        <div>
+          <div class="deal-title">30% off all fresh lamb cuts</div>
+          <div class="deal-desc">Applies to shoulder, rack, and leg cuts</div>
+          <div class="deal-expiry">Expires Saturday, Mar 22</div>
+        </div>
+      </div>
+      <div class="deal-card">
+        <div class="deal-badge">🍅</div>
+        <div>
+          <div class="deal-title">Buy 2, get 1 free — canned tomatoes</div>
+          <div class="deal-desc">All brands, any size</div>
+          <div class="deal-expiry">Expires Thursday, Mar 20</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="state-panel" id="store-loading">
+    <div style="background:#fff; border-radius:var(--radius-xl); border:1px solid var(--gray-200); padding:32px; display:flex; gap:24px; margin-bottom:24px;">
+      <div class="skeleton" style="width:80px; height:80px; border-radius:var(--radius-lg); flex-shrink:0;"></div>
+      <div style="flex:1;">
+        <div class="skeleton" style="height:26px; width:55%; margin-bottom:10px;"></div>
+        <div class="skeleton" style="height:14px; width:45%; margin-bottom:8px;"></div>
+        <div class="skeleton" style="height:22px; width:35%;"></div>
+      </div>
+    </div>
+    <div style="background:#fff; border-radius:var(--radius-lg); border:1px solid var(--gray-200); padding:24px;">
+      <div class="skeleton" style="height:20px; width:40%; margin-bottom:16px;"></div>
+      <div class="skeleton" style="height:14px; width:90%; margin-bottom:8px;"></div>
+      <div class="skeleton" style="height:14px; width:75%; margin-bottom:8px;"></div>
+      <div class="skeleton" style="height:14px; width:80%;"></div>
+    </div>
+  </div>
+
+  <!-- Empty: Story 1 empty state -->
+  <div class="state-panel" id="store-empty">
+    <div class="profile-hero">
+      <div class="profile-avatar">🥬</div>
+      <div>
+        <div class="profile-name">Sultan Bey International</div>
+        <div class="profile-meta">📍 142 Beaver St, Sewickley, PA</div>
+        <div class="profile-hours"><span class="hours-open">Open now</span></div>
+        <div class="profile-tags"><span class="tag">Halal</span></div>
+      </div>
+    </div>
+    <div class="section-card">
+      <h2>🌿 Fresh Today</h2>
+      <div class="empty-state" style="padding:30px 20px;">
+        <div class="empty-state-icon">🫙</div>
+        <h3>No recent updates</h3>
+        <p>This store hasn't posted any inventory updates in the last 7 days. Check back soon.</p>
+      </div>
+    </div>
+    <div class="section-card">
+      <h2>🏷 Deals This Week</h2>
+      <div style="padding:16px 0; font-size:14px; color:var(--gray-400);">No active deals right now. Check back next week.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN: ITEM SEARCH (Story 5) ==================== -->
+<div class="screen" id="screen-search">
+  <div class="story-tags"><span class="story-tag">Story 5: Search for a Specific Item</span></div>
+  <div class="page-header">
+    <h1>Find what you need</h1>
+    <p>Real-time stock status across all local stores</p>
+  </div>
+
+  <div class="search-bar-wrap">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="search-bar" placeholder="Search for bok choy, shin ramen, halal meat…" id="item-search-input" oninput="itemSearch(this.value)">
+  </div>
+
+  <div class="state-tabs">
+    <button class="state-tab active" onclick="showState('search', 'results', this)">Results found</button>
+    <button class="state-tab" onclick="showState('search', 'loading', this)">Loading</button>
+    <button class="state-tab" onclick="showState('search', 'empty', this)">No results</button>
+    <button class="state-tab" onclick="showState('search', 'typo', this)">Fuzzy match</button>
+  </div>
+
+  <!-- Results -->
+  <div class="state-panel active" id="search-results">
+    <div style="font-size:13px; color:var(--gray-400); margin-bottom:12px;">4 results across 2 stores</div>
+    <div class="item-result" onclick="navigate('store')">
+      <div class="item-result-icon">🥬</div>
+      <div style="flex:1;">
+        <div class="item-result-name">Bok Choy</div>
+        <div class="item-result-store">Sultan Bey International · 0.4 mi</div>
+        <div class="item-timestamp">Updated 1h ago</div>
+      </div>
+      <span class="stock-badge in-stock">In Stock</span>
+    </div>
+    <div class="item-result" onclick="navigate('store')">
+      <div class="item-result-icon">🍜</div>
+      <div style="flex:1;">
+        <div class="item-result-name">Shin Ramen (5-pack)</div>
+        <div class="item-result-store">Lotus Asian Market · 1.2 mi</div>
+        <div class="item-timestamp">Updated 3h ago</div>
+      </div>
+      <span class="stock-badge in-stock">In Stock</span>
+    </div>
+    <div class="item-result" style="opacity:0.7;">
+      <div class="item-result-icon">🥕</div>
+      <div style="flex:1;">
+        <div class="item-result-name">Daikon Radish</div>
+        <div class="item-result-store">Lotus Asian Market · 1.2 mi</div>
+        <div class="item-timestamp">Updated 5h ago</div>
+      </div>
+      <span class="stock-badge out-stock">Out of Stock</span>
+      <button class="notify-btn" onclick="event.stopPropagation(); showToast('Notification set for Daikon Radish', 'success')">🔔 Notify me</button>
+    </div>
+    <div class="item-result" onclick="navigate('store')">
+      <div class="item-result-icon">🫚</div>
+      <div style="flex:1;">
+        <div class="item-result-name">Sesame Oil (1L)</div>
+        <div class="item-result-store">Lotus Asian Market · 1.2 mi</div>
+        <div class="item-timestamp">Updated 2h ago</div>
+      </div>
+      <span class="stock-badge in-stock">In Stock</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="state-panel" id="search-loading">
+    <div class="loading-row">
+      <div style="display:flex; gap:12px; padding:14px 16px; background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius-md);">
+        <div class="skeleton" style="width:48px; height:48px; border-radius:var(--radius-sm); flex-shrink:0;"></div>
+        <div style="flex:1;"><div class="skeleton" style="height:16px; width:50%; margin-bottom:8px;"></div><div class="skeleton" style="height:13px; width:35%;"></div></div>
+        <div class="skeleton" style="width:70px; height:24px; border-radius:20px; flex-shrink:0;"></div>
+      </div>
+      <div style="display:flex; gap:12px; padding:14px 16px; background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius-md);">
+        <div class="skeleton" style="width:48px; height:48px; border-radius:var(--radius-sm); flex-shrink:0;"></div>
+        <div style="flex:1;"><div class="skeleton" style="height:16px; width:45%; margin-bottom:8px;"></div><div class="skeleton" style="height:13px; width:30%;"></div></div>
+        <div class="skeleton" style="width:70px; height:24px; border-radius:20px; flex-shrink:0;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty -->
+  <div class="state-panel" id="search-empty">
+    <div class="empty-state">
+      <div class="empty-state-icon">🔍</div>
+      <h3>No results for "truffle oil"</h3>
+      <p>This item isn't stocked at any local stores right now. Try a different name or set an alert.</p>
+      <button class="btn-primary" style="margin-top:16px;" onclick="showToast('Notification set!', 'success')">🔔 Notify me when it's available</button>
+    </div>
+  </div>
+
+  <!-- Fuzzy match: Story 5 — Levenshtein tolerance -->
+  <div class="state-panel" id="search-typo">
+    <div style="font-size:13px; background:var(--amber-50); border:1px solid var(--amber-100); color:var(--amber-800); padding:10px 14px; border-radius:var(--radius-sm); margin-bottom:14px;">
+      Showing results for <strong>"Bok Choy"</strong> — did you mean that? (searched: "bk choi")
+    </div>
+    <div class="item-result" onclick="navigate('store')">
+      <div class="item-result-icon">🥬</div>
+      <div style="flex:1;">
+        <div class="item-result-name">Bok Choy</div>
+        <div class="item-result-store">Sultan Bey International · 0.4 mi</div>
+        <div class="item-timestamp">Updated 1h ago</div>
+      </div>
+      <span class="stock-badge in-stock">In Stock</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN: DEALS (Story 2) ==================== -->
+<div class="screen" id="screen-deals">
+  <div class="story-tags"><span class="story-tag">Story 2: Deals This Week</span></div>
+  <div class="page-header">
+    <h1>Deals this week</h1>
+    <p>Active promotions at local stores — sorted by expiry date</p>
+  </div>
+
+  <div class="state-tabs">
+    <button class="state-tab active" onclick="showState('deals', 'loaded', this)">Loaded</button>
+    <button class="state-tab" onclick="showState('deals', 'empty', this)">No deals</button>
+  </div>
+
+  <div class="state-panel active" id="deals-loaded">
+    <div style="font-size:13px; color:var(--green-600); margin-bottom:16px; font-weight:500;">3 active deals · 2 stores</div>
+    <div class="deal-card" style="margin-bottom:12px;">
+      <div class="deal-badge">🥩</div>
+      <div style="flex:1;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div class="deal-title">30% off fresh lamb cuts</div>
+          <span style="background:var(--red-50); color:var(--red-800); font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px;">Ends Thu</span>
+        </div>
+        <div class="deal-desc">Sultan Bey International · 0.4 mi</div>
+        <div class="deal-expiry">Expires Thursday, Mar 20</div>
+      </div>
+    </div>
+    <div class="deal-card" style="margin-bottom:12px;">
+      <div class="deal-badge">🍜</div>
+      <div style="flex:1;">
+        <div class="deal-title">Shin Ramen — buy 3 get 1 free</div>
+        <div class="deal-desc">Lotus Asian Market · 1.2 mi</div>
+        <div class="deal-expiry">Expires Friday, Mar 21</div>
+      </div>
+    </div>
+    <div class="deal-card" style="margin-bottom:12px;">
+      <div class="deal-badge">🥕</div>
+      <div style="flex:1;">
+        <div class="deal-title">Organic produce bundle — $12 value for $8</div>
+        <div class="deal-desc">Fresh Harvest Co-op · 2.1 mi</div>
+        <div class="deal-expiry">Expires Saturday, Mar 22</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="state-panel" id="deals-empty">
+    <div class="empty-state">
+      <div class="empty-state-icon">🏷</div>
+      <h3>No deals right now</h3>
+      <p>Stores haven't posted any deals this week. Check back Monday — stores typically update their promotions then.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN: LOGIN (Story 6) ==================== -->
+<div class="screen" id="screen-login">
+  <div class="story-tags"><span class="story-tag">Story 6: Secure Store Owner Login</span></div>
+
+  <div class="state-tabs" style="margin-bottom:24px;">
+    <button class="state-tab active" onclick="showLoginState('form', this)">Default</button>
+    <button class="state-tab" onclick="showLoginState('error', this)">Wrong credentials</button>
+    <button class="state-tab" onclick="showLoginState('success', this)">Success</button>
+    <button class="state-tab" onclick="showLoginState('reset', this)">Forgot password</button>
+  </div>
+
+  <div id="login-form">
+    <div class="form-card">
+      <div class="form-logo">LocalGrocer</div>
+      <div class="form-subtitle">Owner portal — manage your store's listings</div>
+      <div id="login-alert"></div>
+      <div class="field-group">
+        <label class="field-label">Email address</label>
+        <input class="field-input" type="email" placeholder="you@yourstore.com" id="login-email">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Password</label>
+        <input class="field-input" type="password" placeholder="Your password" id="login-pass">
+        <div style="margin-top:8px;"><a class="form-link" onclick="showLoginState('reset', document.querySelector('.state-tab'))">Forgot password?</a></div>
+      </div>
+      <button class="btn-full" onclick="navigate('dashboard'); showToast('Welcome back, Sultan Bey!', 'success')">Sign in to dashboard</button>
+      <hr class="form-divider">
+      <div style="text-align:center; font-size:13px; color:var(--gray-400);">New store owner? <a class="form-link" onclick="navigate('profile-setup')">Create your store →</a></div>
+    </div>
+  </div>
+
+  <div id="login-error" style="display:none;">
+    <div class="form-card">
+      <div class="form-logo">LocalGrocer</div>
+      <div class="form-subtitle">Owner portal</div>
+      <div class="alert-box alert-error">❌ Incorrect email or password. Please try again.</div>
+      <div class="field-group">
+        <label class="field-label">Email address</label>
+        <input class="field-input error" type="email" value="wrong@email.com">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Password</label>
+        <input class="field-input error" type="password" value="wrongpass">
+        <div style="margin-top:8px;"><a class="form-link" onclick="showLoginState('reset', null)">Forgot password?</a></div>
+      </div>
+      <button class="btn-full">Sign in to dashboard</button>
+    </div>
+  </div>
+
+  <div id="login-success" style="display:none;">
+    <div class="form-card" style="text-align:center;">
+      <div style="font-size:52px; margin-bottom:16px;">✅</div>
+      <div class="form-logo">Welcome back!</div>
+      <div style="font-size:15px; color:var(--gray-600); margin-bottom:24px;">Taking you to your dashboard…</div>
+      <div style="background:var(--green-50); border-radius:var(--radius-md); padding:14px; font-size:13px; color:var(--green-800);">Signed in as <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="630c140d06112310160f17020d01061a04110c000611104d000c0e">[email&#160;protected]</a></strong></div>
+    </div>
+  </div>
+
+  <div id="login-reset" style="display:none;">
+    <div class="form-card">
+      <div class="form-logo">Reset password</div>
+      <div class="form-subtitle">We'll send a reset link to your email</div>
+      <div class="field-group">
+        <label class="field-label">Email address</label>
+        <input class="field-input" type="email" placeholder="you@yourstore.com">
+      </div>
+      <button class="btn-full" onclick="showToast('Reset email sent!', 'success'); showLoginState('form', null)">Send reset link</button>
+      <div style="text-align:center; margin-top:14px;"><a class="form-link" onclick="showLoginState('form', null)">← Back to sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN: PROFILE SETUP (Story 7) ==================== -->
+<div class="screen" id="screen-profile-setup">
+  <div class="story-tags"><span class="story-tag">Story 7: Create a Store Profile</span></div>
+  <div class="page-header">
+    <h1>Create your store profile</h1>
+    <p>Shoppers will see this on the directory and store page</p>
+  </div>
+
+  <div class="state-tabs">
+    <button class="state-tab active" onclick="showState('profile', 'form', this)">Form</button>
+    <button class="state-tab" onclick="showState('profile', 'error', this)">Validation error</button>
+    <button class="state-tab" onclick="showState('profile', 'success', this)">Success</button>
+    <button class="state-tab" onclick="showState('profile', 'geo-error', this)">Geocoding failed</button>
+  </div>
+
+  <div class="state-panel active" id="profile-form" style="max-width:600px;">
+    <div class="section-card">
+      <h2>Store details</h2>
+      <div class="field-group">
+        <label class="field-label">Store name *</label>
+        <input class="field-input" placeholder="e.g. Sultan Bey International">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Address *</label>
+        <input class="field-input" placeholder="142 Beaver St, Sewickley, PA 15143">
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;">
+        <div>
+          <label class="field-label">Opening time *</label>
+          <input class="field-input" type="time" value="08:00">
+        </div>
+        <div>
+          <label class="field-label">Closing time *</label>
+          <input class="field-input" type="time" value="20:00">
+        </div>
+      </div>
+    </div>
+    <div class="section-card">
+      <h2>Specialty categories</h2>
+      <p style="font-size:14px; color:var(--gray-400); margin-bottom:14px;">Select all that apply — shoppers filter by these</p>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        <button class="filter-chip active" onclick="this.classList.toggle('active')">🥢 Asian groceries</button>
+        <button class="filter-chip" onclick="this.classList.toggle('active')">☪ Halal</button>
+        <button class="filter-chip active" onclick="this.classList.toggle('active')">🌿 Organic</button>
+        <button class="filter-chip" onclick="this.classList.toggle('active')">🥦 Produce</button>
+        <button class="filter-chip active" onclick="this.classList.toggle('active')">💳 EBT Accepted</button>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn-primary" onclick="showState('profile', 'success', document.querySelector('.state-tab'))">Publish store profile →</button>
+      <button class="btn-ghost">Save as draft</button>
+    </div>
+  </div>
+
+  <div class="state-panel" id="profile-error" style="max-width:600px;">
+    <div class="section-card">
+      <h2>Store details</h2>
+      <div class="field-group">
+        <label class="field-label">Store name *</label>
+        <input class="field-input error" value="">
+        <div class="field-error">Store name is required</div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Address *</label>
+        <input class="field-input error" value="">
+        <div class="field-error">A valid address is required to appear on the map</div>
+      </div>
+    </div>
+    <div class="alert-box alert-error" style="max-width:600px;">Please complete all required fields before publishing.</div>
+  </div>
+
+  <div class="state-panel" id="profile-success">
+    <div class="alert-box alert-success" style="max-width:600px;">✅ Your store is now live on the directory!</div>
+    <div class="store-card" style="max-width:320px;" onclick="navigate('store')">
+      <div class="store-card-img">🥬<div class="store-card-live-badge"><div class="live-dot"></div>Just added</div></div>
+      <div class="store-card-body">
+        <div class="store-card-name">Sultan Bey International</div>
+        <div class="store-card-meta"><span>📍 0.4 mi</span><span>Sewickley</span></div>
+        <div class="store-card-tags"><span class="tag">Halal</span><span class="tag-ebt tag">EBT</span></div>
+        <div class="store-card-fresh" style="color:var(--gray-400);">Start posting updates to engage shoppers!</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="state-panel" id="profile-geo-error" style="max-width:600px;">
+    <div class="alert-box" style="background:var(--amber-50); border:1px solid var(--amber-100); color:var(--amber-800);">
+      ⚠️ We couldn't locate this address on the map. Your store has been saved as a draft. Please check your address and try again.
+    </div>
+    <div class="section-card">
+      <div class="field-group">
+        <label class="field-label">Address — please verify</label>
+        <input class="field-input error" value="142 Beavr Str, Sewickly">
+        <div class="field-error">Address could not be geocoded</div>
+      </div>
+      <button class="btn-primary">Retry →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN: OWNER DASHBOARD (Story 8, 9, 10) ==================== -->
+<div class="screen" id="screen-dashboard">
+  <div class="story-tags"><span class="story-tag">Story 8: Post a Deal</span><span class="story-tag">Story 9: Flash Sale</span><span class="story-tag">Story 10: Edit/Delete Post</span></div>
+  <div class="dashboard-header">
+    <div>
+      <div class="page-header" style="margin-bottom:4px;">
+        <h1>Your Dashboard</h1>
+        <p>Sultan Bey International — Sewickley, PA</p>
+      </div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-ghost" onclick="navigate('reuse')">♻️ Reuse Deal</button>
+      <button class="btn-primary" onclick="navigate('manage')">+ New Post</button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Profile Views</div>
+      <div class="stat-value">248</div>
+      <div class="stat-change change-up">↑ 18% this week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Posts</div>
+      <div class="stat-value">6</div>
+      <div class="stat-change" style="color:var(--gray-400);">3 fresh today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Deals</div>
+      <div class="stat-value">2</div>
+      <div class="stat-change change-down">1 expires Thu</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Item Searches</div>
+      <div class="stat-value">91</div>
+      <div class="stat-change change-up">↑ 7 today</div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header">
+      <h2>Recent Posts</h2>
+      <span class="see-all" onclick="navigate('manage')">Manage all →</span>
+    </div>
+    <div class="post-row">
+      <div class="post-row-icon">🥬</div>
+      <div style="flex:1;">
+        <div class="post-row-title">Bok Choy — Fresh Arrival</div>
+        <div class="post-row-meta">Fresh Today · posted 1h ago</div>
+      </div>
+      <div class="post-row-actions">
+        <button class="action-btn" onclick="navigate('manage')">Edit</button>
+        <button class="action-btn danger" onclick="document.getElementById('delete-modal').classList.add('open')">Delete</button>
+      </div>
+    </div>
+    <div class="post-row">
+      <div class="post-row-icon">🏷</div>
+      <div style="flex:1;">
+        <div class="post-row-title">30% off fresh lamb cuts</div>
+        <div class="post-row-meta">Deal · Expires Thu Mar 20</div>
+      </div>
+      <div class="post-row-actions">
+        <button class="action-btn" onclick="navigate('manage')">Edit</button>
+        <button class="action-btn danger" onclick="document.getElementById('delete-modal').classList.add('open')">Delete</button>
+      </div>
+    </div>
+    <div class="post-row">
+      <div class="post-row-icon">⚡</div>
+      <div style="flex:1;">
+        <div class="post-row-title">Flash Sale: Shin Ramen 5-pack</div>
+        <div class="post-row-meta">Flash Sale · Expires in 1h 23m</div>
+      </div>
+      <div class="post-row-actions">
+        <button class="action-btn danger" onclick="document.getElementById('delete-modal').classList.add('open')">Remove</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN: MANAGE POSTS (Story 10) ==================== -->
+<div class="screen" id="screen-manage">
+  <div class="story-tags"><span class="story-tag">Story 10: Edit or Delete a Post</span><span class="story-tag">Story 8: Post a Deal with Expiry</span></div>
+  <div class="page-header">
+    <h1>Manage posts</h1>
+    <p>Edit or remove your store's listings in real-time</p>
+  </div>
+
+  <div class="state-tabs">
+    <button class="state-tab active" onclick="showState('manage', 'list', this)">All posts</button>
+    <button class="state-tab" onclick="showState('manage', 'editing', this)">Editing a post</button>
+    <button class="state-tab" onclick="showState('manage', 'new-deal', this)">New deal</button>
+    <button class="state-tab" onclick="showState('manage', 'delete-confirm', this)">Delete confirm</button>
+  </div>
+
+  <!-- Post list -->
+  <div class="state-panel active" id="manage-list">
+    <div style="display:flex; gap:8px; margin-bottom:16px;">
+      <button class="btn-primary" onclick="showState('manage', 'new-deal', document.querySelector('#screen-manage .state-tab'))">+ Post a deal</button>
+      <button class="btn-ghost" onclick="navigate('reuse')">♻️ Reuse a Deal</button>
+    </div>
+    <div class="post-row">
+      <div class="post-row-icon">🥬</div>
+      <div style="flex:1;">
+        <div class="post-row-title">Bok Choy — Fresh today</div>
+        <div class="post-row-meta">Fresh Today · posted 1h ago</div>
+      </div>
+      <div class="post-row-actions">
+        <button class="action-btn" onclick="showState('manage', 'editing', null)">Edit</button>
+        <button class="action-btn danger" onclick="showState('manage', 'delete-confirm', null)">Delete</button>
+      </div>
+    </div>
+    <div class="post-row">
+      <div class="post-row-icon">🏷</div>
+      <div style="flex:1;">
+        <div class="post-row-title">30% off fresh lamb cuts</div>
+        <div class="post-row-meta">Deal · Expires Thu Mar 20</div>
+      </div>
+      <div class="post-row-actions">
+        <button class="action-btn" onclick="showState('manage', 'editing', null)">Edit</button>
+        <button class="action-btn danger" onclick="showState('manage', 'delete-confirm', null)">Delete</button>
+      </div>
+    </div>
+    <div class="post-row" style="opacity:0.5;">
+      <div class="post-row-icon">🍅</div>
+      <div style="flex:1;">
+        <div class="post-row-title" style="text-decoration:line-through;">Buy 2 get 1 canned tomatoes</div>
+        <div class="post-row-meta">Deal · Expired Mar 14 — hidden from shoppers</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editing -->
+  <div class="state-panel" id="manage-editing" style="max-width:500px;">
+    <div class="section-card">
+      <h2>Edit post</h2>
+      <div class="field-group">
+        <label class="field-label">Item name</label>
+        <input class="field-input" value="Bok Choy — Fresh today">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Note (optional)</label>
+        <input class="field-input" value="Just arrived from local farm — very limited">
+      </div>
+      <div style="display:flex; gap:8px; margin-top:4px;">
+        <button class="save-btn" onclick="showToast('Post updated — shoppers see it now', 'success'); showState('manage', 'list', null)">Save changes</button>
+        <button class="btn-cancel" onclick="showState('manage', 'list', null)">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New deal: Story 8 -->
+  <div class="state-panel" id="manage-new-deal" style="max-width:500px;">
+    <div class="section-card">
+      <h2>Post a deal</h2>
+      <div class="field-group">
+        <label class="field-label">Deal title *</label>
+        <input class="field-input" placeholder="e.g. 30% off fresh lamb cuts">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Description</label>
+        <input class="field-input" placeholder="Any conditions or details">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Expiry date *</label>
+        <input class="field-input" type="date" value="2026-03-22">
+      </div>
+      <div style="font-size:12px; color:var(--gray-400); margin-bottom:16px;">Deals auto-hide when they expire — no cleanup needed.</div>
+      <div style="display:flex; gap:8px;">
+        <button class="save-btn" onclick="showToast('Deal posted and live!', 'success'); showState('manage', 'list', null)">Post deal</button>
+        <button class="btn-cancel" onclick="showState('manage', 'list', null)">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirm -->
+  <div class="state-panel" id="manage-delete-confirm" style="max-width:500px;">
+    <div class="section-card" style="border:1px solid #F7C1C1; background:var(--red-50);">
+      <h2 style="color:var(--red-800);">Remove this post?</h2>
+      <p style="font-size:14px; color:var(--gray-600); margin-bottom:20px;">Shoppers will no longer see "Bok Choy — Fresh today". This action hides the post immediately.</p>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-danger" onclick="showToast('Post removed from shopper feeds', 'error'); showState('manage', 'list', null)">Yes, remove it</button>
+        <button class="btn-cancel" onclick="showState('manage', 'list', null)">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN: REUSE PAST DEALS (Story 9) ==================== -->
+<div class="screen" id="screen-reuse">
+  <div class="story-tags"><span class="story-tag">Story 9: Reuse Past Deals</span></div>
+  <div class="page-header">
+    <h1>Reuse a past deal</h1>
+    <p>Duplicate a previous promotion and update it — no retyping from scratch</p>
+  </div>
+
+  <div class="state-tabs">
+    <button class="state-tab active" onclick="showState('reuse', 'list', this)">Past deals</button>
+    <button class="state-tab" onclick="showState('reuse', 'editing', this)">Editing duplicate</button>
+    <button class="state-tab" onclick="showState('reuse', 'success', this)">Published</button>
+    <button class="state-tab" onclick="showState('reuse', 'empty', this)">No past deals</button>
+  </div>
+
+  <!-- Past deals list -->
+  <div class="state-panel active" id="reuse-list" style="max-width:600px;">
+    <p style="font-size:13px; color:var(--gray-600); margin-bottom:16px;">Select a past deal to duplicate. You can edit any field before publishing.</p>
+    <div class="post-row" style="background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius-md); margin-bottom:8px; cursor:pointer;" onclick="showState('reuse','editing',null)">
+      <div class="post-row-icon">🥩</div>
+      <div style="flex:1;">
+        <div class="post-row-title">30% off fresh lamb cuts</div>
+        <div class="post-row-meta" style="color:var(--gray-400);">Ran Mar 10 – Mar 20 · Expired</div>
+      </div>
+      <button class="btn-primary" style="font-size:13px; padding:6px 14px;" onclick="event.stopPropagation(); showState('reuse','editing',null)">Duplicate →</button>
+    </div>
+    <div class="post-row" style="background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius-md); margin-bottom:8px; cursor:pointer;" onclick="showState('reuse','editing',null)">
+      <div class="post-row-icon">🍅</div>
+      <div style="flex:1;">
+        <div class="post-row-title">Buy 2 get 1 free — canned tomatoes</div>
+        <div class="post-row-meta" style="color:var(--gray-400);">Ran Feb 28 – Mar 7 · Expired</div>
+      </div>
+      <button class="btn-primary" style="font-size:13px; padding:6px 14px;" onclick="event.stopPropagation(); showState('reuse','editing',null)">Duplicate →</button>
+    </div>
+    <div class="post-row" style="background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius-md); margin-bottom:8px; cursor:pointer;" onclick="showState('reuse','editing',null)">
+      <div class="post-row-icon">🥕</div>
+      <div style="flex:1;">
+        <div class="post-row-title">Organic produce bundle — $12 for $8</div>
+        <div class="post-row-meta" style="color:var(--gray-400);">Ran Feb 15 – Feb 22 · Expired</div>
+      </div>
+      <button class="btn-primary" style="font-size:13px; padding:6px 14px;" onclick="event.stopPropagation(); showState('reuse','editing',null)">Duplicate →</button>
+    </div>
+  </div>
+
+  <!-- Editing duplicate -->
+  <div class="state-panel" id="reuse-editing" style="max-width:500px;">
+    <div class="alert-box alert-success" style="margin-bottom:16px;">✅ Duplicated from "30% off fresh lamb cuts" — update the details below</div>
+    <div class="section-card">
+      <h2>Edit before publishing</h2>
+      <div class="field-group">
+        <label class="field-label">Deal title *</label>
+        <input class="field-input" value="30% off fresh lamb cuts">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Description</label>
+        <input class="field-input" value="Applies to shoulder, rack, and leg cuts">
+      </div>
+      <div class="field-group">
+        <label class="field-label">New expiry date *</label>
+        <input class="field-input" type="date" value="2026-03-29">
+        <div style="font-size:12px; color:var(--gray-400); margin-top:4px;">Must be a future date — the original expiry has been cleared.</div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:4px;">
+        <button class="save-btn" onclick="showState('reuse','success',null); showToast('Deal duplicated and live!', 'success')">Publish deal</button>
+        <button class="btn-cancel" onclick="showState('reuse','list',null)">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div class="state-panel" id="reuse-success" style="max-width:500px;">
+    <div class="alert-box alert-success" style="margin-bottom:16px;">✅ Deal is live on your store page!</div>
+    <div class="deal-card">
+      <div class="deal-badge">🥩</div>
+      <div>
+        <div class="deal-title">30% off fresh lamb cuts</div>
+        <div class="deal-desc">Applies to shoulder, rack, and leg cuts</div>
+        <div class="deal-expiry">Expires Saturday, Mar 29</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:16px;">
+      <button class="btn-primary" onclick="showState('reuse','list',null)">Reuse another</button>
+      <button class="btn-ghost" onclick="navigate('manage')">View all posts</button>
+    </div>
+  </div>
+
+  <!-- Empty -->
+  <div class="state-panel" id="reuse-empty">
+    <div class="empty-state">
+      <div class="empty-state-icon">🗂</div>
+      <h3>No past deals yet</h3>
+      <p>Once you've posted and run a deal, it will appear here so you can reuse it next time.</p>
+      <button class="btn-primary" style="margin-top:16px;" onclick="navigate('manage')">Post your first deal</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN: POST FRESH UPDATE / OWNER (Story 11) ==================== -->
+<div class="screen" id="screen-post-fresh">
+  <div class="story-tags"><span class="story-tag">Story 11: Post Fresh Today Updates (Owner)</span></div>
+  <div class="page-header">
+    <h1>Post a fresh update</h1>
+    <p>Tell shoppers what just arrived — posts appear on your profile within 5 seconds</p>
+  </div>
+
+  <div class="state-tabs">
+    <button class="state-tab active" onclick="showState('postfresh', 'form', this)">Ready to post</button>
+    <button class="state-tab" onclick="showState('postfresh', 'success', this)">Posted!</button>
+    <button class="state-tab" onclick="showState('postfresh', 'error', this)">Validation error</button>
+    <button class="state-tab" onclick="showState('postfresh', 'history', this)">Your updates</button>
+  </div>
+
+  <!-- Form -->
+  <div class="state-panel active" id="postfresh-form" style="max-width:460px;">
+    <div class="section-card">
+      <h2 style="display:flex; align-items:center; gap:8px;">🌿 New fresh update</h2>
+      <p style="font-size:13px; color:var(--gray-600); margin-bottom:20px;">Shoppers on your profile will see this immediately. Items older than 48 hours are automatically de-emphasized.</p>
+      <div class="field-group">
+        <label class="field-label">Item name *</label>
+        <input class="field-input" id="fresh-item-name" placeholder="e.g. Bok Choy, Shin Ramen, Pomegranates">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Note (optional)</label>
+        <input class="field-input" placeholder="e.g. Just arrived, very limited quantities">
+      </div>
+      <div style="font-size:12px; color:var(--gray-400); margin-bottom:16px;">This update will appear under "Fresh Today" on your store profile.</div>
+      <button class="btn-full" onclick="showState('postfresh','success',null); showToast('Fresh update posted!', 'success')">Post update →</button>
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div class="state-panel" id="postfresh-success" style="max-width:460px;">
+    <div class="alert-box alert-success" style="margin-bottom:16px;">✅ Update live on your store profile!</div>
+    <div class="section-card">
+      <div class="fresh-item">
+        <div>
+          <div class="fresh-item-name">Bok Choy</div>
+          <div class="fresh-item-note">Just arrived, very limited quantities</div>
+        </div>
+        <div class="fresh-time">posted just now</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:16px;">
+      <button class="btn-primary" onclick="showState('postfresh','form',null)">Post another</button>
+      <button class="btn-ghost" onclick="navigate('store')">View store profile →</button>
+    </div>
+  </div>
+
+  <!-- Validation error -->
+  <div class="state-panel" id="postfresh-error" style="max-width:460px;">
+    <div class="section-card">
+      <h2 style="display:flex; align-items:center; gap:8px;">🌿 New fresh update</h2>
+      <div class="field-group">
+        <label class="field-label">Item name *</label>
+        <input class="field-input error" placeholder="e.g. Bok Choy, Shin Ramen" value="">
+        <div class="field-error">Item name is required</div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Note (optional)</label>
+        <input class="field-input" placeholder="e.g. Just arrived">
+      </div>
+      <button class="btn-full" style="margin-top:4px;">Post update →</button>
+    </div>
+  </div>
+
+  <!-- History of updates -->
+  <div class="state-panel" id="postfresh-history" style="max-width:560px;">
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Your recent updates</h2>
+        <button class="btn-primary" style="font-size:13px; padding:6px 14px;" onclick="showState('postfresh','form',null)">+ New update</button>
+      </div>
+      <div class="fresh-item">
+        <div>
+          <div class="fresh-item-name">Bok Choy</div>
+          <div class="fresh-item-note">Just arrived from local farm — very limited</div>
+        </div>
+        <div class="fresh-time">posted 1h ago</div>
+      </div>
+      <div class="fresh-item">
+        <div>
+          <div class="fresh-item-name">Lamb Shoulder</div>
+          <div class="fresh-item-note">Halal certified, whole and half cuts available</div>
+        </div>
+        <div class="fresh-time">posted 2h ago</div>
+      </div>
+      <div class="fresh-item" style="opacity:0.45;">
+        <div>
+          <div class="fresh-item-name" style="font-size:13px;">Persian Cucumbers</div>
+          <div class="fresh-item-note">Still in stock</div>
+        </div>
+        <div class="fresh-time" style="background:var(--gray-100); color:var(--gray-400);">38h ago — de-emphasized</div>
+      </div>
+      <div style="font-size:12px; color:var(--gray-400); padding-top:10px; border-top:1px solid var(--gray-100); margin-top:4px;">Updates older than 48 hours are de-emphasized for shoppers. Updates older than 7 days are hidden automatically.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==================== SCREEN: RATIONALE ==================== -->
+<div class="screen" id="screen-rationale">
+  <div class="page-header">
+    <h1>UI Design Rationale</h1>
+    <p>Design decisions and their connection to user stories</p>
+  </div>
+
+  <div class="section-card">
+    <h2>Navigation structure</h2>
+    <p style="font-size:14px; color:var(--gray-600); line-height:1.8; margin-bottom:12px;">The persistent top navigation and sidebar (Story 3, 12) separate the shopper experience from the owner dashboard, preventing cross-contamination of mental models. The sidebar collapses on mobile (Story 11) and is replaced by a bottom tab bar — the dominant mobile navigation pattern. The "Browse Without Account" principle (Story 12) means all navigation items are visible to unauthenticated users — login is only prompted at the moment a locked feature is needed.</p>
+  </div>
+
+  <div class="section-card">
+    <h2>The "Live" badge and freshness indicators</h2>
+    <p style="font-size:14px; color:var(--gray-600); line-height:1.8;">Stories 1 and 9 require that the platform feels alive and current, not like a static Yelp listing. The pulsing green "Updated today" badge on store cards and the de-emphasized opacity on posts older than 24h communicate freshness at a glance. Timestamps are always relative ("posted 2h ago") per Story 1's machine acceptance criteria.</p>
+  </div>
+
+  <div class="section-card">
+    <h2>Filter chips (Story 4)</h2>
+    <p style="font-size:14px; color:var(--gray-600); line-height:1.8;">Filter chips use an AND-logic multi-select with immediate visual feedback (border + background change). A "Clear filters" button appears only when at least one filter is active. Results update in-place without page reload. Labels were chosen to be culturally respectful ("Asian groceries" not "foreign food").</p>
+  </div>
+
+  <div class="section-card">
+    <h2>Reuse Past Deals (Story 9)</h2>
+    <p style="font-size:14px; color:var(--gray-600); line-height:1.8;">The past deals list shows all expired deals in reverse chronological order. A single "Duplicate →" button copies all fields into an editable form. The expiry date is always cleared on duplication — the machine criteria requires a future date, so leaving the old date would cause an immediate validation error. A success banner shows the live deal card exactly as shoppers will see it.</p>
+  </div>
+
+  <div class="section-card">
+    <h2>Post Fresh Today Updates — Owner (Story 11)</h2>
+    <p style="font-size:14px; color:var(--gray-600); line-height:1.8;">The owner posting form is minimal: item name (required) and an optional note. This mirrors the simplicity requirement from Story 11's human criteria — "post a new update in under 30 seconds." The history tab shows the owner exactly how their updates look to shoppers, including the 45% opacity de-emphasis for items older than 48 hours, so they understand the freshness system without needing documentation.</p>
+  </div>
+
+  <div class="section-card">
+    <h2>Deals auto-expiry (Story 2 + 8)</h2>
+    <p style="font-size:14px; color:var(--gray-600); line-height:1.8;">Expired deals are never shown in any shopper-facing view. On the owner side (Story 10), expired posts appear with strike-through and a note "hidden from shoppers" so owners maintain context without the data disappearing entirely — supporting the soft-delete requirement for analytics retention.</p>
+  </div>
+
+  <div class="section-card">
+    <h2>Component reuse across stories</h2>
+    <p style="font-size:14px; color:var(--gray-600); line-height:1.8;">The same store card component appears in Story 3 (directory), Story 4 (filtered results), and Story 7 (profile creation success). The deal card appears on the store profile (Story 2) and the deals directory. The filter chip pattern is reused in Story 4 and Story 7 (category selection). This shared vocabulary ensures the UI feels like one coherent application.</p>
+  </div>
+
+  <div class="section-card">
+    <h2>Story-to-element mapping</h2>
+    <table style="width:100%; font-size:13px; border-collapse:collapse;">
+      <thead><tr style="border-bottom:2px solid var(--gray-200);">
+        <th style="text-align:left; padding:8px; font-weight:600; color:var(--gray-600);">Element</th>
+        <th style="text-align:left; padding:8px; font-weight:600; color:var(--gray-600);">Story</th>
+      </tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Guest banner / no login wall</td><td style="padding:8px;">Story 12</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Map + list toggle, distance labels</td><td style="padding:8px;">Story 3</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Filter chips (Asian, Halal, Organic…)</td><td style="padding:8px;">Story 4</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">"Fresh Today" section + timestamps</td><td style="padding:8px;">Story 1</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Store "Updated today" live badge</td><td style="padding:8px;">Story 1</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">"Deals This Week" section</td><td style="padding:8px;">Story 2</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">In-Stock / Out-of-Stock badges + timestamps</td><td style="padding:8px;">Story 5</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">"Notify me" button on out-of-stock items</td><td style="padding:8px;">Story 5</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Fuzzy match suggestion ("did you mean?")</td><td style="padding:8px;">Story 5</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Login form + error / 401 state</td><td style="padding:8px;">Story 6</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Category selector on profile form</td><td style="padding:8px;">Story 7</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Geocoding failure / draft save alert</td><td style="padding:8px;">Story 7</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Deal form with expiry date field</td><td style="padding:8px;">Story 8</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Expired deal strikethrough in manage view</td><td style="padding:8px;">Story 8</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Past deals list with Duplicate button</td><td style="padding:8px;">Story 9</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Duplicate edit form (fields pre-filled, expiry cleared)</td><td style="padding:8px;">Story 9</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Duplicate success — live deal card preview</td><td style="padding:8px;">Story 9</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">No past deals empty state</td><td style="padding:8px;">Story 9</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Edit / Delete buttons on manage posts</td><td style="padding:8px;">Story 10</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Single-tap delete confirmation panel</td><td style="padding:8px;">Story 10</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Owner fresh update form (item name + note)</td><td style="padding:8px;">Story 11</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Owner update history with de-emphasis preview</td><td style="padding:8px;">Story 11</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Validation error on missing item name</td><td style="padding:8px;">Story 11</td></tr>
+        <tr><td style="padding:8px;">No login wall on any public page</td><td style="padding:8px;">Story 12</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+</div>
+</div>
+
+<!-- MOBILE BOTTOM NAV — Story 11 -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-item active" onclick="navigate('directory')"><span style="font-size:20px;">🗺</span>Discover</div>
+  <div class="mobile-nav-item" onclick="navigate('search')"><span style="font-size:20px;">🔍</span>Search</div>
+  <div class="mobile-nav-item" onclick="navigate('deals')"><span style="font-size:20px;">🏷</span>Deals</div>
+  <div class="mobile-nav-item" onclick="navigate('dashboard')"><span style="font-size:20px;">📊</span>My Store</div>
+</nav>
+
+<!-- DELETE MODAL — Story 10 -->
+<div class="modal-overlay" id="delete-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <h3>Remove this post?</h3>
+    <p>Shoppers will no longer see this item. This takes effect immediately across all feeds.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('delete-modal').classList.remove('open')">Cancel</button>
+      <button class="btn-danger" onclick="document.getElementById('delete-modal').classList.remove('open'); showToast('Post removed from shopper feeds', 'error')">Remove post</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+const screens = ['directory','store','search','deals','login','profile-setup','dashboard','manage','reuse','post-fresh','rationale'];
+const sidebarMap = {
+  directory: 'side-directory', search: 'side-search', deals: 'side-deals',
+  login: 'side-login', dashboard: 'side-dashboard',
+  'profile-setup': 'side-profile-setup', reuse: 'side-reuse', 'post-fresh': 'side-post-fresh', manage: 'side-manage'
+};
+const navMap = {
+  directory: 'nav-directory', search: 'nav-search', deals: 'nav-deals',
+  dashboard: 'nav-dashboard', login: 'nav-dashboard'
+};
+
+function navigate(screen) {
+  screens.forEach(s => {
+    const el = document.getElementById('screen-' + s);
+    if (el) el.classList.remove('active');
+  });
+  const target = document.getElementById('screen-' + screen);
+  if (target) target.classList.add('active');
+
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.topnav-link').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.mobile-nav-item').forEach(i => i.classList.remove('active'));
+
+  if (sidebarMap[screen]) document.getElementById(sidebarMap[screen])?.classList.add('active');
+  if (navMap[screen]) document.getElementById(navMap[screen])?.classList.add('active');
+}
+
+function showState(prefix, state, btn) {
+  const screenId = {
+    search: 'screen-search', directory: 'screen-directory', store: 'screen-store',
+    manage: 'screen-manage', reuse: 'screen-reuse', postfresh: 'screen-post-fresh',
+    profile: 'screen-profile-setup', deals: 'screen-deals'
+  }[prefix] || ('screen-' + prefix);
+  document.querySelectorAll('#' + screenId + ' .state-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById(prefix + '-' + state);
+  if (panel) panel.classList.add('active');
+  if (btn) {
+    const parent = btn.closest('.state-tabs');
+    if (parent) parent.querySelectorAll('.state-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+  }
+}
+
+function showLoginState(state, btn) {
+  ['login-form','login-error','login-success','login-reset'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const target = document.getElementById('login-' + state);
+  if (target) target.style.display = '';
+  if (btn) {
+    const parent = btn.closest ? btn.closest('.state-tabs') : null;
+    if (parent) parent.querySelectorAll('.state-tab').forEach(t => t.classList.remove('active'));
+    if (btn.classList) btn.classList.add('active');
+  }
+}
+
+function setView(view, btn) {
+  const map = document.getElementById('map-view');
+  const listStates = document.querySelectorAll('#screen-directory .state-panel');
+  if (view === 'map') {
+    map.style.display = 'block';
+    document.getElementById('directory-loaded').style.display = 'none';
+  } else {
+    map.style.display = 'none';
+    document.getElementById('directory-loaded').style.display = 'block';
+  }
+  btn.closest('.map-toggle').querySelectorAll('.map-toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+let activeFilters = new Set();
+function toggleFilter(btn, filter) {
+  if (activeFilters.has(filter)) { activeFilters.delete(filter); btn.classList.remove('active'); }
+  else { activeFilters.add(filter); btn.classList.add('active'); }
+  document.getElementById('clear-filters').style.display = activeFilters.size > 0 ? 'block' : 'none';
+}
+function clearFilters() {
+  activeFilters.clear();
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('clear-filters').style.display = 'none';
+}
+
+function filterStores(val) { /* Would filter grid in real impl */ }
+function itemSearch(val) { /* Would search in real impl */ }
+
+let toastTimer;
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'success' 
