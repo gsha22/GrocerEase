@@ -26,6 +26,19 @@ export default function MapPage() {
   const [center, setCenter] = useState<[number, number]>(PITTSBURGH_CENTER);
   const [loading, setLoading] = useState(true);
 
+  async function fetchStores(lat: number | null, lng: number | null) {
+    const params = new URLSearchParams();
+    if (lat !== null && lng !== null) {
+      params.set("lat", lat.toString());
+      params.set("lng", lng.toString());
+      params.set("radius", "10");
+    }
+    const res = await fetch(`/api/stores?${params.toString()}`);
+    const data = await res.json();
+    setStores(data);
+    setLoading(false);
+  }
+
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -42,20 +55,8 @@ export default function MapPage() {
     } else {
       fetchStores(null, null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  async function fetchStores(lat: number | null, lng: number | null) {
-    const params = new URLSearchParams();
-    if (lat !== null && lng !== null) {
-      params.set("lat", lat.toString());
-      params.set("lng", lng.toString());
-      params.set("radius", "10");
-    }
-    const res = await fetch(`/api/stores?${params.toString()}`);
-    const data = await res.json();
-    setStores(data);
-    setLoading(false);
-  }
 
   return (
     <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
