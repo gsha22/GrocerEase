@@ -1,6 +1,33 @@
-// TODO: Story 2 (Deals This Week — Shopper)
+import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import DealCard from "@/components/DealCard";
 
-export default function DealsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function DealsPage() {
+  const now = new Date();
+
+  const deals = await prisma.deal.findMany({
+    where: {
+      deletedAt: null,
+      isExpired: false,
+      expiresAt: { gt: now },
+      store: { isPublished: true },
+    },
+    orderBy: { expiresAt: "asc" },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      expiresAt: true,
+      store: {
+        select: { id: true, name: true },
+      },
+    },
+  });
+
+  const storeIds = new Set(deals.map((d) => d.store.id));
+
   return (
     <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-7">
@@ -8,63 +35,50 @@ export default function DealsPage() {
           Deals this week
         </h1>
         <p className="text-[15px] text-gray-600 mt-1.5">
-          Active promotions at local stores — sorted by expiry date
+          Active promotions at local stores &mdash; sorted by expiry date
         </p>
       </div>
 
-      <div className="text-[13px] text-green-600 font-medium mb-4">
-        3 active deals &middot; 2 stores
-      </div>
-
-      {/* Deal cards */}
-      {[
-        {
-          emoji: "🥩",
-          title: "30% off fresh lamb cuts",
-          store: "Store Name · 0.4 mi",
-          expiry: "Expires Thursday, Mar 20",
-          urgent: true,
-        },
-        {
-          emoji: "🍜",
-          title: "Shin Ramen — buy 3 get 1 free",
-          store: "Store Name · 1.2 mi",
-          expiry: "Expires Friday, Mar 21",
-          urgent: false,
-        },
-        {
-          emoji: "🥕",
-          title: "Organic produce bundle — $12 value for $8",
-          store: "Store Name · 2.1 mi",
-          expiry: "Expires Saturday, Mar 22",
-          urgent: false,
-        },
-      ].map((deal, i) => (
-        <div
-          key={i}
-          className="flex gap-3.5 p-3.5 bg-amber-50 rounded-xl border border-amber-100 mb-3"
-        >
-          <span className="text-[22px]">{deal.emoji}</span>
-          <div className="flex-1">
-            <div className="flex justify-between items-start">
-              <div className="font-semibold text-[15px] text-gray-800">
-                {deal.title}
-              </div>
-              {deal.urgent && (
-                <span className="bg-red-50 text-red-800 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ml-2">
-                  Ends Thu
-                </span>
-              )}
-            </div>
-            <div className="text-[13px] text-gray-600 mt-0.5">
-              {deal.store}
-            </div>
-            <div className="text-[12px] text-amber-400 font-medium mt-1">
-              {deal.expiry}
-            </div>
+      {deals.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <>
+          <div className="text-[13px] text-green-600 font-medium mb-4">
+            {deals.length} active deal{deals.length !== 1 && "s"} &middot;{" "}
+            {storeIds.size} store{storeIds.size !== 1 && "s"}
           </div>
-        </div>
-      ))}
+
+          {deals.map((deal) => (
+            <Link key={deal.id} href={`/stores/${deal.store.id}`} className="block">
+              <DealCard
+                deal={{
+                  id: deal.id,
+                  title: deal.title,
+                  description: deal.description,
+                  expiresAt: deal.expiresAt.toISOString(),
+                  storeName: deal.store.name,
+                }}
+                showStore
+              />
+            </Link>
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="text-center py-16 px-5">
+      <div className="text-[52px] mb-4">🏷</div>
+      <h3 className="text-[18px] font-semibold text-gray-800 mb-2">
+        No deals right now
+      </h3>
+      <p className="text-[14px] text-gray-400 max-w-[300px] mx-auto">
+        Stores haven&apos;t posted any deals this week. Check back Monday
+        &mdash; stores typically update their promotions then.
+      </p>
     </div>
   );
 }
