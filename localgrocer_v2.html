@@ -460,13 +460,14 @@
 </head>
 <body>
 
-<!-- TOP NAV — Stories 3, 6, 11, 12 -->
+<!-- TOP NAV — Stories 3, 6, 11 -->
 <nav class="topnav">
   <div class="topnav-logo" onclick="navigate('directory')">Local<span>Grocer</span></div>
   <div class="topnav-links">
     <button class="topnav-link active" id="nav-directory" onclick="navigate('directory')">Discover Stores</button>
     <button class="topnav-link" id="nav-search" onclick="navigate('search')">Search Items</button>
     <button class="topnav-link" id="nav-deals" onclick="navigate('deals')">Deals</button>
+    <button class="topnav-link" id="nav-alerts" onclick="navigate('alerts')">My Alerts</button>
     <button class="topnav-link" id="nav-dashboard" onclick="navigate('dashboard')">Owner Dashboard</button>
   </div>
   <div class="topnav-actions">
@@ -478,7 +479,7 @@
 <div class="app-shell">
 <div class="page-layout">
 
-<!-- SIDEBAR — Stories 3, 4 -->
+<!-- SIDEBAR — Stories 3, 4, 12 -->
 <aside class="sidebar">
   <div class="sidebar-section">Shopper</div>
   <button class="sidebar-item active" id="side-directory" onclick="navigate('directory')">
@@ -489,6 +490,9 @@
   </button>
   <button class="sidebar-item" id="side-deals" onclick="navigate('deals')">
     <div class="sidebar-icon">🏷</div> Weekly Deals
+  </button>
+  <button class="sidebar-item" id="side-alerts" onclick="navigate('alerts')">
+    <div class="sidebar-icon">🔔</div> My Alerts
   </button>
   <div class="sidebar-section">Store Owner</div>
   <button class="sidebar-item" id="side-login" onclick="navigate('login')">
@@ -517,15 +521,14 @@
 
 <main class="main-content">
 
-<!-- ==================== SCREEN: DIRECTORY (Story 3, 4, 12) ==================== -->
+<!-- ==================== SCREEN: DIRECTORY (Story 3, 4) ==================== -->
 <div class="screen active" id="screen-directory">
-  <div class="story-tags"><span class="story-tag">Story 3: Discover Nearby Stores</span><span class="story-tag">Story 4: Filter by Specialty</span><span class="story-tag">Story 12: Browse Without Account</span></div>
+  <div class="story-tags"><span class="story-tag">Story 3: Discover Nearby Stores</span><span class="story-tag">Story 4: Filter by Specialty</span></div>
 
-  <!-- Guest Banner: Story 12 — no login required -->
   <div class="guest-banner">
     <div>
       <h3>Discover your neighborhood's best grocers</h3>
-      <p>Browse stores and deals without signing up. Create an account to set stock alerts.</p>
+      <p>Browse stores and deals freely. Sign up to subscribe to stores and get restock alerts.</p>
     </div>
     <button class="btn-ghost" onclick="navigate('login')">Sign up for alerts →</button>
   </div>
@@ -669,9 +672,9 @@
   </div>
 </div>
 
-<!-- ==================== SCREEN: STORE PROFILE (Story 1, 2) ==================== -->
+<!-- ==================== SCREEN: STORE PROFILE (Story 1, 2, 12) ==================== -->
 <div class="screen" id="screen-store">
-  <div class="story-tags"><span class="story-tag">Story 1: Fresh Today Updates</span><span class="story-tag">Story 2: Deals This Week</span><span class="story-tag">Story 12: Browse Without Account</span></div>
+  <div class="story-tags"><span class="story-tag">Story 1: Fresh Today Updates</span><span class="story-tag">Story 2: Deals This Week</span><span class="story-tag">Story 12: Subscribe to Store/Item</span></div>
   <div class="breadcrumb"><span class="breadcrumb-link" onclick="navigate('directory')">Discover Stores</span><span class="breadcrumb-sep">›</span><span>Sultan Bey International</span></div>
 
   <!-- State Tabs -->
@@ -694,6 +697,11 @@
           <span class="tag">Middle Eastern</span>
           <span class="tag-ebt tag">EBT Accepted</span>
           <span class="tag-halal tag">Organic produce</span>
+        </div>
+        <!-- Story 12: Follow / Subscribe button -->
+        <div style="margin-top:14px; display:flex; gap:8px; align-items:center;">
+          <button class="btn-primary" style="font-size:13px; padding:7px 16px;" id="follow-btn" onclick="toggleFollow(this)">🔔 Follow this store</button>
+          <span style="font-size:12px; color:var(--gray-400);">Get notified on new deals &amp; restocks</span>
         </div>
       </div>
     </div>
@@ -791,6 +799,10 @@
         <div class="profile-meta">📍 142 Beaver St, Sewickley, PA</div>
         <div class="profile-hours"><span class="hours-open">Open now</span></div>
         <div class="profile-tags"><span class="tag">Halal</span></div>
+        <!-- Story 12: Follow button on empty state too -->
+        <div style="margin-top:14px;">
+          <button class="btn-primary" style="font-size:13px; padding:7px 16px;" onclick="toggleFollow(this)">🔔 Follow this store</button>
+        </div>
       </div>
     </div>
     <div class="section-card">
@@ -810,7 +822,7 @@
 
 <!-- ==================== SCREEN: ITEM SEARCH (Story 5) ==================== -->
 <div class="screen" id="screen-search">
-  <div class="story-tags"><span class="story-tag">Story 5: Search for a Specific Item</span></div>
+  <div class="story-tags"><span class="story-tag">Story 5: Search for a Specific Item</span><span class="story-tag">Story 12: Subscribe to Store/Item</span></div>
   <div class="page-header">
     <h1>Find what you need</h1>
     <p>Real-time stock status across all local stores</p>
@@ -1523,6 +1535,90 @@
 </div>
 
 
+<!-- ==================== SCREEN: MY ALERTS (Story 12) ==================== -->
+<div class="screen" id="screen-alerts">
+  <div class="story-tags"><span class="story-tag">Story 12: Subscribe to Store/Item</span></div>
+  <div class="page-header">
+    <h1>My Alerts</h1>
+    <p>Stores you follow and items you're watching — we'll notify you on new deals, restocks, and fresh updates</p>
+  </div>
+
+  <div class="state-tabs">
+    <button class="state-tab active" onclick="showState('alerts', 'active', this)">Active alerts</button>
+    <button class="state-tab" onclick="showState('alerts', 'empty', this)">No alerts yet</button>
+    <button class="state-tab" onclick="showState('alerts', 'logged-out', this)">Not logged in</button>
+  </div>
+
+  <!-- Active alerts -->
+  <div class="state-panel active" id="alerts-active" style="max-width:640px;">
+    <div style="font-size:13px; color:var(--green-600); margin-bottom:16px; font-weight:500;">3 active alerts</div>
+
+    <!-- Store follow alert -->
+    <div class="post-row" style="margin-bottom:8px;">
+      <div class="post-row-icon">🏪</div>
+      <div style="flex:1;">
+        <div class="post-row-title">Sultan Bey International</div>
+        <div class="post-row-meta">Following store · New deals &amp; fresh updates</div>
+      </div>
+      <div class="post-row-actions">
+        <button class="action-btn" style="background:var(--green-50); color:var(--green-600); border-color:var(--green-200); font-weight:600;" onclick="this.textContent='Follow'; this.style.background=''; this.style.color='var(--gray-600)'; this.style.borderColor='var(--gray-200)'; this.style.fontWeight='500'; showToast('Unfollowed Sultan Bey International','error')">✓ Following</button>
+      </div>
+    </div>
+    <div class="post-row" style="margin-bottom:8px;">
+      <div class="post-row-icon">🍜</div>
+      <div style="flex:1;">
+        <div class="post-row-title">Lotus Asian Market</div>
+        <div class="post-row-meta">Following store · New deals &amp; fresh updates</div>
+      </div>
+      <div class="post-row-actions">
+        <button class="action-btn" style="background:var(--green-50); color:var(--green-600); border-color:var(--green-200); font-weight:600;" onclick="this.textContent='Follow'; this.style.background=''; this.style.color='var(--gray-600)'; this.style.borderColor='var(--gray-200)'; this.style.fontWeight='500'; showToast('Unfollowed Lotus Asian Market','error')">✓ Following</button>
+      </div>
+    </div>
+
+    <!-- Item restock alert -->
+    <div class="post-row" style="margin-bottom:8px;">
+      <div class="post-row-icon">🥕</div>
+      <div style="flex:1;">
+        <div class="post-row-title">Daikon Radish</div>
+        <div class="post-row-meta">Restock alert · Lotus Asian Market</div>
+      </div>
+      <div class="post-row-actions">
+        <button class="action-btn danger" onclick="this.closest('.post-row').style.opacity='0.4'; this.closest('.post-row').style.textDecoration='line-through'; showToast('Alert removed','error')">Remove</button>
+      </div>
+    </div>
+
+    <div style="font-size:12px; color:var(--gray-400); padding-top:14px; border-top:1px solid var(--gray-100); margin-top:8px;">
+      Follow stores from their profile page, or tap "Notify me" on out-of-stock items to add restock alerts.
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="state-panel" id="alerts-empty">
+    <div class="empty-state">
+      <div class="empty-state-icon">🔔</div>
+      <h3>No alerts yet</h3>
+      <p>Follow stores to get notified on new deals and fresh updates. Tap "Notify me" on out-of-stock items to get restock alerts.</p>
+      <div style="display:flex; gap:8px; justify-content:center; margin-top:16px;">
+        <button class="btn-primary" onclick="navigate('directory')">Browse stores</button>
+        <button class="btn-ghost" onclick="navigate('search')">Search items</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Not logged in prompt -->
+  <div class="state-panel" id="alerts-logged-out">
+    <div class="empty-state">
+      <div class="empty-state-icon">🔒</div>
+      <h3>Sign in to manage alerts</h3>
+      <p>Create an account or log in to subscribe to stores and items. You'll get notified when new deals or restocks are posted.</p>
+      <div style="display:flex; gap:8px; justify-content:center; margin-top:16px;">
+        <button class="btn-primary" onclick="navigate('login')">Log in</button>
+        <button class="btn-ghost" onclick="navigate('login')">Sign up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ==================== SCREEN: RATIONALE ==================== -->
 <div class="screen" id="screen-rationale">
   <div class="page-header">
@@ -1532,7 +1628,7 @@
 
   <div class="section-card">
     <h2>Navigation structure</h2>
-    <p style="font-size:14px; color:var(--gray-600); line-height:1.8; margin-bottom:12px;">The persistent top navigation and sidebar (Story 3, 12) separate the shopper experience from the owner dashboard, preventing cross-contamination of mental models. The sidebar collapses on mobile (Story 11) and is replaced by a bottom tab bar — the dominant mobile navigation pattern. The "Browse Without Account" principle (Story 12) means all navigation items are visible to unauthenticated users — login is only prompted at the moment a locked feature is needed.</p>
+    <p style="font-size:14px; color:var(--gray-600); line-height:1.8; margin-bottom:12px;">The persistent top navigation and sidebar (Story 3, 12) separate the shopper experience from the owner dashboard, preventing cross-contamination of mental models. The sidebar collapses on mobile (Story 11) and is replaced by a bottom tab bar — the dominant mobile navigation pattern. A dedicated "My Alerts" link (Story 12) gives logged-in shoppers quick access to their subscriptions without cluttering the primary browsing experience.</p>
   </div>
 
   <div class="section-card">
@@ -1561,6 +1657,11 @@
   </div>
 
   <div class="section-card">
+    <h2>Subscribe to Store/Item — Alerts (Story 12)</h2>
+    <p style="font-size:14px; color:var(--gray-600); line-height:1.8;">Story 12 converts passive browsers into return users through a structured subscription system. The "Follow this store" button on store profiles creates a <code>store_follow</code> alert, while the existing "Notify me" button on out-of-stock items creates an <code>item_restock</code> alert. The "My Alerts" page gives logged-in shoppers a single place to manage all subscriptions. Unfollowing uses optimistic UI — the button toggles immediately before the API call completes — per the human criteria requiring instant feedback. The "Not logged in" state gently prompts sign-in without blocking browsing, preserving the frictionless discovery flow.</p>
+  </div>
+
+  <div class="section-card">
     <h2>Component reuse across stories</h2>
     <p style="font-size:14px; color:var(--gray-600); line-height:1.8;">The same store card component appears in Story 3 (directory), Story 4 (filtered results), and Story 7 (profile creation success). The deal card appears on the store profile (Story 2) and the deals directory. The filter chip pattern is reused in Story 4 and Story 7 (category selection). This shared vocabulary ensures the UI feels like one coherent application.</p>
   </div>
@@ -1573,7 +1674,7 @@
         <th style="text-align:left; padding:8px; font-weight:600; color:var(--gray-600);">Story</th>
       </tr></thead>
       <tbody>
-        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Guest banner / no login wall</td><td style="padding:8px;">Story 12</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">"Follow this store" button on profile</td><td style="padding:8px;">Story 12</td></tr>
         <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Map + list toggle, distance labels</td><td style="padding:8px;">Story 3</td></tr>
         <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Filter chips (Asian, Halal, Organic…)</td><td style="padding:8px;">Story 4</td></tr>
         <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">"Fresh Today" section + timestamps</td><td style="padding:8px;">Story 1</td></tr>
@@ -1596,7 +1697,10 @@
         <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Owner fresh update form (item name + note)</td><td style="padding:8px;">Story 11</td></tr>
         <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Owner update history with de-emphasis preview</td><td style="padding:8px;">Story 11</td></tr>
         <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Validation error on missing item name</td><td style="padding:8px;">Story 11</td></tr>
-        <tr><td style="padding:8px;">No login wall on any public page</td><td style="padding:8px;">Story 12</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">"My Alerts" management page</td><td style="padding:8px;">Story 12</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">Active/inactive subscription toggle</td><td style="padding:8px;">Story 12</td></tr>
+        <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px;">"Not logged in" sign-in prompt on alerts</td><td style="padding:8px;">Story 12</td></tr>
+        <tr><td style="padding:8px;">"Notify me" item restock alert</td><td style="padding:8px;">Story 5, 12</td></tr>
       </tbody>
     </table>
   </div>
@@ -1611,6 +1715,7 @@
   <div class="mobile-nav-item active" onclick="navigate('directory')"><span style="font-size:20px;">🗺</span>Discover</div>
   <div class="mobile-nav-item" onclick="navigate('search')"><span style="font-size:20px;">🔍</span>Search</div>
   <div class="mobile-nav-item" onclick="navigate('deals')"><span style="font-size:20px;">🏷</span>Deals</div>
+  <div class="mobile-nav-item" onclick="navigate('alerts')"><span style="font-size:20px;">🔔</span>Alerts</div>
   <div class="mobile-nav-item" onclick="navigate('dashboard')"><span style="font-size:20px;">📊</span>My Store</div>
 </nav>
 
@@ -1630,14 +1735,14 @@
 <div class="toast" id="toast"></div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-const screens = ['directory','store','search','deals','login','profile-setup','dashboard','manage','reuse','post-fresh','rationale'];
+const screens = ['directory','store','search','deals','alerts','login','profile-setup','dashboard','manage','reuse','post-fresh','rationale'];
 const sidebarMap = {
-  directory: 'side-directory', search: 'side-search', deals: 'side-deals',
+  directory: 'side-directory', search: 'side-search', deals: 'side-deals', alerts: 'side-alerts',
   login: 'side-login', dashboard: 'side-dashboard',
   'profile-setup': 'side-profile-setup', reuse: 'side-reuse', 'post-fresh': 'side-post-fresh', manage: 'side-manage'
 };
 const navMap = {
-  directory: 'nav-directory', search: 'nav-search', deals: 'nav-deals',
+  directory: 'nav-directory', search: 'nav-search', deals: 'nav-deals', alerts: 'nav-alerts',
   dashboard: 'nav-dashboard', login: 'nav-dashboard'
 };
 
@@ -1661,7 +1766,7 @@ function showState(prefix, state, btn) {
   const screenId = {
     search: 'screen-search', directory: 'screen-directory', store: 'screen-store',
     manage: 'screen-manage', reuse: 'screen-reuse', postfresh: 'screen-post-fresh',
-    profile: 'screen-profile-setup', deals: 'screen-deals'
+    profile: 'screen-profile-setup', deals: 'screen-deals', alerts: 'screen-alerts'
   }[prefix] || ('screen-' + prefix);
   document.querySelectorAll('#' + screenId + ' .state-panel').forEach(p => p.classList.remove('active'));
   const panel = document.getElementById(prefix + '-' + state);
@@ -1715,6 +1820,26 @@ function clearFilters() {
 
 function filterStores(val) { /* Would filter grid in real impl */ }
 function itemSearch(val) { /* Would search in real impl */ }
+
+function toggleFollow(btn) {
+  if (btn.dataset.following === 'true') {
+    btn.dataset.following = 'false';
+    btn.textContent = '🔔 Follow this store';
+    btn.style.background = '';
+    btn.classList.add('btn-primary');
+    btn.classList.remove('btn-ghost');
+    showToast('Unfollowed store', 'error');
+  } else {
+    btn.dataset.following = 'true';
+    btn.textContent = '✓ Following';
+    btn.style.background = 'var(--green-50)';
+    btn.style.color = 'var(--green-600)';
+    btn.style.border = '1px solid var(--green-200)';
+    btn.classList.remove('btn-primary');
+    btn.classList.add('btn-ghost');
+    showToast('Following Sultan Bey — you\'ll get notified on new deals & updates', 'success');
+  }
+}
 
 let toastTimer;
 function showToast(msg, type) {
