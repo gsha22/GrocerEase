@@ -26,20 +26,20 @@ export default function MapPage() {
   const [center, setCenter] = useState<[number, number]>(PITTSBURGH_CENTER);
   const [loading, setLoading] = useState(true);
 
-  async function fetchStores(lat: number | null, lng: number | null) {
-    const params = new URLSearchParams();
-    if (lat !== null && lng !== null) {
-      params.set("lat", lat.toString());
-      params.set("lng", lng.toString());
-      params.set("radius", "10");
-    }
-    const res = await fetch(`/api/stores?${params.toString()}`);
-    const data = await res.json();
-    setStores(data);
-    setLoading(false);
-  }
-
   useEffect(() => {
+    async function loadStores(lat: number | null, lng: number | null) {
+      const params = new URLSearchParams();
+      if (lat !== null && lng !== null) {
+        params.set("lat", lat.toString());
+        params.set("lng", lng.toString());
+        params.set("radius", "10");
+      }
+      const res = await fetch(`/api/stores?${params.toString()}`);
+      const data = await res.json();
+      setStores(data);
+      setLoading(false);
+    }
+
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -48,14 +48,13 @@ export default function MapPage() {
             pos.coords.longitude,
           ];
           setCenter(loc);
-          fetchStores(loc[0], loc[1]);
+          loadStores(loc[0], loc[1]);
         },
-        () => fetchStores(null, null)
+        () => loadStores(null, null)
       );
     } else {
-      fetchStores(null, null);
+      loadStores(null, null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
