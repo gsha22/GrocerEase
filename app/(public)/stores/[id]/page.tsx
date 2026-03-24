@@ -79,22 +79,18 @@ export default async function StoreProfilePage({
               </span>
             </div>
           )}
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {store.categories.map((tag) => (
-              <span
-                key={tag}
-                className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
-                  tag === "EBT Accepted"
-                    ? "bg-amber-50 text-amber-800"
-                    : tag === "Halal"
-                      ? "bg-blue-50 text-blue-800"
-                      : "bg-green-50 text-green-800"
-                }`}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
+          {store.categories.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {store.categories.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-800 font-medium"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
