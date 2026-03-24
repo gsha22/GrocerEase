@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 import DealCard from "@/components/DealCard";
+
+export const dynamic = "force-dynamic";
 
 export default async function DealsPage() {
   const now = new Date();
@@ -46,7 +49,7 @@ export default async function DealsPage() {
           </div>
 
           {deals.map((deal) => (
-            <a key={deal.id} href={`/stores/${deal.store.id}`} className="block">
+            <Link key={deal.id} href={`/stores/${deal.store.id}`} className="block">
               <DealCard
                 deal={{
                   id: deal.id,
@@ -57,7 +60,7 @@ export default async function DealsPage() {
                 }}
                 showStore
               />
-            </a>
+            </Link>
           ))}
         </>
       )}
