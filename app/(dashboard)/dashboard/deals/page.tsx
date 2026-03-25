@@ -4,16 +4,19 @@ export default function ManageDealsPage() {
   return (
     <div className="max-w-[700px]">
       <div className="mb-7">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
+          Owner portal
+        </p>
         <h1 className="font-display text-[28px] font-medium text-gray-800 tracking-tight">
           Deals
         </h1>
         <p className="text-[15px] text-gray-600 mt-1.5">
-          Create and manage your store&apos;s promotions
+          Create promotions shoppers see on your store and the deals feed.
         </p>
       </div>
 
       {/* New deal form — Story 8 */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6 shadow-sm">
         <h2 className="text-[17px] font-semibold text-gray-800 mb-4">
           Post a deal
         </h2>
@@ -22,7 +25,7 @@ export default function ManageDealsPage() {
             Deal title *
           </label>
           <input
-            className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] bg-white outline-none focus:border-green-400 transition-colors"
+            className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
             placeholder="e.g. 30% off fresh lamb cuts"
           />
         </div>
@@ -31,7 +34,7 @@ export default function ManageDealsPage() {
             Description
           </label>
           <input
-            className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] bg-white outline-none focus:border-green-400 transition-colors"
+            className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
             placeholder="Any conditions or details"
           />
         </div>
@@ -41,7 +44,7 @@ export default function ManageDealsPage() {
           </label>
           <input
             type="date"
-            className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] bg-white outline-none focus:border-green-400 transition-colors"
+            className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
           />
         </div>
         <p className="text-[12px] text-gray-400 mb-4">
@@ -58,7 +61,7 @@ export default function ManageDealsPage() {
           Your deals
         </h2>
         <span className="text-[13px] text-gray-400">
-          Past deals can be reused — Story 9
+          Reuse past deals to save time
         </span>
       </div>
 
@@ -79,7 +82,7 @@ export default function ManageDealsPage() {
       ].map((deal, i) => (
         <div
           key={i}
-          className={`flex items-center gap-3 p-3.5 bg-white border border-gray-200 rounded-xl mb-2 transition-colors ${
+          className={`flex items-center gap-3 p-3.5 bg-white border border-gray-200 rounded-xl mb-2 transition-colors shadow-sm ${
             deal.active ? "hover:border-gray-400" : "opacity-50"
           }`}
         >

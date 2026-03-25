@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NavbarAuthLinks from "@/components/NavbarAuthLinks";
 
 export default function Navbar() {
   return (
@@ -36,21 +37,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Auth actions */}
-        <div className="flex gap-2 items-center ml-auto">
-          <Link
-            href="/login"
-            className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors"
-          >
-            Log in
-          </Link>
-          <Link
-            href="/login"
-            className="px-4 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors"
-          >
-            Sign up free
-          </Link>
-        </div>
+        <NavbarAuthLinks />
       </nav>
 
       {/* Mobile bottom nav is rendered separately — see MobileNav component */}

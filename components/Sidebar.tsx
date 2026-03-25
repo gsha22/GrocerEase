@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
 
 const sections = [
   {
-    label: "Store Owner",
+    label: "Owner portal",
     items: [
       { href: "/dashboard", label: "Dashboard", icon: "📊" },
       { href: "/dashboard/profile", label: "Store Profile", icon: "🏪" },
@@ -49,15 +48,6 @@ export default function Sidebar() {
             })}
           </div>
         ))}
-      </div>
-      <div className="shrink-0 p-3 pt-2 border-t border-gray-100">
-        <button
-          type="button"
-          onClick={() => signOut({ callbackUrl: "/" })}
-          className="w-full text-left rounded-md px-2.5 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors"
-        >
-          Sign out
-        </button>
       </div>
     </aside>
   );

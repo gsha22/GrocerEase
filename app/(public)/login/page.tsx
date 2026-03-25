@@ -1,8 +1,15 @@
 import { Suspense } from "react";
-import LoginForm from "./LoginForm";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import LoginForm from "./LoginForm";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await auth();
+  if (session?.user) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="flex-1 flex items-center justify-center px-4 py-12">
       <div className="bg-white rounded-3xl border border-gray-200 p-10 max-w-[420px] w-full shadow-md">

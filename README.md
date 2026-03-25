@@ -6,7 +6,7 @@ A lightweight discovery platform that helps Pittsburgh shoppers find out what ne
 
 | Layer | Choice |
 |---|---|
-| Frontend + Backend | Next.js 14 (App Router) |
+| Frontend + Backend | Next.js 16 (App Router) |
 | Auth | Auth.js (Credentials provider) |
 | Database | PostgreSQL via Supabase |
 | ORM | Prisma |
@@ -118,6 +118,23 @@ npm run db:seed
 ```
 
 Full fixture inventory and story coverage mapping: `docs/test-data.md`.
+
+### Seeded store owner logins (testing)
+
+After `npm run db:seed`, every seeded store shares the same fixture password. Use the **login email** at `/login` to exercise the owner dashboard and authenticated APIs.
+
+| Store (seed) | Login email | Password |
+| --- | --- | --- |
+| Lotus Asian Market | `linh@lotus-market.test` | `OwnerPass123!` |
+| Crescent Halal Grocer | `abdullah@crescent-halal.test` | `OwnerPass123!` |
+| Three Rivers Organic Produce | `maria@3rivers-produce.test` | `OwnerPass123!` |
+| Tokyo Mart Shadyside | `jiyeon@tokyo-mart.test` | `OwnerPass123!` |
+| River Halal Hub | `omar@river-halal.test` | `OwnerPass123!` |
+| East End Organic Pantry | `evelyn@eastend-organic.test` | `OwnerPass123!` |
+
+Owners in the seed **without** a linked store (useful for onboarding flows): `newowner@no-store.test`, `backupowner@no-store.test` — same password **`OwnerPass123!`**.
+
+> These credentials are for **local/demo databases only**. Do not reuse this password in production.
 
 ## Branch Strategy
 

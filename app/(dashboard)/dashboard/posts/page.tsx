@@ -4,16 +4,19 @@ export default function ManagePostsPage() {
   return (
     <div className="max-w-[700px]">
       <div className="mb-7">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
+          Owner portal
+        </p>
         <h1 className="font-display text-[28px] font-medium text-gray-800 tracking-tight">
-          Fresh Updates
+          Fresh updates
         </h1>
         <p className="text-[15px] text-gray-600 mt-1.5">
-          Post &ldquo;fresh today&rdquo; updates for shoppers to see
+          Let shoppers know what just arrived or is back in stock.
         </p>
       </div>
 
       {/* New post form */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6 shadow-sm">
         <h2 className="text-[17px] font-semibold text-gray-800 mb-4">
           Post a fresh update
         </h2>
@@ -22,7 +25,7 @@ export default function ManagePostsPage() {
             Item name *
           </label>
           <input
-            className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] bg-white outline-none focus:border-green-400 transition-colors"
+            className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
             placeholder="e.g. Bok Choy, Lamb Shoulder"
           />
         </div>
@@ -31,7 +34,7 @@ export default function ManagePostsPage() {
             Note (optional)
           </label>
           <input
-            className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] bg-white outline-none focus:border-green-400 transition-colors"
+            className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
             placeholder="e.g. Just arrived from local farm — very limited"
           />
         </div>
@@ -52,7 +55,7 @@ export default function ManagePostsPage() {
       ].map((post, i) => (
         <div
           key={i}
-          className="flex items-center gap-3 p-3.5 bg-white border border-gray-200 rounded-xl mb-2 hover:border-gray-400 transition-colors"
+          className="flex items-center gap-3 p-3.5 bg-white border border-gray-200 rounded-xl mb-2 hover:border-gray-400 transition-colors shadow-sm"
         >
           <div className="text-2xl w-11 h-11 rounded-md bg-gray-50 flex items-center justify-center shrink-0">
             {post.icon}
