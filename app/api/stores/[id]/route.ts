@@ -1,5 +1,7 @@
+import type { Prisma } from "@/app/generated/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
 
 // Story 3: GET /api/stores/:id — Get single store profile
 // Story 12: No auth required
@@ -36,6 +38,49 @@ export async function GET(
 }
 
 // Story 7: PATCH /api/stores/:id — Update store profile (owner only)
-export async function PATCH() {
-  return NextResponse.json({ message: "TODO: Update store" }, { status: 501 });
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: storeId } = await params;
+  const gate = await requireStoreOwnerForStore(storeId);
+  if ("response" in gate) return gate.response;
+
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const data: {
+    name?: string;
+    address?: string;
+    hours?: unknown;
+    categories?: string[];
+    is_published?: boolean;
+    isPublished?: boolean;
+  } = body;
+
+  const patch: Prisma.StoreUpdateInput = {};
+  if (typeof data.name === "string") patch.name = data.name;
+  if (typeof data.address === "string") patch.address = data.address;
+  if (data.hours !== undefined) patch.hours = data.hours as Prisma.InputJsonValue;
+  if (Array.isArray(data.categories)) patch.categories = data.categories;
+  if (typeof data.is_published === "boolean")
+    patch.isPublished = data.is_published;
+  if (typeof data.isPublished === "boolean")
+    patch.isPublished = data.isPublished;
+
+  if (Object.keys(patch).length === 0) {
+    return NextResponse.json(
+      { error: "No valid fields to update." },
+      { status: 400 }
+    );
+  }
+
+  const updated = await prisma.store.update({
+    where: { id: storeId },
+    data: patch,
+  });
+
+  return NextResponse.json({ store: updated });
 }

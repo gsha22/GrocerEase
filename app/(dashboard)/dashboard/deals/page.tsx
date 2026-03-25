@@ -11,6 +11,9 @@ export default async function ManageDealsPage() {
   if (!session.storeId) {
     return (
       <div className="max-w-[700px]">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
+          Owner portal
+        </p>
         <h1 className="font-display text-[28px] font-medium text-gray-800 tracking-tight">
           Deals
         </h1>
@@ -33,6 +36,18 @@ export default async function ManageDealsPage() {
 
   return (
     <div className="max-w-[700px]">
+      <div className="mb-7">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
+          Owner portal
+        </p>
+        <h1 className="font-display text-[28px] font-medium text-gray-800 tracking-tight">
+          Deals
+        </h1>
+        <p className="text-[15px] text-gray-600 mt-1.5">
+          Create promotions shoppers see on your store and the deals feed.
+        </p>
+      </div>
+
       <OwnerDealExpiryAlerts
         initial={alerts.map((a) => ({ id: a.id, message: a.message }))}
       />

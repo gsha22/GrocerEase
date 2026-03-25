@@ -6,7 +6,7 @@ A lightweight discovery platform that helps Pittsburgh shoppers find out what ne
 
 | Layer | Choice |
 |---|---|
-| Frontend + Backend | Next.js 14 (App Router) |
+| Frontend + Backend | Next.js 16 (App Router) |
 | Auth | Auth.js (Credentials provider) |
 | Database | PostgreSQL via Supabase |
 | ORM | Prisma |
@@ -50,6 +50,12 @@ A lightweight discovery platform that helps Pittsburgh shoppers find out what ne
 
    ```bash
    npx prisma migrate dev --name init
+   ```
+
+5. **Generate Prisma Client**
+
+   ```bash
+   npx prisma generate
    ```
 
 5. **Start the dev server**
@@ -102,6 +108,35 @@ middleware.ts            — protects /dashboard/* routes
 | `npm run db:reset` | Reset DB and re-seed deterministic fixtures |
 | `npx prisma studio` | Open Prisma Studio (DB browser) |
 | `npx prisma migrate dev` | Run pending migrations |
+| `npm run test:auth` | HTTP integration tests for auth & session (needs running app) |
+
+### Running `test:auth`
+
+These tests call a **live** Next.js server and your database (same as local dev).
+
+1. Set `.env` (`DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL` matching the server origin).
+2. Apply migrations and seed: `npx prisma migrate deploy` and `npm run db:seed`.
+3. Build and start the app in another terminal (or use dev):
+
+   ```bash
+   npm run build && npm run start
+   ```
+
+   For `next dev`, the default URL is `http://localhost:3000`.
+
+4. Run the suite:
+
+   ```bash
+   npm run test:auth
+   ```
+
+   If the app listens on another host/port:
+
+   ```bash
+   TEST_BASE_URL=http://localhost:3000 npm run test:auth
+   ```
+
+The script (`scripts/auth-machine-tests.ts`) covers login, dashboard protection, owner-only APIs, forgot-password stub, and **session persistence** (cookie still valid for `/api/auth/session` and `/` after login, `/login` redirects to `/dashboard` when already signed in).
 
 ## Test Data Fixtures
 
@@ -112,6 +147,23 @@ npm run db:seed
 ```
 
 Full fixture inventory and story coverage mapping: `docs/test-data.md`.
+
+### Seeded store owner logins (testing)
+
+After `npm run db:seed`, every seeded store shares the same fixture password. Use the **login email** at `/login` to exercise the owner dashboard and authenticated APIs.
+
+| Store (seed) | Login email | Password |
+| --- | --- | --- |
+| Lotus Asian Market | `linh@lotus-market.test` | `OwnerPass123!` |
+| Crescent Halal Grocer | `abdullah@crescent-halal.test` | `OwnerPass123!` |
+| Three Rivers Organic Produce | `maria@3rivers-produce.test` | `OwnerPass123!` |
+| Tokyo Mart Shadyside | `jiyeon@tokyo-mart.test` | `OwnerPass123!` |
+| River Halal Hub | `omar@river-halal.test` | `OwnerPass123!` |
+| East End Organic Pantry | `evelyn@eastend-organic.test` | `OwnerPass123!` |
+
+Owners in the seed **without** a linked store (useful for onboarding flows): `newowner@no-store.test`, `backupowner@no-store.test` — same password **`OwnerPass123!`**.
+
+> These credentials are for **local/demo databases only**. Do not reuse this password in production.
 
 ## Branch Strategy
 

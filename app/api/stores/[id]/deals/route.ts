@@ -3,6 +3,7 @@ import type { Session } from "next-auth";
 import { auth } from "@/auth";
 import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -112,6 +113,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const session = await auth();
   const err = ownerAuthError(session, storeId);
   if (err) return err;
+
+  const gate = await requireStoreOwnerForStore(storeId);
+  if ("response" in gate) return gate.response;
 
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
