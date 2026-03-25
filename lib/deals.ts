@@ -13,6 +13,19 @@ const MONTH_NAMES = [
 ];
 
 /**
+ * Formats a decimal price string as USD (e.g. "4.99" → "$4.99").
+ */
+export function formatPriceUsd(price: string | null | undefined): string | null {
+  if (price == null || price === "") return null;
+  const n = Number(price);
+  if (!Number.isFinite(n)) return null;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(n);
+}
+
+/**
  * Formats an expiry date as "Expires Thursday, Mar 20".
  */
 export function formatExpiry(date: Date | string): string {

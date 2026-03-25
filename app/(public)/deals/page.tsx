@@ -19,6 +19,7 @@ export default async function DealsPage() {
       id: true,
       title: true,
       description: true,
+      price: true,
       expiresAt: true,
       store: {
         select: { id: true, name: true },
@@ -55,6 +56,7 @@ export default async function DealsPage() {
                   id: deal.id,
                   title: deal.title,
                   description: deal.description,
+                  price: deal.price != null ? deal.price.toString() : null,
                   expiresAt: deal.expiresAt.toISOString(),
                   storeName: deal.store.name,
                 }}

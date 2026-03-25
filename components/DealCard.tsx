@@ -1,9 +1,10 @@
-import { formatExpiry, isUrgent, urgentLabel } from "@/lib/deals";
+import { formatExpiry, formatPriceUsd, isUrgent, urgentLabel } from "@/lib/deals";
 
 export interface DealData {
   id: string;
   title: string;
   description: string | null;
+  price?: string | null;
   expiresAt: string;
   storeName?: string;
 }
@@ -36,6 +37,7 @@ function inferEmoji(title: string): string {
 
 export default function DealCard({ deal, showStore = false }: Props) {
   const urgent = isUrgent(deal.expiresAt);
+  const priceLabel = formatPriceUsd(deal.price ?? null);
 
   return (
     <div className="flex gap-3.5 p-3.5 bg-amber-50 rounded-xl border border-amber-100 mb-2.5 last:mb-0">
@@ -44,6 +46,11 @@ export default function DealCard({ deal, showStore = false }: Props) {
         <div className="flex justify-between items-start gap-2">
           <div className="font-semibold text-[15px] text-gray-800">
             {deal.title}
+            {priceLabel && (
+              <span className="ml-2 text-green-700 font-bold tabular-nums">
+                {priceLabel}
+              </span>
+            )}
           </div>
           {urgent && (
             <span className="bg-red-50 text-red-800 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0">

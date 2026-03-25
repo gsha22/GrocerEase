@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma migrate reset --force && npm run db:seed"
+    "db:reset": "prisma migrate reset --force && npm run db:seed",
+    "deals:cron": "curl -sf -H \"Authorization: Bearer ${CRON_SECRET}\" \"${NEXTAUTH_URL:-http://localhost:3000}/api/cron/deals\""
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.5.0",

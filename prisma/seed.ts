@@ -24,6 +24,7 @@ const prisma = new PrismaClient({
 async function resetAndSeed() {
   await prisma.$transaction([
     prisma.alert.deleteMany(),
+    prisma.ownerNotification.deleteMany(),
     prisma.deal.deleteMany(),
     prisma.freshUpdate.deleteMany(),
     prisma.item.deleteMany(),

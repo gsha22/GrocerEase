@@ -20,6 +20,7 @@ export async function GET(
       deals: {
         where: {
           deletedAt: null,
+          isExpired: false,
           expiresAt: { gt: new Date() },
         },
         orderBy: { expiresAt: "asc" },

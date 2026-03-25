@@ -17,6 +17,7 @@ export async function GET() {
       id: true,
       title: true,
       description: true,
+      price: true,
       discountPct: true,
       expiresAt: true,
       createdAt: true,
@@ -32,7 +33,16 @@ export async function GET() {
   const storeIds = new Set(deals.map((d) => d.store.id));
 
   return NextResponse.json({
-    deals,
+    deals: deals.map((d) => ({
+      id: d.id,
+      title: d.title,
+      description: d.description,
+      price: d.price != null ? d.price.toString() : null,
+      discountPct: d.discountPct,
+      expiresAt: d.expiresAt.toISOString(),
+      createdAt: d.createdAt.toISOString(),
+      store: d.store,
+    })),
     meta: {
       totalDeals: deals.length,
       totalStores: storeIds.size,
