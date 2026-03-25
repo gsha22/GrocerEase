@@ -52,14 +52,14 @@ export default function OwnerHeader() {
           )}
           <Link
             href="/"
-            className="hidden sm:inline-flex px-3 py-1.5 rounded-md text-sm text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors"
+            className="hidden sm:inline-flex px-3 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors"
           >
             View site
           </Link>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="px-3 sm:px-4 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors shrink-0"
+            className="px-3 sm:px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors shrink-0"
           >
             Sign out
           </button>
