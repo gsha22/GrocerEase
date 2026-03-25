@@ -7,8 +7,11 @@
  *   3. Seed data loaded (`npm run db:seed`) so fixture owners exist
  *   4. App running: `npm run dev` or `npm start`
  *
- * Run:
- *   TEST_BASE_URL=http://localhost:3000 npx tsx scripts/auth-machine-tests.ts
+ * Run (server must already be listening):
+ *   npm run test:auth
+ *
+ * Or with a custom origin:
+ *   TEST_BASE_URL=http://localhost:3000 npm run test:auth
  */
 
 import "dotenv/config";
@@ -70,6 +73,20 @@ async function login(email: string, password: string) {
   };
 }
 
+async function fetchAuthSession(cookieHeader?: string) {
+  const headers: Record<string, string> = {};
+  if (cookieHeader) headers.Cookie = cookieHeader;
+  const res = await fetch(`${BASE}/api/auth/session`, { headers });
+  const text = await res.text();
+  let json: unknown = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    json = text;
+  }
+  return { res, json };
+}
+
 async function main() {
   console.log(`Testing auth against ${BASE}\n`);
 
@@ -117,6 +134,71 @@ async function main() {
       "success JSON must not include password material"
     );
     sessionCookie = cookieHeader;
+  }
+
+  // --- Session cookie works on /api/auth/session (client SessionProvider source)
+  {
+    const { res, json } = await fetchAuthSession(sessionCookie);
+    assert.equal(res.status, 200, "GET /api/auth/session with cookie should be 200");
+    const body = json as { user?: { email?: string; name?: string } };
+    assert.ok(body?.user?.email, "session should include user.email");
+    assert.equal(
+      body.user!.email!.toLowerCase(),
+      OWNER_EMAIL_LINH,
+      "session email should match logged-in owner"
+    );
+    const raw = JSON.stringify(json);
+    assert.ok(
+      !raw.includes(OWNER_PASSWORD) && !raw.toLowerCase().includes("passwordhash"),
+      "session JSON must not contain password material"
+    );
+  }
+
+  // --- Session persists after "leaving" owner context (same cookie = still authenticated)
+  {
+    const homeRes = await fetch(`${BASE}/`, {
+      headers: { Cookie: sessionCookie },
+    });
+    assert.ok(homeRes.ok, "GET / with session cookie should succeed");
+
+    const { res, json } = await fetchAuthSession(sessionCookie);
+    assert.equal(res.status, 200, "session still valid after requesting public home");
+    assert.equal(
+      (json as { user?: { email?: string } }).user?.email?.toLowerCase(),
+      OWNER_EMAIL_LINH,
+      "user should still be authenticated (simulates return to main site)"
+    );
+  }
+
+  // --- /login redirects to dashboard when already signed in
+  {
+    const res = await fetch(`${BASE}/login`, {
+      redirect: "manual",
+      headers: { Cookie: sessionCookie },
+    });
+    assert.ok(
+      res.status === 302 || res.status === 303 || res.status === 307,
+      "GET /login with session should redirect"
+    );
+    const loc = res.headers.get("location") ?? "";
+    assert.ok(
+      loc.includes("/dashboard"),
+      `expected /login to redirect to dashboard, got: ${loc}`
+    );
+  }
+
+  // --- No cookie => empty / anonymous session from API
+  {
+    const { res, json } = await fetchAuthSession();
+    assert.equal(res.status, 200, "GET /api/auth/session without cookie should be 200");
+    const user =
+      json !== null && typeof json === "object"
+        ? (json as { user?: unknown }).user
+        : undefined;
+    assert.ok(
+      user === undefined || user === null,
+      "unauthenticated session response should have no user"
+    );
   }
 
   // --- Dashboard requires auth (middleware)

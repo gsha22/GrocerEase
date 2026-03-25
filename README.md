@@ -108,6 +108,35 @@ middleware.ts            — protects /dashboard/* routes
 | `npm run db:reset` | Reset DB and re-seed deterministic fixtures |
 | `npx prisma studio` | Open Prisma Studio (DB browser) |
 | `npx prisma migrate dev` | Run pending migrations |
+| `npm run test:auth` | HTTP integration tests for auth & session (needs running app) |
+
+### Running `test:auth`
+
+These tests call a **live** Next.js server and your database (same as local dev).
+
+1. Set `.env` (`DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL` matching the server origin).
+2. Apply migrations and seed: `npx prisma migrate deploy` and `npm run db:seed`.
+3. Build and start the app in another terminal (or use dev):
+
+   ```bash
+   npm run build && npm run start
+   ```
+
+   For `next dev`, the default URL is `http://localhost:3000`.
+
+4. Run the suite:
+
+   ```bash
+   npm run test:auth
+   ```
+
+   If the app listens on another host/port:
+
+   ```bash
+   TEST_BASE_URL=http://localhost:3000 npm run test:auth
+   ```
+
+The script (`scripts/auth-machine-tests.ts`) covers login, dashboard protection, owner-only APIs, forgot-password stub, and **session persistence** (cookie still valid for `/api/auth/session` and `/` after login, `/login` redirects to `/dashboard` when already signed in).
 
 ## Test Data Fixtures
 
