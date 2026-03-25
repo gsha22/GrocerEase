@@ -52,6 +52,12 @@ A lightweight discovery platform that helps Pittsburgh shoppers find out what ne
    npx prisma migrate dev --name init
    ```
 
+5. **Generate Prisma Client**
+
+   ```bash
+   npx prisma generate
+   ```
+
 5. **Start the dev server**
 
    ```bash
