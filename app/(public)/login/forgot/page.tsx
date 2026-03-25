@@ -5,14 +5,14 @@ import { useState } from "react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
+  const [notImplemented, setNotImplemented] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setMessage(null);
+    setNotImplemented(null);
     setPending(true);
     try {
       const res = await fetch("/auth/forgot-password", {
@@ -21,15 +21,19 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ email }),
       });
       const data = await res.json().catch(() => ({}));
+      if (res.status === 501) {
+        setNotImplemented(
+          typeof data.error === "string"
+            ? data.error
+            : "Password reset is not available yet."
+        );
+        return;
+      }
       if (!res.ok) {
         setError(
           typeof data.error === "string" ? data.error : "Something went wrong."
         );
         return;
-      }
-      if (data.ok && typeof data.message === "string") {
-        setMessage(data.message);
-        setEmail("");
       }
     } finally {
       setPending(false);
@@ -43,25 +47,25 @@ export default function ForgotPasswordPage() {
           Reset password
         </div>
         <p className="text-[14px] text-gray-400 mb-6">
-          Enter the email you use for your store owner account. We&apos;ll send
-          reset instructions if we find a match.
+          Enter the email you use for your store owner account. When reset is
+          available, we&apos;ll use it to verify your account.
         </p>
 
         <form onSubmit={onSubmit} className="space-y-4">
+          {notImplemented && (
+            <div
+              role="status"
+              className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] text-amber-950"
+            >
+              {notImplemented}
+            </div>
+          )}
           {error && (
             <div
               role="alert"
               className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-800"
             >
               {error}
-            </div>
-          )}
-          {message && (
-            <div
-              role="status"
-              className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-[13px] text-green-900"
-            >
-              {message}
             </div>
           )}
 
