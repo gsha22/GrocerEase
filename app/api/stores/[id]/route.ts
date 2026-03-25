@@ -1,5 +1,6 @@
 import type { Prisma } from "@/app/generated/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { geocodeAddress } from "@/lib/geocode-address";
 import { prisma } from "@/lib/prisma";
 import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
 
@@ -60,14 +61,46 @@ export async function PATCH(
   } = body;
 
   const patch: Prisma.StoreUpdateInput = {};
-  if (typeof data.name === "string") patch.name = data.name;
-  if (typeof data.address === "string") patch.address = data.address;
+  if (typeof data.name === "string") patch.name = data.name.trim();
+  if (typeof data.address === "string") patch.address = data.address.trim();
   if (data.hours !== undefined) patch.hours = data.hours as Prisma.InputJsonValue;
-  if (Array.isArray(data.categories)) patch.categories = data.categories;
+  if (Array.isArray(data.categories)) {
+    patch.categories = data.categories
+      .filter((c): c is string => typeof c === "string")
+      .map((c) => c.trim().toLowerCase())
+      .filter(Boolean);
+  }
   if (typeof data.is_published === "boolean")
     patch.isPublished = data.is_published;
   if (typeof data.isPublished === "boolean")
     patch.isPublished = data.isPublished;
+
+  const nextPublished = (patch.isPublished as boolean | undefined) ?? gate.store.isPublished;
+  const togglingToPublished = patch.isPublished === true && !gate.store.isPublished;
+  const nextAddress = (patch.address as string | undefined) ?? gate.store.address;
+  const nextCategories = (patch.categories as string[] | undefined) ?? gate.store.categories;
+  const nextHours =
+    (patch.hours as Prisma.InputJsonValue | undefined) ?? (gate.store.hours as Prisma.JsonValue);
+
+  if (
+    togglingToPublished &&
+    (!nextAddress || !nextHours || !Array.isArray(nextCategories) || nextCategories.length === 0)
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Published profiles require address, hours, and at least one specialty category.",
+      },
+      { status: 400 }
+    );
+  }
+
+  const shouldGeocode = Boolean(nextPublished && patch.address);
+  if (shouldGeocode) {
+    const coords = await geocodeAddress(nextAddress);
+    patch.lat = coords.lat;
+    patch.lng = coords.lng;
+  }
 
   if (Object.keys(patch).length === 0) {
     return NextResponse.json(
