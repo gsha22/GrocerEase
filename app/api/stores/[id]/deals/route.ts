@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -50,6 +51,9 @@ export async function POST(
   context: RouteContext,
 ) {
   const { id: storeId } = await context.params;
+
+  const gate = await requireStoreOwnerForStore(storeId);
+  if ("response" in gate) return gate.response;
 
   const body = await request.json().catch(() => null);
   if (!body) {
