@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
+import SessionProvider from "@/components/SessionProvider";
+import { auth } from "@/auth";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -20,11 +22,13 @@ export const metadata: Metadata = {
     "Discover what nearby Pittsburgh grocery stores have in stock before you leave home.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="en" className={`${dmSans.variable} ${playfair.variable} h-full`}>
       <body className="min-h-full flex flex-col font-sans antialiased">
@@ -34,7 +38,9 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        {children}
+        <SessionProvider session={session}>
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );
