@@ -5,6 +5,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
 
 function timeAgo(date: Date): string {
   const ms = Date.now() - new Date(date).getTime();
@@ -93,6 +94,12 @@ export default async function StoreProfilePage({
           )}
         </div>
       </div>
+
+      <ItemAvailabilitySearch
+        storeId={store.id}
+        storeName={store.name}
+        storeAddress={store.address}
+      />
 
       {/* Fresh Today — Story 1 */}
       <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-4">
