@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { runCredentialsSignIn } from "@/lib/credentials-sign-in-response";
 import { validateOwnerSignup } from "@/lib/validate-owner-signup";
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { email, password, name } = validated.data;
+  const { email, password, name, callbackUrl } = validated.data;
 
   const existing = await prisma.storeOwner.findUnique({
     where: { email },
@@ -47,21 +48,29 @@ export async function POST(req: NextRequest) {
       },
       select: { id: true, email: true, name: true },
     });
-  } catch (e) {
+  } catch (e: unknown) {
+    if (
+      e instanceof Prisma.PrismaClientKnownRequestError &&
+      e.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "An account with this email already exists." },
+        { status: 409 },
+      );
+    }
     console.error("POST /auth/signup create error:", e);
     return NextResponse.json(
       { error: "Could not create account. Try again." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
-  const callbackUrl =
-    typeof (body as { callbackUrl?: string }).callbackUrl === "string" &&
-    (body as { callbackUrl: string }).callbackUrl.startsWith("/")
-      ? (body as { callbackUrl: string }).callbackUrl
-      : "/dashboard";
-
-  const signInRes = await runCredentialsSignIn(req, email, password, callbackUrl);
+  const signInRes = await runCredentialsSignIn(
+    req,
+    email,
+    password,
+    callbackUrl,
+  );
   const setCookies = signInRes.headers.getSetCookie?.() ?? [];
   const signInJson = (await signInRes.json().catch(() => null)) as {
     ok?: boolean;

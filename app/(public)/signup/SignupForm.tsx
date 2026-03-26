@@ -3,11 +3,23 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import {
+  isSafeRelativeAppPath,
+  safeCallbackPath,
+} from "@/lib/safe-callback-path";
+
+interface SignupApiResponse {
+  ok?: boolean;
+  redirectUrl?: string;
+  error?: string;
+  fieldErrors?: Record<string, string>;
+  user?: unknown;
+}
 
 export default function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const callbackUrl = safeCallbackPath(searchParams.get("callbackUrl"));
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -35,16 +47,16 @@ export default function SignupForm() {
           callbackUrl,
         }),
       });
-      const data = await res.json().catch(() => ({}));
+      const data = (await res.json().catch(() => ({}))) as SignupApiResponse;
 
       if (res.status === 400) {
-        const fe = (data as { fieldErrors?: Record<string, string> }).fieldErrors;
+        const fe = data.fieldErrors;
         if (fe && typeof fe === "object") {
           setFieldErrors(fe);
         }
         setError(
-          typeof (data as { error?: string }).error === "string"
-            ? (data as { error: string }).error
+          typeof data.error === "string"
+            ? data.error
             : "Please fix the errors below."
         );
         return;
@@ -52,26 +64,26 @@ export default function SignupForm() {
 
       if (res.status === 409) {
         setError(
-          typeof (data as { error?: string }).error === "string"
-            ? (data as { error: string }).error
+          typeof data.error === "string"
+            ? data.error
             : "This email is already registered."
         );
         return;
       }
 
-      if (res.status === 201 && (data as { ok?: boolean }).ok) {
-        const url = (data as { redirectUrl?: string }).redirectUrl;
-        if (typeof url === "string") {
+      if (res.status === 201 && data.ok) {
+        const url = data.redirectUrl;
+        if (typeof url === "string" && isSafeRelativeAppPath(url)) {
           router.push(url);
           router.refresh();
           return;
         }
       }
 
-      if (res.status === 201 && (data as { user?: unknown }).user) {
+      if (res.status === 201 && data.user) {
         setError(
-          typeof (data as { error?: string }).error === "string"
-            ? (data as { error: string }).error
+          typeof data.error === "string"
+            ? data.error
             : "Account created. Please sign in."
         );
         router.push("/login");

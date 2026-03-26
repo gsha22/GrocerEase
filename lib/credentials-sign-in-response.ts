@@ -2,6 +2,35 @@ import { Auth, skipCSRFCheck } from "@auth/core";
 import { NextRequest, NextResponse } from "next/server";
 import { authConfig } from "@/auth";
 
+/**
+ * Turns Auth.js Location into a same-origin path safe for client router.push
+ * (never an external URL).
+ */
+export function safeRedirectPathForClient(
+  locationHeader: string,
+  requestOrigin: string,
+): string {
+  const loc = locationHeader.trim();
+  if (!loc || loc.startsWith("//")) return "/dashboard";
+
+  let absolute: string;
+  if (loc.startsWith("http://") || loc.startsWith("https://")) {
+    absolute = loc;
+  } else {
+    const path = loc.startsWith("/") ? loc : `/${loc}`;
+    absolute = `${requestOrigin}${path}`;
+  }
+
+  try {
+    const u = new URL(absolute);
+    if (u.origin !== new URL(requestOrigin).origin) return "/dashboard";
+    const out = `${u.pathname}${u.search}${u.hash}`;
+    return out || "/dashboard";
+  } catch {
+    return "/dashboard";
+  }
+}
+
 export function buildCredentialsAuthRequest(
   req: NextRequest,
   email: string,
@@ -41,9 +70,7 @@ export function nextResponseFromCredentialsAuth(
   if (authRes.status === 302 || authRes.status === 303) {
     const res = NextResponse.json({
       ok: true,
-      redirectUrl: location.startsWith("http")
-        ? location
-        : `${req.nextUrl.origin}${location}`,
+      redirectUrl: safeRedirectPathForClient(location, req.nextUrl.origin),
     });
     const rawCookies = authRes.headers.getSetCookie?.() ?? [];
     for (const cookie of rawCookies) {

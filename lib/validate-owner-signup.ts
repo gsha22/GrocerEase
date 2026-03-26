@@ -1,7 +1,11 @@
+import { safeCallbackPath } from "@/lib/safe-callback-path";
+
 export type OwnerSignupInput = {
   email: string;
   password: string;
   name: string;
+  /** Same-origin path only; defaults to /dashboard */
+  callbackUrl: string;
 };
 
 export type SignupValidationResult =
@@ -40,12 +44,15 @@ export function validateOwnerSignup(body: unknown): SignupValidationResult {
   if (!password) {
     errors.password = "Password is required.";
   } else {
-    if (password.length < 8) {
-      errors.password = "Password must be at least 8 characters.";
-    } else if (!/[a-zA-Z]/.test(password)) {
-      errors.password = "Password must include at least one letter.";
-    } else if (!/[0-9]/.test(password)) {
-      errors.password = "Password must include at least one number.";
+    const pwdReqs: string[] = [];
+    if (password.length < 8) pwdReqs.push("be at least 8 characters");
+    if (!/[a-zA-Z]/.test(password)) pwdReqs.push("include at least one letter");
+    if (!/[0-9]/.test(password)) pwdReqs.push("include at least one number");
+    if (pwdReqs.length > 0) {
+      errors.password =
+        pwdReqs.length === 1
+          ? `Password must ${pwdReqs[0]}.`
+          : `Password must ${pwdReqs.slice(0, -1).join(", ")}, and ${pwdReqs[pwdReqs.length - 1]}.`;
     }
   }
 
@@ -61,12 +68,17 @@ export function validateOwnerSignup(body: unknown): SignupValidationResult {
     return { ok: false, errors };
   }
 
+  const callbackUrl = safeCallbackPath(
+    typeof input.callbackUrl === "string" ? input.callbackUrl : undefined,
+  );
+
   return {
     ok: true,
     data: {
       email: rawEmail,
       password,
       name: rawName,
+      callbackUrl,
     },
   };
 }

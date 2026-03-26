@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runCredentialsSignIn } from "@/lib/credentials-sign-in-response";
+import { safeCallbackPath } from "@/lib/safe-callback-path";
 
 export async function POST(req: NextRequest) {
   let body: { email?: string; password?: string; callbackUrl?: string };
@@ -12,10 +13,7 @@ export async function POST(req: NextRequest) {
   const rawEmail = typeof body.email === "string" ? body.email : "";
   const email = rawEmail.trim().toLowerCase();
   const password = typeof body.password === "string" ? body.password : "";
-  const callbackUrl =
-    typeof body.callbackUrl === "string" && body.callbackUrl.startsWith("/")
-      ? body.callbackUrl
-      : "/dashboard";
+  const callbackUrl = safeCallbackPath(body.callbackUrl);
 
   if (!email || !password) {
     return NextResponse.json(
