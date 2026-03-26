@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   enrichFreshUpdatesWithStale,
   FRESH_UPDATE_STALE_THRESHOLD_MS,
+  MAX_ITEM_NAME_LEN,
   parseFreshUpdatePostBody,
 } from "./fresh-updates";
 
@@ -64,9 +65,11 @@ describe("parseFreshUpdatePostBody", () => {
   });
 
   it("rejects oversized item_name", () => {
-    const r = parseFreshUpdatePostBody({ item_name: "x".repeat(201) });
+    const r = parseFreshUpdatePostBody({
+      item_name: "x".repeat(MAX_ITEM_NAME_LEN + 1),
+    });
     assert.equal(r.ok, false);
-    if (!r.ok) assert.match(r.error, /200/i);
+    if (!r.ok) assert.match(r.error, new RegExp(String(MAX_ITEM_NAME_LEN)));
   });
 });
 

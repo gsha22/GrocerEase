@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { strict as assert } from "node:assert";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../app/generated/prisma/client";
+import { FRESH_UPDATE_PUBLIC_LIST_LIMIT } from "../lib/fresh-updates";
 import { fixtureMeta, ids } from "../prisma/fixtures";
 
 const BASE = process.env.TEST_BASE_URL ?? "http://localhost:3000";
@@ -145,6 +146,10 @@ async function main() {
     assert.equal(res.status, 200);
     const updates = (json as { updates: UpdateRow[] }).updates;
     assert.ok(Array.isArray(updates), "updates array");
+    assert.ok(
+      updates.length <= FRESH_UPDATE_PUBLIC_LIST_LIMIT,
+      "public GET should cap rows to match store page",
+    );
     const idx = updates.findIndex((u) => u.id === createdId);
     assert.ok(idx >= 0, "new update should appear in public list");
     if (idx > 0) {
@@ -241,11 +246,5 @@ main()
         where: { id: { in: testRowIds } },
       });
     }
-    await prisma.freshUpdate.deleteMany({
-      where: {
-        storeId: ids.stores.lotus,
-        itemName: { in: ["__machine_stale_probe__", "__machine_ancient__"] },
-      },
-    });
     await prisma.$disconnect();
   });

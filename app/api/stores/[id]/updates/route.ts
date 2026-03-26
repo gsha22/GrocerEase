@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   enrichFreshUpdatesWithStale,
+  FRESH_UPDATE_PUBLIC_LIST_LIMIT,
   FRESH_UPDATE_PUBLIC_WINDOW_MS,
   parseFreshUpdatePostBody,
 } from "@/lib/fresh-updates";
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       ...(windowStart ? { createdAt: { gte: windowStart } } : {}),
     },
     orderBy: { createdAt: "desc" },
+    ...(showAll ? {} : { take: FRESH_UPDATE_PUBLIC_LIST_LIMIT }),
     select: {
       id: true,
       itemName: true,
@@ -61,11 +63,6 @@ export async function POST(
   const parsed = parseFreshUpdatePostBody(body);
   if (!parsed.ok) {
     return NextResponse.json({ error: parsed.error }, { status: 400 });
-  }
-
-  const store = await prisma.store.findUnique({ where: { id: storeId } });
-  if (!store) {
-    return NextResponse.json({ error: "Store not found" }, { status: 404 });
   }
 
   const update = await prisma.freshUpdate.create({

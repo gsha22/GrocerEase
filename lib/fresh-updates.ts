@@ -6,8 +6,14 @@ export const FRESH_UPDATE_PUBLIC_WINDOW_MS = 7 * 24 * HOUR_MS;
 /** Updates older than this are flagged as stale in API and UI. */
 export const FRESH_UPDATE_STALE_THRESHOLD_MS = 48 * HOUR_MS;
 
-const MAX_ITEM_NAME_LEN = 200;
-const MAX_NOTE_LEN = 500;
+/**
+ * Max rows returned for public Fresh Today (store page + public GET updates).
+ * Owner `?all=true` lists are uncapped.
+ */
+export const FRESH_UPDATE_PUBLIC_LIST_LIMIT = 10;
+
+export const MAX_ITEM_NAME_LEN = 200;
+export const MAX_NOTE_LEN = 500;
 
 export type ParsedFreshUpdatePost =
   | { ok: true; itemName: string; note: string | null }

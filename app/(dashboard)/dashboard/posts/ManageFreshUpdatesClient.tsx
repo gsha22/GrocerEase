@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { MAX_ITEM_NAME_LEN, MAX_NOTE_LEN } from "@/lib/fresh-updates";
 import { relativeTime } from "@/lib/time";
 
 type ApiFreshUpdate = {
@@ -22,36 +23,63 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoadError(null);
-    const res = await fetch(`/api/stores/${storeId}/updates?all=true`);
-    if (!res.ok) {
-      let msg = "Could not load updates. Refresh the page or sign in again.";
-      try {
-        const data = (await res.json()) as { error?: string };
-        if (typeof data.error === "string" && data.error) msg = data.error;
-      } catch {
-        /* ignore */
-      }
-      setLoadError(msg);
-      setUpdates([]);
-      return;
-    }
-    const data = (await res.json()) as { updates?: ApiFreshUpdate[] };
-    setUpdates(data.updates ?? []);
-  }, [storeId]);
+  const mountedRef = useRef(true);
+  const submitAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      submitAbortRef.current?.abort();
+    };
+  }, []);
+
+  const load = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!mountedRef.current) return;
+      setLoadError(null);
+      try {
+        const res = await fetch(`/api/stores/${storeId}/updates?all=true`, {
+          signal,
+        });
+        if (signal?.aborted) return;
+        if (!mountedRef.current) return;
+        if (!res.ok) {
+          let msg = "Could not load updates. Refresh the page or sign in again.";
+          try {
+            const data = (await res.json()) as { error?: string };
+            if (typeof data.error === "string" && data.error) msg = data.error;
+          } catch {
+            /* ignore */
+          }
+          setLoadError(msg);
+          setUpdates([]);
+          return;
+        }
+        const data = (await res.json()) as { updates?: ApiFreshUpdate[] };
+        if (!mountedRef.current) return;
+        setUpdates(data.updates ?? []);
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        if (!mountedRef.current) return;
+        setLoadError("Could not load updates. Refresh the page or sign in again.");
+        setUpdates([]);
+      }
+    },
+    [storeId],
+  );
+
+  useEffect(() => {
+    const ac = new AbortController();
     (async () => {
       try {
-        await load();
+        await load(ac.signal);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (mountedRef.current && !ac.signal.aborted) setLoading(false);
       }
     })();
     return () => {
-      cancelled = true;
+      ac.abort();
     };
   }, [load]);
 
@@ -64,6 +92,9 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
       setError("Item name is required.");
       return;
     }
+    submitAbortRef.current?.abort();
+    const ac = new AbortController();
+    submitAbortRef.current = ac;
     setSubmitting(true);
     try {
       const res = await fetch(`/api/stores/${storeId}/updates`, {
@@ -73,8 +104,11 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
           item_name: name,
           note: note.trim() || undefined,
         }),
+        signal: ac.signal,
       });
+      if (ac.signal.aborted || !mountedRef.current) return;
       const data = await res.json().catch(() => ({}));
+      if (ac.signal.aborted || !mountedRef.current) return;
       if (!res.ok) {
         setError(
           typeof data.error === "string" ? data.error : "Could not post update.",
@@ -84,9 +118,13 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
       setItemName("");
       setNote("");
       setSuccess("Posted. Shoppers will see it on your store page right away.");
-      await load();
+      await load(ac.signal);
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      if (!mountedRef.current) return;
+      setError("Could not post update.");
     } finally {
-      setSubmitting(false);
+      if (mountedRef.current && !ac.signal.aborted) setSubmitting(false);
     }
   }
 
@@ -127,6 +165,7 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
             <input
               id="fresh-item-name"
               value={itemName}
+              maxLength={MAX_ITEM_NAME_LEN}
               onChange={(e) => setItemName(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
               placeholder="e.g. Bok Choy, Lamb Shoulder"
@@ -140,11 +179,13 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
             >
               Note (optional)
             </label>
-            <input
+            <textarea
               id="fresh-note"
               value={note}
+              maxLength={MAX_NOTE_LEN}
+              rows={2}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors resize-y min-h-[80px]"
               placeholder="e.g. Just arrived from local farm — very limited"
               autoComplete="off"
             />
