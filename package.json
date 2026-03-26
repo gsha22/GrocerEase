@@ -10,6 +10,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force && npm run db:seed",
     "test:auth": "tsx scripts/auth-machine-tests.ts",
+    "test:signup": "tsx scripts/signup-machine-tests.ts",
     "test:store-profile": "tsx scripts/store-profile-machine-tests.ts",
     "test:geocode": "tsx scripts/geocode-branch-tests.ts"
   },

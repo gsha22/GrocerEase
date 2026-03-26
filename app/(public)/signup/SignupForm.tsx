@@ -1,0 +1,204 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+
+export default function SignupForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [pending, setPending] = useState(false);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setFieldErrors({});
+    setPending(true);
+    try {
+      const res = await fetch("/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          confirmPassword,
+          callbackUrl,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.status === 400) {
+        const fe = (data as { fieldErrors?: Record<string, string> }).fieldErrors;
+        if (fe && typeof fe === "object") {
+          setFieldErrors(fe);
+        }
+        setError(
+          typeof (data as { error?: string }).error === "string"
+            ? (data as { error: string }).error
+            : "Please fix the errors below."
+        );
+        return;
+      }
+
+      if (res.status === 409) {
+        setError(
+          typeof (data as { error?: string }).error === "string"
+            ? (data as { error: string }).error
+            : "This email is already registered."
+        );
+        return;
+      }
+
+      if (res.status === 201 && (data as { ok?: boolean }).ok) {
+        const url = (data as { redirectUrl?: string }).redirectUrl;
+        if (typeof url === "string") {
+          router.push(url);
+          router.refresh();
+          return;
+        }
+      }
+
+      if (res.status === 201 && (data as { user?: unknown }).user) {
+        setError(
+          typeof (data as { error?: string }).error === "string"
+            ? (data as { error: string }).error
+            : "Account created. Please sign in."
+        );
+        router.push("/login");
+        router.refresh();
+        return;
+      }
+
+      setError("Something went wrong. Try again.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      {error && (
+        <div
+          role="alert"
+          className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-800"
+        >
+          {error}
+        </div>
+      )}
+
+      <div>
+        <label
+          htmlFor="signup-name"
+          className="block text-[13px] font-medium text-gray-600 mb-1.5"
+        >
+          Your name
+        </label>
+        <input
+          id="signup-name"
+          type="text"
+          autoComplete="name"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Linh Tran"
+          className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
+        />
+        {fieldErrors.name && (
+          <p className="text-[12px] text-red-600 mt-1">{fieldErrors.name}</p>
+        )}
+      </div>
+
+      <div>
+        <label
+          htmlFor="signup-email"
+          className="block text-[13px] font-medium text-gray-600 mb-1.5"
+        >
+          Email address
+        </label>
+        <input
+          id="signup-email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@yourstore.com"
+          className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
+        />
+        {fieldErrors.email && (
+          <p className="text-[12px] text-red-600 mt-1">{fieldErrors.email}</p>
+        )}
+      </div>
+
+      <div>
+        <label
+          htmlFor="signup-password"
+          className="block text-[13px] font-medium text-gray-600 mb-1.5"
+        >
+          Password
+        </label>
+        <input
+          id="signup-password"
+          type="password"
+          autoComplete="new-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="At least 8 characters, with a letter and a number"
+          className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
+        />
+        {fieldErrors.password && (
+          <p className="text-[12px] text-red-600 mt-1">{fieldErrors.password}</p>
+        )}
+      </div>
+
+      <div>
+        <label
+          htmlFor="signup-confirm"
+          className="block text-[13px] font-medium text-gray-600 mb-1.5"
+        >
+          Confirm password
+        </label>
+        <input
+          id="signup-confirm"
+          type="password"
+          autoComplete="new-password"
+          required
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
+        />
+        {fieldErrors.confirmPassword && (
+          <p className="text-[12px] text-red-600 mt-1">
+            {fieldErrors.confirmPassword}
+          </p>
+        )}
+      </div>
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="w-full py-3 rounded-md text-[15px] font-semibold text-white bg-green-600 hover:bg-green-800 transition-colors mt-1 disabled:opacity-60"
+      >
+        {pending ? "Creating account…" : "Create owner account"}
+      </button>
+
+      <p className="text-center text-[13px] text-gray-500">
+        Already have an account?{" "}
+        <Link href="/login" className="text-green-600 font-medium hover:text-green-800">
+          Sign in
+        </Link>
+      </p>
+    </form>
+  );
+}

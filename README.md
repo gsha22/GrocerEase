@@ -76,11 +76,15 @@ app/
     map/page.tsx         — map view
     deals/page.tsx       — deals feed
     login/page.tsx       — owner login
+    signup/page.tsx      — owner registration
   (dashboard)/           — owner routes (auth-protected)
     dashboard/page.tsx
     dashboard/profile/page.tsx
     dashboard/posts/page.tsx
     dashboard/deals/page.tsx
+  auth/                  — JSON auth helpers
+    login/route.ts
+    signup/route.ts
   api/                   — API routes
     auth/[...nextauth]/route.ts
     stores/route.ts
@@ -109,6 +113,7 @@ middleware.ts            — protects /dashboard/* routes
 | `npx prisma studio` | Open Prisma Studio (DB browser) |
 | `npx prisma migrate dev` | Run pending migrations |
 | `npm run test:auth` | HTTP integration tests for auth & session (needs running app) |
+| `npm run test:signup` | HTTP integration tests for `POST /auth/signup` (needs running app + DB) |
 | `npm run test:store-profile` | HTTP integration tests for store profile create/edit (needs running app + DB) |
 | `npm run test:geocode` | Geocoding branch tests (mocked; optional real Google API check) |
 
@@ -158,6 +163,18 @@ These tests call a **live** Next.js server and your database (same as local dev)
 
 The script (`scripts/auth-machine-tests.ts`) covers login, dashboard protection, owner-only APIs, forgot-password stub, and **session persistence** (cookie still valid for `/api/auth/session` and `/` after login, `/login` redirects to `/dashboard` when already signed in).
 
+### Running `test:signup`
+
+Same prerequisites as `test:auth` (running Next server, `DATABASE_URL`, secrets). Then:
+
+```bash
+npm run test:signup
+```
+
+Optional: `TEST_BASE_URL=http://localhost:3000 npm run test:signup`.
+
+The script (`scripts/signup-machine-tests.ts`) asserts validation errors (**400**), duplicate email (**409**), successful create (**201**) with **no password** in JSON, **Set-Cookie** session, **`/api/auth/session`** shows the new user, **`POST /auth/login`** works with the chosen password, and duplicate signup is rejected.
+
 ## Test Data Fixtures
 
 Use deterministic test data for QA/demo/integration scenarios:
@@ -184,6 +201,8 @@ After `npm run db:seed`, every seeded store shares the same fixture password. Us
 Owners in the seed **without** a linked store (useful for onboarding flows): `newowner@no-store.test`, `backupowner@no-store.test` — same password **`OwnerPass123!`**.
 
 > These credentials are for **local/demo databases only**. Do not reuse this password in production.
+
+New owners can also self-register at **`/signup`** (email, password, display name).
 
 ## Branch Strategy
 
