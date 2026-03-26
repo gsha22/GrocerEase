@@ -4,6 +4,7 @@ import {
   enrichFreshUpdatesWithStale,
   FRESH_UPDATE_STALE_THRESHOLD_MS,
   MAX_ITEM_NAME_LEN,
+  parseFreshUpdatePatchBody,
   parseFreshUpdatePostBody,
 } from "./fresh-updates";
 
@@ -106,5 +107,31 @@ describe("enrichFreshUpdatesWithStale", () => {
       out.map((u) => u.id),
       ["new", "old"],
     );
+  });
+});
+
+describe("parseFreshUpdatePatchBody", () => {
+  it("accepts item_name and description", () => {
+    const r = parseFreshUpdatePatchBody({
+      item_name: "  Bok Choy  ",
+      description: "  New crop  ",
+    });
+    assert.equal(r.ok, true);
+    if (r.ok) {
+      assert.equal(r.data.itemName, "Bok Choy");
+      assert.equal(r.data.note, "New crop");
+    }
+  });
+
+  it("requires at least one editable field", () => {
+    const r = parseFreshUpdatePatchBody({});
+    assert.equal(r.ok, false);
+    if (!r.ok) assert.match(r.error, /at least one/i);
+  });
+
+  it("rejects empty item_name", () => {
+    const r = parseFreshUpdatePatchBody({ item_name: "   " });
+    assert.equal(r.ok, false);
+    if (!r.ok) assert.match(r.error, /cannot be empty/i);
   });
 });

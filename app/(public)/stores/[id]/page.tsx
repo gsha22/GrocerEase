@@ -9,10 +9,10 @@ import {
   FRESH_UPDATE_PUBLIC_WINDOW_MS,
 } from "@/lib/fresh-updates";
 import { prisma } from "@/lib/prisma";
-import { relativeTime } from "@/lib/time";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
+import StoreFreshUpdatesFeed from "@/components/StoreFreshUpdatesFeed";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +54,13 @@ export default async function StoreProfilePage({
     store.freshUpdates,
     asOf,
   );
+  const initialFreshUpdates = freshUpdatesDisplay.map((update) => ({
+    id: update.id,
+    itemName: update.itemName,
+    note: update.note,
+    createdAt: update.createdAt.toISOString(),
+    isStale: update.isStale,
+  }));
 
   const hours = store.hours as { open?: string; close?: string } | null;
 
@@ -114,47 +121,10 @@ export default async function StoreProfilePage({
         <h2 className="text-[17px] font-semibold text-gray-800 mb-4 flex items-center gap-2">
           🌿 Fresh Today
         </h2>
-        {freshUpdatesDisplay.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-[42px] mb-3">🫙</div>
-            <h3 className="text-[16px] font-semibold text-gray-800 mb-1">
-              No recent updates
-            </h3>
-            <p className="text-[14px] text-gray-400">
-              This store hasn&apos;t posted any inventory updates in the last 7
-              days.
-            </p>
-          </div>
-        ) : (
-          freshUpdatesDisplay.map((update) => (
-            <div
-              key={update.id}
-              className={`flex justify-between items-start py-3 border-b border-gray-100 last:border-b-0 ${
-                update.isStale ? "opacity-40" : ""
-              }`}
-            >
-              <div>
-                <div className="font-medium text-[15px]">
-                  {update.itemName}
-                </div>
-                {update.note && (
-                  <div className="text-[13px] text-gray-400 mt-0.5">
-                    {update.note}
-                  </div>
-                )}
-              </div>
-              <span
-                className={`text-[12px] px-2 py-0.5 rounded-full whitespace-nowrap ml-2 shrink-0 ${
-                  update.isStale
-                    ? "bg-gray-100 text-gray-400"
-                    : "bg-green-50 text-green-600"
-                }`}
-              >
-                {relativeTime(update.createdAt) ?? "—"}
-              </span>
-            </div>
-          ))
-        )}
+        <StoreFreshUpdatesFeed
+          storeId={store.id}
+          initialUpdates={initialFreshUpdates}
+        />
       </div>
 
       {/* Deals This Week — Story 2 */}

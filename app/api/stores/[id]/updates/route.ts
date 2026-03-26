@@ -5,6 +5,7 @@ import {
   FRESH_UPDATE_PUBLIC_WINDOW_MS,
   parseFreshUpdatePostBody,
 } from "@/lib/fresh-updates";
+import { broadcastPostEvent } from "@/lib/post-events";
 import { prisma } from "@/lib/prisma";
 import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
 
@@ -71,6 +72,12 @@ export async function POST(
       itemName: parsed.itemName,
       note: parsed.note,
     },
+  });
+
+  broadcastPostEvent({
+    storeId,
+    postId: update.id,
+    type: "POST_UPDATE",
   });
 
   return NextResponse.json({ update }, { status: 201 });
