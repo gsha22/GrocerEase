@@ -2,6 +2,7 @@
 // Story 2: Deals This Week (Shopper view)
 // Story 12: No auth required
 
+import DealCard from "@/components/DealCard";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -38,6 +39,7 @@ export default async function StoreProfilePage({
       deals: {
         where: {
           deletedAt: null,
+          isExpired: false,
           expiresAt: { gt: new Date() },
         },
         orderBy: { expiresAt: "asc" },
@@ -160,30 +162,16 @@ export default async function StoreProfilePage({
           </p>
         ) : (
           store.deals.map((deal) => (
-            <div
+            <DealCard
               key={deal.id}
-              className="flex gap-3.5 p-3.5 bg-amber-50 rounded-xl border border-amber-100 mb-2.5 last:mb-0"
-            >
-              <span className="text-[22px]">🏷</span>
-              <div>
-                <div className="font-semibold text-[15px] text-gray-800">
-                  {deal.title}
-                </div>
-                {deal.description && (
-                  <div className="text-[13px] text-gray-600 mt-0.5">
-                    {deal.description}
-                  </div>
-                )}
-                <div className="text-[12px] text-amber-400 font-medium mt-1">
-                  Expires{" "}
-                  {new Date(deal.expiresAt).toLocaleDateString("en-US", {
-                    weekday: "long",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </div>
-              </div>
-            </div>
+              deal={{
+                id: deal.id,
+                title: deal.title,
+                description: deal.description,
+                price: deal.price != null ? deal.price.toString() : null,
+                expiresAt: deal.expiresAt.toISOString(),
+              }}
+            />
           ))
         )}
       </div>

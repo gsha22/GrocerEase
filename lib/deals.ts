@@ -13,13 +13,26 @@ const MONTH_NAMES = [
 ];
 
 /**
+ * Formats a decimal price string as USD (e.g. "4.99" → "$4.99").
+ */
+export function formatPriceUsd(price: string | null | undefined): string | null {
+  if (price == null || price === "") return null;
+  const n = Number(price);
+  if (!Number.isFinite(n)) return null;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(n);
+}
+
+/**
  * Formats an expiry date as "Expires Thursday, Mar 20".
  */
 export function formatExpiry(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
-  const day = DAY_NAMES[d.getDay()];
-  const month = MONTH_NAMES[d.getMonth()];
-  return `Expires ${day}, ${month} ${d.getDate()}`;
+  const day = DAY_NAMES[d.getUTCDay()];
+  const month = MONTH_NAMES[d.getUTCMonth()];
+  return `Expires ${day}, ${month} ${d.getUTCDate()}`;
 }
 
 /**
@@ -36,6 +49,6 @@ export function isUrgent(expiresAt: Date | string): boolean {
  */
 export function urgentLabel(expiresAt: Date | string): string {
   const d = typeof expiresAt === "string" ? new Date(expiresAt) : expiresAt;
-  const shortDay = DAY_NAMES[d.getDay()].slice(0, 3);
+  const shortDay = DAY_NAMES[d.getUTCDay()].slice(0, 3);
   return `Ends ${shortDay}`;
 }

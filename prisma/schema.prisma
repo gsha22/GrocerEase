@@ -20,7 +20,8 @@ model StoreOwner {
   sessionToken String?  @map("session_token")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  store               Store?
+  store                Store?
+  ownerNotifications   OwnerNotification[]
   passwordResetTokens PasswordResetToken[]
 
   @@map("store_owners")
@@ -91,24 +92,43 @@ model FreshUpdate {
 }
 
 model Deal {
-  id           String    @id @default(uuid())
-  storeId      String    @map("store_id")
-  itemId       String?   @map("item_id")
-  sourceDealId String?   @map("source_deal_id")
-  title        String
-  description  String?
-  discountPct  Float?    @map("discount_pct")
-  expiresAt    DateTime  @map("expires_at")
-  isExpired    Boolean   @default(false) @map("is_expired")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  deletedAt    DateTime? @map("deleted_at")
+  id                 String    @id @default(uuid())
+  storeId            String    @map("store_id")
+  itemId             String?   @map("item_id")
+  sourceDealId       String?   @map("source_deal_id")
+  title              String
+  description        String?
+  price              Decimal?  @db.Decimal(10, 2)
+  discountPct        Float?    @map("discount_pct")
+  expiresAt          DateTime  @map("expires_at")
+  isExpired          Boolean   @default(false) @map("is_expired")
+  expiryNotifiedAt   DateTime? @map("expiry_notified_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  deletedAt          DateTime? @map("deleted_at")
 
-  store      Store  @relation(fields: [storeId], references: [id])
-  item       Item?  @relation(fields: [itemId], references: [id])
-  sourceDeal Deal?  @relation("DealDuplication", fields: [sourceDealId], references: [id])
-  duplicates Deal[] @relation("DealDuplication")
+  store               Store                @relation(fields: [storeId], references: [id])
+  item                Item?                @relation(fields: [itemId], references: [id])
+  sourceDeal          Deal?                @relation("DealDuplication", fields: [sourceDealId], references: [id])
+  duplicates          Deal[]               @relation("DealDuplication")
+  ownerNotifications OwnerNotification[]
 
   @@map("deals")
+}
+
+model OwnerNotification {
+  id        String    @id @default(uuid())
+  ownerId   String    @map("owner_id")
+  dealId    String    @map("deal_id")
+  kind      String
+  message   String
+  createdAt DateTime  @default(now()) @map("created_at")
+  readAt    DateTime? @map("read_at")
+
+  owner StoreOwner @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  deal  Deal       @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, readAt])
+  @@map("owner_notifications")
 }
 
 model Shopper {
