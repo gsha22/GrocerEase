@@ -3,23 +3,18 @@
 // Story 12: No auth required
 
 import DealCard from "@/components/DealCard";
+import {
+  enrichFreshUpdatesWithStale,
+  FRESH_UPDATE_PUBLIC_LIST_LIMIT,
+  FRESH_UPDATE_PUBLIC_WINDOW_MS,
+} from "@/lib/fresh-updates";
 import { prisma } from "@/lib/prisma";
+import { relativeTime } from "@/lib/time";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
 
-function timeAgo(date: Date): string {
-  const ms = Date.now() - new Date(date).getTime();
-  const hours = Math.floor(ms / 3_600_000);
-  if (hours < 1) return "posted just now";
-  if (hours < 24) return `posted ${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-function isStale(date: Date): boolean {
-  return Date.now() - new Date(date).getTime() > 48 * 3_600_000;
-}
+export const dynamic = "force-dynamic";
 
 export default async function StoreProfilePage({
   params,
@@ -27,14 +22,20 @@ export default async function StoreProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  // Request-time cutoff for the 7-day Fresh Today window (not React client render).
+  const asOf = new Date();
+  const freshSince = new Date(asOf.getTime() - FRESH_UPDATE_PUBLIC_WINDOW_MS);
 
   const store = await prisma.store.findUnique({
     where: { id },
     include: {
       freshUpdates: {
-        where: { deletedAt: null },
+        where: {
+          deletedAt: null,
+          createdAt: { gte: freshSince },
+        },
         orderBy: { createdAt: "desc" },
-        take: 10,
+        take: FRESH_UPDATE_PUBLIC_LIST_LIMIT,
       },
       deals: {
         where: {
@@ -48,6 +49,11 @@ export default async function StoreProfilePage({
   });
 
   if (!store || !store.isPublished) notFound();
+
+  const freshUpdatesDisplay = enrichFreshUpdatesWithStale(
+    store.freshUpdates,
+    asOf,
+  );
 
   const hours = store.hours as { open?: string; close?: string } | null;
 
@@ -108,7 +114,7 @@ export default async function StoreProfilePage({
         <h2 className="text-[17px] font-semibold text-gray-800 mb-4 flex items-center gap-2">
           🌿 Fresh Today
         </h2>
-        {store.freshUpdates.length === 0 ? (
+        {freshUpdatesDisplay.length === 0 ? (
           <div className="text-center py-8">
             <div className="text-[42px] mb-3">🫙</div>
             <h3 className="text-[16px] font-semibold text-gray-800 mb-1">
@@ -120,11 +126,11 @@ export default async function StoreProfilePage({
             </p>
           </div>
         ) : (
-          store.freshUpdates.map((update) => (
+          freshUpdatesDisplay.map((update) => (
             <div
               key={update.id}
               className={`flex justify-between items-start py-3 border-b border-gray-100 last:border-b-0 ${
-                isStale(update.createdAt) ? "opacity-40" : ""
+                update.isStale ? "opacity-40" : ""
               }`}
             >
               <div>
@@ -139,12 +145,12 @@ export default async function StoreProfilePage({
               </div>
               <span
                 className={`text-[12px] px-2 py-0.5 rounded-full whitespace-nowrap ml-2 shrink-0 ${
-                  isStale(update.createdAt)
+                  update.isStale
                     ? "bg-gray-100 text-gray-400"
                     : "bg-green-50 text-green-600"
                 }`}
               >
-                {timeAgo(update.createdAt)}
+                {relativeTime(update.createdAt) ?? "—"}
               </span>
             </div>
           ))

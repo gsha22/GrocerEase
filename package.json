@@ -15,7 +15,9 @@
     "test:deals-machine": "tsx scripts/deals-machine-tests.ts",
     "test:deals-smoke": "tsx scripts/smoke-deals.ts",
     "test:geocode": "tsx scripts/geocode-branch-tests.ts",
-    "test:store-profile": "tsx scripts/store-profile-machine-tests.ts"
+    "test:store-profile": "tsx scripts/store-profile-machine-tests.ts",
+    "test:fresh-updates": "node --import tsx --test lib/fresh-updates.test.ts",
+    "test:fresh-updates-machine": "tsx scripts/fresh-updates-machine-tests.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.5.0",
