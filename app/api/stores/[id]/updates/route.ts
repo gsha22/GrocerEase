@@ -77,7 +77,7 @@ export async function POST(
   broadcastPostEvent({
     storeId,
     postId: update.id,
-    type: "POST_UPDATE",
+    type: "POST_CREATE",
   });
 
   return NextResponse.json({ update }, { status: 201 });

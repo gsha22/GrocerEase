@@ -71,13 +71,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const existing = await prisma.deal.findFirst({
-    where: { id: dealId, storeId, deletedAt: null },
-  });
-  if (!existing) {
-    return NextResponse.json({ error: "Deal not found" }, { status: 404 });
-  }
-
   const data: {
     title?: string;
     description?: string;
@@ -141,11 +134,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     data.expiryNotifiedAt = null;
   }
 
-  const deal = await prisma.deal.update({
-    where: { id: dealId },
+  const updated = await prisma.deal.updateMany({
+    where: { id: dealId, storeId, deletedAt: null },
     data,
+  });
+  if (updated.count === 0) {
+    return NextResponse.json({ error: "Deal not found" }, { status: 404 });
+  }
+
+  const deal = await prisma.deal.findUnique({
+    where: { id: dealId },
     select: {
       id: true,
+      storeId: true,
       title: true,
       description: true,
       price: true,
@@ -154,8 +155,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       isExpired: true,
       createdAt: true,
       sourceDealId: true,
+      deletedAt: true,
     },
   });
+  if (!deal || deal.storeId !== storeId || deal.deletedAt !== null) {
+    return NextResponse.json({ error: "Deal not found" }, { status: 404 });
+  }
 
   return NextResponse.json({ deal: dealJson(deal) }, { status: 200 });
 }
@@ -167,17 +172,13 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
   const gate = await requireStoreOwnerForStore(storeId);
   if ("response" in gate) return gate.response;
 
-  const deal = await prisma.deal.findFirst({
+  const deleted = await prisma.deal.updateMany({
     where: { id: dealId, storeId, deletedAt: null },
-  });
-  if (!deal) {
-    return NextResponse.json({ error: "Deal not found" }, { status: 404 });
-  }
-
-  await prisma.deal.update({
-    where: { id: dealId },
     data: { deletedAt: new Date() },
   });
+  if (deleted.count === 0) {
+    return NextResponse.json({ error: "Deal not found" }, { status: 404 });
+  }
 
   return NextResponse.json({ ok: true });
 }

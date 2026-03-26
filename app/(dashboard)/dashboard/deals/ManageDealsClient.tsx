@@ -190,6 +190,7 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
   }
 
   function startEdit(deal: ApiDeal) {
+    if (savingEdit) return;
     setEditError(null);
     setEditingId(deal.id);
     setEditPrice(deal.price ?? "");
@@ -369,7 +370,8 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
                   <button
                     type="button"
                     onClick={() => startEdit(deal)}
-                    className="shrink-0 px-2.5 py-1 rounded-md text-[12px] font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors"
+                    disabled={savingEdit}
+                    className="shrink-0 px-2.5 py-1 rounded-md text-[12px] font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     Edit
                   </button>

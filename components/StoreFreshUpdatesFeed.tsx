@@ -37,9 +37,6 @@ export default function StoreFreshUpdatesFeed({
       void reload();
     };
     es.addEventListener("post-event", onPostEvent);
-    es.onerror = () => {
-      es.close();
-    };
     return () => {
       es.removeEventListener("post-event", onPostEvent);
       es.close();
