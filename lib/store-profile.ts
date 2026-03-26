@@ -18,7 +18,7 @@ function asTrimmedString(value: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-function parseCategories(value: unknown): string[] {
+export function parseCategories(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value
     .filter((v): v is string => typeof v === "string")
@@ -27,7 +27,7 @@ function parseCategories(value: unknown): string[] {
     .filter((v, idx, arr) => arr.indexOf(v) === idx);
 }
 
-function parseHours(value: unknown): { open: string; close: string } | null {
+export function parseHours(value: unknown): { open: string; close: string } | null {
   if (!value || typeof value !== "object") return null;
   const raw = value as { open?: unknown; close?: unknown };
   const open = asTrimmedString(raw.open);
@@ -73,4 +73,70 @@ export function validateStoreProfileCreate(body: unknown): ValidationResult<Stor
       isPublished: true,
     },
   };
+}
+
+/** Fields allowed on PATCH; only keys present on the request body are validated and returned. */
+export type StoreProfileValidatedPatch = {
+  name?: string;
+  address?: string;
+  hours?: { open: string; close: string };
+  categories?: string[];
+  isPublished?: boolean;
+};
+
+export function validateStoreProfilePatch(
+  body: Record<string, unknown>
+): ValidationResult<StoreProfileValidatedPatch> {
+  const errors: Record<string, string> = {};
+
+  if ("name" in body) {
+    const name = asTrimmedString(body.name);
+    if (!name) errors.name = "Store name cannot be empty.";
+  }
+  if ("address" in body) {
+    const address = asTrimmedString(body.address);
+    if (!address) errors.address = "Address cannot be empty.";
+  }
+  if ("hours" in body) {
+    const hours = parseHours(body.hours);
+    if (!hours) {
+      errors.hours =
+        "Hours must include valid open and close times in HH:mm (24-hour).";
+    }
+  }
+  if ("categories" in body) {
+    if (!Array.isArray(body.categories)) {
+      errors.categories = "Categories must be an array.";
+    } else {
+      const categories = parseCategories(body.categories);
+      if (categories.length === 0) {
+        errors.categories = "Select at least one specialty category.";
+      } else if (categories.some((c) => !CATEGORY_ALLOWLIST.has(c))) {
+        errors.categories = "One or more categories are invalid.";
+      }
+    }
+  }
+  if ("is_published" in body && typeof body.is_published !== "boolean") {
+    errors.is_published = "is_published must be a boolean.";
+  }
+  if ("isPublished" in body && typeof body.isPublished !== "boolean") {
+    errors.isPublished = "isPublished must be a boolean.";
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return { ok: false, errors };
+  }
+
+  const data: StoreProfileValidatedPatch = {};
+  if ("name" in body) data.name = asTrimmedString(body.name)!;
+  if ("address" in body) data.address = asTrimmedString(body.address)!;
+  if ("hours" in body) data.hours = parseHours(body.hours)!;
+  if ("categories" in body) data.categories = parseCategories(body.categories);
+  if (typeof body.isPublished === "boolean") {
+    data.isPublished = body.isPublished;
+  } else if (typeof body.is_published === "boolean") {
+    data.isPublished = body.is_published;
+  }
+
+  return { ok: true, data };
 }

@@ -160,6 +160,50 @@ async function main() {
     assert.equal(res.status, 409, "owner should not be able to create two stores");
   }
 
+  // Code review / PATCH parity with POST: PATCH must not accept invalid `hours` or `categories`
+  // that POST would reject (e.g. hours: { open: "99:99" }, categories: ["nonexistent"]).
+  {
+    const { res, json } = await patchJson(
+      `/api/stores/${createdStoreId}`,
+      { hours: { open: "99:99", close: "20:00" } },
+      ownerCookie
+    );
+    assert.equal(res.status, 400, "invalid hours should be rejected");
+    const body = json as {
+      error?: string;
+      fieldErrors?: { hours?: string };
+    };
+    assert.equal(body.error, "Validation failed");
+    assert.ok(body.fieldErrors?.hours, "hours field error expected");
+    const afterBadHours = await fetch(`${BASE}/api/stores/${createdStoreId}`);
+    assert.equal(afterBadHours.status, 200);
+    const storeAfter = (await afterBadHours.json()) as {
+      hours: unknown;
+      categories: string[];
+    };
+    assert.deepEqual(storeAfter.hours, { open: "08:00", close: "20:00" });
+    assert.deepEqual(storeAfter.categories, ["produce", "ebt"]);
+  }
+
+  {
+    const { res, json } = await patchJson(
+      `/api/stores/${createdStoreId}`,
+      { categories: ["nonexistent"] },
+      ownerCookie
+    );
+    assert.equal(res.status, 400, "invalid categories should be rejected");
+    const body = json as {
+      error?: string;
+      fieldErrors?: { categories?: string };
+    };
+    assert.equal(body.error, "Validation failed");
+    assert.ok(body.fieldErrors?.categories, "categories field error expected");
+    const afterBadCats = await fetch(`${BASE}/api/stores/${createdStoreId}`);
+    assert.equal(afterBadCats.status, 200);
+    const storeAfter = (await afterBadCats.json()) as { categories: string[] };
+    assert.deepEqual(storeAfter.categories, ["produce", "ebt"]);
+  }
+
   // owner can edit and public data reflects changes
   {
     const { res } = await patchJson(
