@@ -3,10 +3,13 @@
 // Story 12: No auth required
 
 import DealCard from "@/components/DealCard";
+import { FRESH_UPDATE_PUBLIC_WINDOW_MS } from "@/lib/fresh-updates";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
+
+export const dynamic = "force-dynamic";
 
 function timeAgo(date: Date): string {
   const ms = Date.now() - new Date(date).getTime();
@@ -27,12 +30,18 @@ export default async function StoreProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  // Request-time cutoff for the 7-day Fresh Today window (not React client render).
+  const asOf = new Date();
+  const freshSince = new Date(asOf.getTime() - FRESH_UPDATE_PUBLIC_WINDOW_MS);
 
   const store = await prisma.store.findUnique({
     where: { id },
     include: {
       freshUpdates: {
-        where: { deletedAt: null },
+        where: {
+          deletedAt: null,
+          createdAt: { gte: freshSince },
+        },
         orderBy: { createdAt: "desc" },
         take: 10,
       },
