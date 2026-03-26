@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
+import { publishPostEvent } from "@/lib/post-events";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -70,5 +71,6 @@ export async function POST(
     },
   });
 
+  publishPostEvent({ type: "POST_UPDATE", storeId, postId: update.id });
   return NextResponse.json({ update }, { status: 201 });
 }

@@ -20,6 +20,10 @@ function dateInputToIso(dateStr: string): string {
   return new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999)).toISOString();
 }
 
+function isoToDateInput(iso: string): string {
+  return new Date(iso).toISOString().slice(0, 10);
+}
+
 function dealIsActive(d: ApiDeal): boolean {
   return !d.isExpired && new Date(d.expiresAt).getTime() > Date.now();
 }
@@ -42,6 +46,12 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [reuseDates, setReuseDates] = useState<Record<string, string>>({});
   const [pastDealsVisible, setPastDealsVisible] = useState(PAST_DEALS_PAGE_SIZE);
+  const [editingDealId, setEditingDealId] = useState<string | null>(null);
+  const [editPrice, setEditPrice] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editExpiresDate, setEditExpiresDate] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const load = useCallback(async () => {
     setLoadError(null);
@@ -147,10 +157,131 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
     await load();
   }
 
+  function beginEdit(deal: ApiDeal) {
+    setError(null);
+    setEditingDealId(deal.id);
+    setEditPrice(deal.price ?? "");
+    setEditDescription(deal.description ?? "");
+    setEditTitle(deal.title);
+    setEditExpiresDate(isoToDateInput(deal.expiresAt));
+  }
+
+  function cancelEdit() {
+    setEditingDealId(null);
+    setEditPrice("");
+    setEditDescription("");
+    setEditTitle("");
+    setEditExpiresDate("");
+  }
+
+  async function saveEdit(dealId: string) {
+    setError(null);
+    if (!editPrice.trim()) {
+      setError("Price is required.");
+      return;
+    }
+    if (!editDescription.trim()) {
+      setError("Description is required.");
+      return;
+    }
+    if (!editExpiresDate) {
+      setError("Expiry date is required.");
+      return;
+    }
+
+    setSavingEdit(true);
+    try {
+      const res = await fetch(`/api/stores/${storeId}/deals/${dealId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          price: editPrice.trim(),
+          description: editDescription,
+          title: editTitle.trim(),
+          expires_at: dateInputToIso(editExpiresDate),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(typeof data.error === "string" ? data.error : "Could not update deal.");
+        return;
+      }
+      cancelEdit();
+      await load();
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
   const activeDeals = deals.filter(dealIsActive);
   const inactiveDeals = deals.filter((d) => !dealIsActive(d));
   const visibleInactive = inactiveDeals.slice(0, pastDealsVisible);
   const hasMorePast = inactiveDeals.length > pastDealsVisible;
+
+  function renderEditingCard(dealId: string) {
+    return (
+      <div className="p-3.5 bg-white border border-green-200 rounded-xl">
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[12px] font-medium text-gray-600 mb-1">Price (USD)</label>
+            <input
+              type="number"
+              min={0.01}
+              step="0.01"
+              value={editPrice}
+              onChange={(e) => setEditPrice(e.target.value)}
+              className="w-full px-3 py-2 rounded-md border border-gray-200 text-[14px] outline-none focus:border-green-400"
+            />
+          </div>
+          <div>
+            <label className="block text-[12px] font-medium text-gray-600 mb-1">Description</label>
+            <textarea
+              rows={3}
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              className="w-full px-3 py-2 rounded-md border border-gray-200 text-[14px] outline-none focus:border-green-400 resize-y"
+            />
+          </div>
+          <div>
+            <label className="block text-[12px] font-medium text-gray-600 mb-1">
+              Short title (optional)
+            </label>
+            <input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="w-full px-3 py-2 rounded-md border border-gray-200 text-[14px] outline-none focus:border-green-400"
+            />
+          </div>
+          <div>
+            <label className="block text-[12px] font-medium text-gray-600 mb-1">Expiry date</label>
+            <input
+              type="date"
+              value={editExpiresDate}
+              onChange={(e) => setEditExpiresDate(e.target.value)}
+              className="w-full px-3 py-2 rounded-md border border-gray-200 text-[14px] outline-none focus:border-green-400"
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="px-3 py-1.5 rounded-md text-[12px] font-medium border border-gray-200 hover:bg-gray-100 transition-colors text-gray-600"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={savingEdit}
+              onClick={() => saveEdit(dealId)}
+              className="px-3 py-1.5 rounded-md text-[12px] font-medium border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50"
+            >
+              {savingEdit ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -251,72 +382,96 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
         <p className="text-[14px] text-gray-400">No deals yet. Post your first one above.</p>
       ) : (
         <div className="space-y-2">
-          {activeDeals.map((deal) => (
-            <div
-              key={deal.id}
-              className="flex items-center gap-3 p-3.5 bg-white border border-gray-200 rounded-xl hover:border-gray-400 transition-colors"
-            >
-              <div className="text-2xl w-11 h-11 rounded-md bg-gray-50 flex items-center justify-center shrink-0">
-                🏷
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-[15px] truncate">{deal.title}</div>
-                <div className="text-[12px] text-gray-400 mt-0.5">{formatDealMeta(deal)}</div>
-              </div>
-              <button
-                type="button"
-                onClick={() => removeDeal(deal.id)}
-                className="shrink-0 px-2.5 py-1 rounded-md text-[12px] font-medium text-gray-500 border border-gray-200 hover:bg-red-50 hover:text-red-700 hover:border-red-100 transition-colors"
+          {activeDeals.map((deal) =>
+            editingDealId === deal.id ? (
+              <div key={deal.id}>{renderEditingCard(deal.id)}</div>
+            ) : (
+              <div
+                key={deal.id}
+                className="flex items-center gap-3 p-3.5 bg-white border border-gray-200 rounded-xl hover:border-gray-400 transition-colors"
               >
-                Remove
-              </button>
-            </div>
-          ))}
-          {visibleInactive.map((deal) => (
-            <div
-              key={deal.id}
-              className="flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 bg-white border border-gray-200 rounded-xl opacity-80"
-            >
-              <div className="text-2xl w-11 h-11 rounded-md bg-gray-50 flex items-center justify-center shrink-0">
-                🏷
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-[15px] truncate line-through">{deal.title}</div>
-                <div className="text-[12px] text-gray-400 mt-0.5">
-                  {deal.isExpired || new Date(deal.expiresAt) <= new Date()
-                    ? "Expired — hidden from shoppers"
-                    : "Inactive"}
-                  {" · "}
-                  {formatDealMeta(deal)}
+                <div className="text-2xl w-11 h-11 rounded-md bg-gray-50 flex items-center justify-center shrink-0">
+                  🏷
                 </div>
-              </div>
-              <div className="flex flex-col gap-2 shrink-0 w-full sm:w-auto">
-                <input
-                  type="date"
-                  value={reuseDates[deal.id] ?? ""}
-                  onChange={(e) =>
-                    setReuseDates((prev) => ({ ...prev, [deal.id]: e.target.value }))
-                  }
-                  className="px-2 py-1.5 rounded-md border border-gray-200 text-[13px]"
-                />
-                <div className="flex flex-wrap gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-[15px] truncate">{deal.title}</div>
+                  <div className="text-[12px] text-gray-400 mt-0.5">{formatDealMeta(deal)}</div>
+                </div>
+                <div className="flex gap-2 shrink-0">
                   <button
                     type="button"
-                    onClick={() => reuseDeal(deal.id)}
-                    className="px-3 py-1.5 rounded-md text-[12px] font-medium border border-gray-200 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-colors text-gray-600"
+                    onClick={() => beginEdit(deal)}
+                    className="px-2.5 py-1 rounded-md text-[12px] font-medium text-gray-500 border border-gray-200 hover:bg-gray-100 transition-colors"
                   >
-                    Reuse with new expiry
+                    Edit
                   </button>
                   <button
                     type="button"
                     onClick={() => removeDeal(deal.id)}
-                    className="px-3 py-1.5 rounded-md text-[12px] font-medium border border-gray-200 text-gray-500 hover:bg-red-50 hover:text-red-700 hover:border-red-100 transition-colors"
+                    className="px-2.5 py-1 rounded-md text-[12px] font-medium text-gray-500 border border-gray-200 hover:bg-red-50 hover:text-red-700 hover:border-red-100 transition-colors"
                   >
                     Remove
                   </button>
                 </div>
               </div>
-            </div>
+            ),
+          )}
+          {visibleInactive.map((deal) => (
+            editingDealId === deal.id ? (
+              <div key={deal.id}>{renderEditingCard(deal.id)}</div>
+            ) : (
+              <div
+                key={deal.id}
+                className="flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 bg-white border border-gray-200 rounded-xl opacity-80"
+              >
+                <div className="text-2xl w-11 h-11 rounded-md bg-gray-50 flex items-center justify-center shrink-0">
+                  🏷
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-[15px] truncate line-through">{deal.title}</div>
+                  <div className="text-[12px] text-gray-400 mt-0.5">
+                    {deal.isExpired || new Date(deal.expiresAt) <= new Date()
+                      ? "Expired — hidden from shoppers"
+                      : "Inactive"}
+                    {" · "}
+                    {formatDealMeta(deal)}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 shrink-0 w-full sm:w-auto">
+                  <input
+                    type="date"
+                    value={reuseDates[deal.id] ?? ""}
+                    onChange={(e) =>
+                      setReuseDates((prev) => ({ ...prev, [deal.id]: e.target.value }))
+                    }
+                    className="px-2 py-1.5 rounded-md border border-gray-200 text-[13px]"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => beginEdit(deal)}
+                      className="px-3 py-1.5 rounded-md text-[12px] font-medium border border-gray-200 hover:bg-gray-100 transition-colors text-gray-600"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => reuseDeal(deal.id)}
+                      className="px-3 py-1.5 rounded-md text-[12px] font-medium border border-gray-200 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-colors text-gray-600"
+                    >
+                      Reuse with new expiry
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeDeal(deal.id)}
+                      className="px-3 py-1.5 rounded-md text-[12px] font-medium border border-gray-200 text-gray-500 hover:bg-red-50 hover:text-red-700 hover:border-red-100 transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )
           ))}
           {hasMorePast && (
             <button

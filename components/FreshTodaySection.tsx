@@ -22,22 +22,43 @@ export default function FreshTodaySection({ storeId }: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    const load = async () => {
+      const res = await fetch(`/api/stores/${storeId}/updates`);
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      if (cancelled) return;
+      setUpdates(data.updates ?? []);
+      setError(false);
+    };
 
-    async function load() {
+    (async () => {
       try {
-        const res = await fetch(`/api/stores/${storeId}/updates`);
-        if (!res.ok) throw new Error("Failed to fetch");
-        const data = await res.json();
-        if (!cancelled) setUpdates(data.updates ?? []);
+        await load();
       } catch {
         if (!cancelled) setError(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
-    }
+    })();
 
-    load();
-    return () => { cancelled = true; };
+    const source = new EventSource(`/api/stores/${storeId}/posts/events`);
+    const refresh = () => {
+      void load().catch(() => {
+        if (!cancelled) setError(true);
+      });
+    };
+    source.addEventListener("POST_UPDATE", refresh);
+    source.addEventListener("POST_DELETE", refresh);
+    source.onerror = () => {
+      source.close();
+    };
+
+    return () => {
+      cancelled = true;
+      source.removeEventListener("POST_UPDATE", refresh);
+      source.removeEventListener("POST_DELETE", refresh);
+      source.close();
+    };
   }, [storeId]);
 
   if (loading) return <FreshTodaySkeleton />;
