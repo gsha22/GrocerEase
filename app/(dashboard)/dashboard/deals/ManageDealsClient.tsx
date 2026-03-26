@@ -38,10 +38,13 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
   const [description, setDescription] = useState("");
   const [title, setTitle] = useState("");
   const [expiresDate, setExpiresDate] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [reuseErrors, setReuseErrors] = useState<Record<string, string | undefined>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [reusingIds, setReusingIds] = useState<Set<string>>(new Set());
   const [reuseDates, setReuseDates] = useState<Record<string, string>>({});
   const [pastDealsVisible, setPastDealsVisible] = useState(PAST_DEALS_PAGE_SIZE);
+  const todayDate = new Date().toISOString().slice(0, 10);
 
   const load = useCallback(async () => {
     setLoadError(null);
@@ -78,9 +81,9 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
+    setFormError(null);
     if (!expiresDate) {
-      setError("Expiry date is required.");
+      setFormError("Expiry date is required.");
       return;
     }
     setSubmitting(true);
@@ -90,14 +93,14 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           price: price.trim(),
-          description,
+          description: description.trim() || undefined,
           title: title.trim() || undefined,
           expires_at: dateInputToIso(expiresDate),
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(typeof data.error === "string" ? data.error : "Could not post deal.");
+        setFormError(typeof data.error === "string" ? data.error : "Could not post deal.");
         return;
       }
       setPrice("");
@@ -111,36 +114,64 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
   }
 
   async function reuseDeal(sourceId: string) {
+    if (reusingIds.has(sourceId)) return;
     const dateStr = reuseDates[sourceId];
     if (!dateStr) {
-      setError("Choose a new expiry date before reusing a past deal.");
+      setReuseErrors((prev) => ({
+        ...prev,
+        [sourceId]: "Choose a new expiry date before reusing this past deal.",
+      }));
       return;
     }
-    setError(null);
-    const res = await fetch(`/api/stores/${storeId}/deals`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        source_deal_id: sourceId,
-        expires_at: dateInputToIso(dateStr),
-      }),
+    setReuseErrors((prev) => ({ ...prev, [sourceId]: undefined }));
+    setReusingIds((prev) => {
+      const next = new Set(prev);
+      next.add(sourceId);
+      return next;
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setError(typeof data.error === "string" ? data.error : "Could not reuse deal.");
-      return;
+    try {
+      const res = await fetch(`/api/stores/${storeId}/deals`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source_deal_id: sourceId,
+          expires_at: dateInputToIso(dateStr),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setReuseErrors((prev) => ({
+          ...prev,
+          [sourceId]: typeof data.error === "string" ? data.error : "Could not reuse deal.",
+        }));
+        return;
+      }
+      setReuseDates((prev) => {
+        const next = { ...prev };
+        delete next[sourceId];
+        return next;
+      });
+      await load();
+    } finally {
+      setReusingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(sourceId);
+        return next;
+      });
     }
-    await load();
   }
 
   async function removeDeal(dealId: string) {
-    setError(null);
+    setReuseErrors((prev) => ({ ...prev, [dealId]: undefined }));
     const res = await fetch(`/api/stores/${storeId}/deals/${dealId}`, {
       method: "DELETE",
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      setError(typeof data.error === "string" ? data.error : "Could not remove deal.");
+      setReuseErrors((prev) => ({
+        ...prev,
+        [dealId]: typeof data.error === "string" ? data.error : "Could not remove deal.",
+      }));
       return;
     }
     setPastDealsVisible(PAST_DEALS_PAGE_SIZE);
@@ -166,9 +197,9 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
       <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
         <h2 className="text-[17px] font-semibold text-gray-800 mb-4">Post a deal</h2>
         <form onSubmit={onSubmit} className="space-y-4">
-          {error && (
+          {formError && (
             <div className="text-[13px] text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-              {error}
+              {formError}
             </div>
           )}
           <div>
@@ -218,6 +249,7 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
             <input
               type="date"
               required
+              min={todayDate}
               value={expiresDate}
               onChange={(e) => setExpiresDate(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] bg-white outline-none focus:border-green-400 transition-colors"
@@ -293,19 +325,24 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
               <div className="flex flex-col gap-2 shrink-0 w-full sm:w-auto">
                 <input
                   type="date"
+                  min={todayDate}
                   value={reuseDates[deal.id] ?? ""}
                   onChange={(e) =>
                     setReuseDates((prev) => ({ ...prev, [deal.id]: e.target.value }))
                   }
                   className="px-2 py-1.5 rounded-md border border-gray-200 text-[13px]"
                 />
+                {reuseErrors[deal.id] && (
+                  <div className="text-[12px] text-red-700">{reuseErrors[deal.id]}</div>
+                )}
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => reuseDeal(deal.id)}
+                    disabled={reusingIds.has(deal.id)}
                     className="px-3 py-1.5 rounded-md text-[12px] font-medium border border-gray-200 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-colors text-gray-600"
                   >
-                    Reuse with new expiry
+                    {reusingIds.has(deal.id) ? "Reusing…" : "Reuse with new expiry"}
                   </button>
                   <button
                     type="button"

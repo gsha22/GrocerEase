@@ -106,7 +106,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  if (body.source_deal_id) {
+  const hasSourceDealId = Object.prototype.hasOwnProperty.call(body, "source_deal_id");
+  if (hasSourceDealId) {
+    if (typeof body.source_deal_id !== "string" || !body.source_deal_id.trim()) {
+      return NextResponse.json({ error: "source_deal_id must be a non-empty string" }, { status: 400 });
+    }
     const source = await prisma.deal.findFirst({
       where: { id: body.source_deal_id, storeId, deletedAt: null },
     });
