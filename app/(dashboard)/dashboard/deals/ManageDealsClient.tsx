@@ -90,7 +90,7 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           price: price.trim(),
-          description,
+          description: description.trim() || undefined,
           title: title.trim() || undefined,
           expires_at: dateInputToIso(expiresDate),
         }),

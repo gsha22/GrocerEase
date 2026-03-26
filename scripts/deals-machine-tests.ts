@@ -73,6 +73,55 @@ async function main() {
   const createdId = (valid.json as { deal?: { id?: string } })?.deal?.id;
   assert.ok(createdId, "Expected created deal id");
 
+  // 1b) POST source_deal_id valid => 201 with new id and timestamp
+  const duplicateExpiry = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
+  const duplicate = await postJson(
+    `/api/stores/${STORE_ID}/deals`,
+    { source_deal_id: createdId, expires_at: duplicateExpiry, price: 4.25 },
+    cookieHeader,
+  );
+  assert.equal(
+    duplicate.res.status,
+    201,
+    "Valid source_deal_id duplication should return 201",
+  );
+  const duplicatedDeal = (duplicate.json as { deal?: { id?: string; createdAt?: string } })?.deal;
+  assert.ok(duplicatedDeal?.id, "Expected duplicated deal id");
+  assert.notEqual(
+    duplicatedDeal?.id,
+    createdId,
+    "Duplicated deal must receive a new identifier",
+  );
+  assert.ok(
+    typeof duplicatedDeal?.createdAt === "string",
+    "Duplicated deal must include a creation timestamp",
+  );
+
+  // 1c) POST source_deal_id invalid => 400 and no insertion
+  const beforeInvalidCount = await prisma.deal.count({ where: { storeId: STORE_ID } });
+  const invalidDuplicate = await postJson(
+    `/api/stores/${STORE_ID}/deals`,
+    { source_deal_id: "not-a-real-deal-id", expires_at: duplicateExpiry },
+    cookieHeader,
+  );
+  assert.equal(
+    invalidDuplicate.res.status,
+    400,
+    "Invalid source_deal_id should return 400",
+  );
+  const afterInvalidCount = await prisma.deal.count({ where: { storeId: STORE_ID } });
+  assert.equal(
+    afterInvalidCount,
+    beforeInvalidCount,
+    "Invalid source_deal_id must not create a new deal",
+  );
+  const blankSource = await postJson(
+    `/api/stores/${STORE_ID}/deals`,
+    { source_deal_id: "", expires_at: duplicateExpiry },
+    cookieHeader,
+  );
+  assert.equal(blankSource.res.status, 400, "Blank source_deal_id should return 400");
+
   // 2) POST missing field / past expiry => 400
   const missing = await postJson(
     `/api/stores/${STORE_ID}/deals`,
@@ -174,9 +223,15 @@ async function main() {
 
   // Cleanup test deals
   await prisma.ownerNotification.deleteMany({
-    where: { dealId: { in: [createdId!, soonDeal.id, deleteId!] } },
+    where: {
+      dealId: {
+        in: [createdId!, duplicatedDeal!.id!, soonDeal.id, deleteId!],
+      },
+    },
   });
-  await prisma.deal.deleteMany({ where: { id: { in: [createdId!, soonDeal.id, deleteId!] } } });
+  await prisma.deal.deleteMany({
+    where: { id: { in: [createdId!, duplicatedDeal!.id!, soonDeal.id, deleteId!] } },
+  });
 
   console.log("All machine deal criteria checks passed.");
 }
