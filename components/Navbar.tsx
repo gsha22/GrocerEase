@@ -1,7 +1,11 @@
 import Link from "next/link";
-import NavbarAuthLinks from "@/components/NavbarAuthLinks";
+import { auth } from "@/auth";
+import SignOutButton from "@/components/SignOutButton";
 
-export default function Navbar() {
+export default async function Navbar() {
+  const session = await auth();
+  const authed = !!session?.user;
+
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
       <nav
@@ -37,7 +41,32 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <NavbarAuthLinks />
+        {authed ? (
+          <div className="flex flex-wrap gap-2 items-center justify-end ml-auto">
+            <Link
+              href="/dashboard"
+              className="px-4 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors"
+            >
+              Owner portal
+            </Link>
+            <SignOutButton className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors" />
+          </div>
+        ) : (
+          <div className="flex gap-2 items-center ml-auto">
+            <Link
+              href="/login"
+              className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors"
+            >
+              Log in
+            </Link>
+            <Link
+              href="/login"
+              className="px-4 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors"
+            >
+              Sign up free
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* Mobile bottom nav is rendered separately — see MobileNav component */}

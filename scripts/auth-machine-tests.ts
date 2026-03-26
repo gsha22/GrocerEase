@@ -161,6 +161,16 @@ async function main() {
     });
     assert.ok(homeRes.ok, "GET / with session cookie should succeed");
 
+    const html = await homeRes.text();
+    assert.ok(
+      html.includes("Owner portal"),
+      "public home HTML should include Owner portal when authenticated"
+    );
+    assert.ok(
+      !html.includes("Log in"),
+      "public home HTML should not include Log in when authenticated"
+    );
+
     const { res, json } = await fetchAuthSession(sessionCookie);
     assert.equal(res.status, 200, "session still valid after requesting public home");
     assert.equal(
