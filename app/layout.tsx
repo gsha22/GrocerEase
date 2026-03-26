@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
+import DevPerformanceMeasureGuard from "@/components/DevPerformanceMeasureGuard";
 import SessionProvider from "@/components/SessionProvider";
 import { auth } from "@/auth";
 import "./globals.css";
@@ -32,6 +33,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${dmSans.variable} ${playfair.variable} h-full`}>
       <body className="min-h-full flex flex-col font-sans antialiased">
+        {process.env.NODE_ENV === "development" ? <DevPerformanceMeasureGuard /> : null}
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-white focus:text-black"
