@@ -1,3 +1,4 @@
+import { inferDealTitleEmoji } from "@/lib/categories";
 import { formatExpiry, formatPriceUsd, isUrgent, urgentLabel } from "@/lib/deals";
 
 export interface DealData {
@@ -14,34 +15,13 @@ interface Props {
   showStore?: boolean;
 }
 
-const CATEGORY_EMOJI: Record<string, string> = {
-  lamb: "🥩",
-  meat: "🥩",
-  ramen: "🍜",
-  noodle: "🍜",
-  produce: "🥕",
-  tomato: "🍅",
-  vegetable: "🥦",
-  fruit: "🍎",
-  fish: "🐟",
-  dairy: "🧀",
-};
-
-function inferEmoji(title: string): string {
-  const lower = title.toLowerCase();
-  for (const [keyword, emoji] of Object.entries(CATEGORY_EMOJI)) {
-    if (lower.includes(keyword)) return emoji;
-  }
-  return "🏷";
-}
-
 export default function DealCard({ deal, showStore = false }: Props) {
   const urgent = isUrgent(deal.expiresAt);
   const priceLabel = formatPriceUsd(deal.price ?? null);
 
   return (
     <div className="flex gap-3.5 p-3.5 bg-amber-50 rounded-xl border border-amber-100 mb-2.5 last:mb-0">
-      <span className="text-[22px]">{inferEmoji(deal.title)}</span>
+      <span className="text-[22px]">{inferDealTitleEmoji(deal.title)}</span>
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start gap-2">
           <div className="font-semibold text-[15px] text-gray-800">

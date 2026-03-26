@@ -1,31 +1,11 @@
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import DealCard from "@/components/DealCard";
+import { findActivePublishedDeals } from "@/lib/active-published-deals";
 
 export const dynamic = "force-dynamic";
 
 export default async function DealsPage() {
-  const now = new Date();
-
-  const deals = await prisma.deal.findMany({
-    where: {
-      deletedAt: null,
-      isExpired: false,
-      expiresAt: { gt: now },
-      store: { isPublished: true },
-    },
-    orderBy: { expiresAt: "asc" },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      price: true,
-      expiresAt: true,
-      store: {
-        select: { id: true, name: true },
-      },
-    },
-  });
+  const deals = await findActivePublishedDeals();
 
   const storeIds = new Set(deals.map((d) => d.store.id));
 

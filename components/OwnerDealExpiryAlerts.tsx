@@ -10,10 +10,12 @@ export default function OwnerDealExpiryAlerts({
   initial: AlertItem[];
 }) {
   const [items, setItems] = useState(initial);
+  const [dismissError, setDismissError] = useState<string | null>(null);
 
   if (items.length === 0) return null;
 
   async function dismiss(id: string) {
+    setDismissError(null);
     const res = await fetch("/api/owner/notifications", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -21,7 +23,17 @@ export default function OwnerDealExpiryAlerts({
     });
     if (res.ok) {
       setItems((prev) => prev.filter((x) => x.id !== id));
+      return;
     }
+    let detail = "Could not dismiss. Try again.";
+    try {
+      const data = (await res.json()) as { error?: string };
+      if (typeof data.error === "string" && data.error) detail = data.error;
+    } catch {
+      /* ignore */
+    }
+    console.error("OwnerDealExpiryAlerts: PATCH /api/owner/notifications failed", res.status);
+    setDismissError(detail);
   }
 
   return (
@@ -32,6 +44,11 @@ export default function OwnerDealExpiryAlerts({
       <div className="text-[13px] font-semibold text-amber-900 mb-2">
         Deal expiring soon
       </div>
+      {dismissError && (
+        <p className="text-[12px] text-red-800 bg-red-50 border border-red-100 rounded-md px-2 py-1.5 mb-2">
+          {dismissError}
+        </p>
+      )}
       <ul className="space-y-2">
         {items.map((a) => (
           <li

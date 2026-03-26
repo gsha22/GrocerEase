@@ -28,6 +28,21 @@ async function postJson(path: string, body: unknown, cookieHeader?: string) {
   return { res, json };
 }
 
+async function deleteDeal(
+  storeId: string,
+  dealId: string,
+  cookieHeader?: string,
+) {
+  const headers: Record<string, string> = {};
+  if (cookieHeader) headers.Cookie = cookieHeader;
+  const res = await fetch(`${BASE}/api/stores/${storeId}/deals/${dealId}`, {
+    method: "DELETE",
+    headers,
+  });
+  const json = await res.json().catch(() => null);
+  return { res, json };
+}
+
 async function login() {
   const res = await fetch(`${BASE}/auth/login`, {
     method: "POST",
@@ -72,6 +87,33 @@ async function main() {
     cookieHeader,
   );
   assert.equal(past.res.status, 400, "Past expires_at should return 400");
+
+  const forDelete = await postJson(
+    `/api/stores/${STORE_ID}/deals`,
+    {
+      price: "9.99",
+      description: "DELETE endpoint test",
+      expires_at: futureIso,
+    },
+    cookieHeader,
+  );
+  assert.equal(forDelete.res.status, 201, "Setup deal for DELETE should return 201");
+  const deleteId = (forDelete.json as { deal?: { id?: string } })?.deal?.id;
+  assert.ok(deleteId, "Expected deal id for DELETE test");
+  const deleted = await deleteDeal(STORE_ID, deleteId!, cookieHeader);
+  assert.equal(deleted.res.status, 200, "DELETE /stores/:id/deals/:dealId should return 200");
+  const soft = await prisma.deal.findFirst({ where: { id: deleteId! } });
+  assert.ok(soft?.deletedAt, "DELETE should set deletedAt (soft delete)");
+
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret) {
+    const cronRes = await fetch(`${BASE}/api/cron/deals`, {
+      headers: { Authorization: `Bearer ${cronSecret}` },
+    });
+    assert.equal(cronRes.status, 200, "Cron GET should succeed with CRON_SECRET");
+    const cronJson = (await cronRes.json()) as { ok?: boolean; ranAt?: string };
+    assert.ok(cronJson.ok === true && typeof cronJson.ranAt === "string", "Cron body should include ranAt");
+  }
 
   // 3) GET /stores/:id/deals returns only expires_at > now (active public list)
   const storeDealsRes = await fetch(`${BASE}/api/stores/${STORE_ID}/deals`);
@@ -131,8 +173,10 @@ async function main() {
   );
 
   // Cleanup test deals
-  await prisma.ownerNotification.deleteMany({ where: { dealId: { in: [createdId!, soonDeal.id] } } });
-  await prisma.deal.deleteMany({ where: { id: { in: [createdId!, soonDeal.id] } } });
+  await prisma.ownerNotification.deleteMany({
+    where: { dealId: { in: [createdId!, soonDeal.id, deleteId!] } },
+  });
+  await prisma.deal.deleteMany({ where: { id: { in: [createdId!, soonDeal.id, deleteId!] } } });
 
   console.log("All machine deal criteria checks passed.");
 }

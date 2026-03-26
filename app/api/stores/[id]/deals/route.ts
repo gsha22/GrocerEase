@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { Session } from "next-auth";
-import { auth } from "@/auth";
 import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
@@ -47,17 +45,7 @@ function parsePrice(raw: unknown): { ok: true; value: Prisma.Decimal } | { ok: f
   return { ok: true, value: new Prisma.Decimal(n.toFixed(2)) };
 }
 
-function ownerAuthError(session: Session | null, storeId: string): NextResponse | null {
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  if (!session.storeId || session.storeId !== storeId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-  return null;
-}
-
-// Story 2: GET /api/stores/:id/deals — Active deals (expires_at > now, not expired)
+// Story 8: GET /api/stores/:id/deals — Active deals (expires_at > now, not expired)
 // Story 9: GET ?all=true — All deals for this store (owner only, reuse flow)
 export async function GET(request: NextRequest, context: RouteContext) {
   const { id: storeId } = await context.params;
@@ -65,9 +53,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const now = new Date();
 
   if (showAll) {
-    const session = await auth();
-    const err = ownerAuthError(session, storeId);
-    if (err) return err;
+    const gate = await requireStoreOwnerForStore(storeId);
+    if ("response" in gate) return gate.response;
   }
 
   const deals = await prisma.deal.findMany({
@@ -110,21 +97,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
 // Story 8: POST — Create deal (owner only). Story 9: source_deal_id duplicates.
 export async function POST(request: NextRequest, context: RouteContext) {
   const { id: storeId } = await context.params;
-  const session = await auth();
-  const err = ownerAuthError(session, storeId);
-  if (err) return err;
-
   const gate = await requireStoreOwnerForStore(storeId);
   if ("response" in gate) return gate.response;
 
+  const now = new Date();
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
-  const store = await prisma.store.findUnique({ where: { id: storeId } });
-  if (!store) {
-    return NextResponse.json({ error: "Store not found" }, { status: 404 });
   }
 
   if (body.source_deal_id) {
@@ -145,7 +124,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (Number.isNaN(expiresAt.getTime())) {
       return NextResponse.json({ error: "expires_at must be a valid date" }, { status: 400 });
     }
-    if (expiresAt <= new Date()) {
+    if (expiresAt <= now) {
       return NextResponse.json({ error: "expires_at must be in the future" }, { status: 400 });
     }
 
@@ -203,7 +182,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   if (Number.isNaN(expiresAt.getTime())) {
     return NextResponse.json({ error: "expires_at must be a valid date" }, { status: 400 });
   }
-  if (expiresAt <= new Date()) {
+  if (expiresAt <= now) {
     return NextResponse.json({ error: "expires_at must be in the future" }, { status: 400 });
   }
 

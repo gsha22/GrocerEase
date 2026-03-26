@@ -30,9 +30,9 @@ export function formatPriceUsd(price: string | null | undefined): string | null 
  */
 export function formatExpiry(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
-  const day = DAY_NAMES[d.getDay()];
-  const month = MONTH_NAMES[d.getMonth()];
-  return `Expires ${day}, ${month} ${d.getDate()}`;
+  const day = DAY_NAMES[d.getUTCDay()];
+  const month = MONTH_NAMES[d.getUTCMonth()];
+  return `Expires ${day}, ${month} ${d.getUTCDate()}`;
 }
 
 /**
@@ -49,6 +49,6 @@ export function isUrgent(expiresAt: Date | string): boolean {
  */
 export function urgentLabel(expiresAt: Date | string): string {
   const d = typeof expiresAt === "string" ? new Date(expiresAt) : expiresAt;
-  const shortDay = DAY_NAMES[d.getDay()].slice(0, 3);
+  const shortDay = DAY_NAMES[d.getUTCDay()].slice(0, 3);
   return `Ends ${shortDay}`;
 }

@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { formatExpiry, formatPriceUsd } from "@/lib/deals";
+
+const PAST_DEALS_PAGE_SIZE = 20;
 
 type ApiDeal = {
   id: string;
@@ -22,25 +25,15 @@ function dealIsActive(d: ApiDeal): boolean {
 }
 
 function formatDealMeta(d: ApiDeal): string {
-  const exp = new Date(d.expiresAt);
-  const dateStr = exp.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-  const price =
-    d.price != null
-      ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-          Number(d.price),
-        )
-      : null;
-  const bits = [price, `expires ${dateStr}`].filter(Boolean);
+  const price = formatPriceUsd(d.price);
+  const bits = [price, formatExpiry(d.expiresAt)].filter(Boolean);
   return bits.join(" · ");
 }
 
 export default function ManageDealsClient({ storeId }: { storeId: string }) {
   const [deals, setDeals] = useState<ApiDeal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [title, setTitle] = useState("");
@@ -48,10 +41,23 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [reuseDates, setReuseDates] = useState<Record<string, string>>({});
+  const [pastDealsVisible, setPastDealsVisible] = useState(PAST_DEALS_PAGE_SIZE);
 
   const load = useCallback(async () => {
+    setLoadError(null);
     const res = await fetch(`/api/stores/${storeId}/deals?all=true`);
-    if (!res.ok) return;
+    if (!res.ok) {
+      let msg = "Could not load deals. Refresh the page or sign in again.";
+      try {
+        const data = (await res.json()) as { error?: string };
+        if (typeof data.error === "string" && data.error) msg = data.error;
+      } catch {
+        /* ignore */
+      }
+      setLoadError(msg);
+      setDeals([]);
+      return;
+    }
     const data = await res.json();
     setDeals(data.deals ?? []);
   }, [storeId]);
@@ -83,7 +89,7 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          price: Number(price),
+          price: price.trim(),
           description,
           title: title.trim() || undefined,
           expires_at: dateInputToIso(expiresDate),
@@ -127,8 +133,24 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
     await load();
   }
 
+  async function removeDeal(dealId: string) {
+    setError(null);
+    const res = await fetch(`/api/stores/${storeId}/deals/${dealId}`, {
+      method: "DELETE",
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setError(typeof data.error === "string" ? data.error : "Could not remove deal.");
+      return;
+    }
+    setPastDealsVisible(PAST_DEALS_PAGE_SIZE);
+    await load();
+  }
+
   const activeDeals = deals.filter(dealIsActive);
   const inactiveDeals = deals.filter((d) => !dealIsActive(d));
+  const visibleInactive = inactiveDeals.slice(0, pastDealsVisible);
+  const hasMorePast = inactiveDeals.length > pastDealsVisible;
 
   return (
     <>
@@ -221,6 +243,10 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
 
       {loading ? (
         <p className="text-[14px] text-gray-400">Loading deals…</p>
+      ) : loadError ? (
+        <p className="text-[14px] text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+          {loadError}
+        </p>
       ) : deals.length === 0 ? (
         <p className="text-[14px] text-gray-400">No deals yet. Post your first one above.</p>
       ) : (
@@ -237,9 +263,16 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
                 <div className="font-medium text-[15px] truncate">{deal.title}</div>
                 <div className="text-[12px] text-gray-400 mt-0.5">{formatDealMeta(deal)}</div>
               </div>
+              <button
+                type="button"
+                onClick={() => removeDeal(deal.id)}
+                className="shrink-0 px-2.5 py-1 rounded-md text-[12px] font-medium text-gray-500 border border-gray-200 hover:bg-red-50 hover:text-red-700 hover:border-red-100 transition-colors"
+              >
+                Remove
+              </button>
             </div>
           ))}
-          {inactiveDeals.map((deal) => (
+          {visibleInactive.map((deal) => (
             <div
               key={deal.id}
               className="flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 bg-white border border-gray-200 rounded-xl opacity-80"
@@ -266,16 +299,37 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
                   }
                   className="px-2 py-1.5 rounded-md border border-gray-200 text-[13px]"
                 />
-                <button
-                  type="button"
-                  onClick={() => reuseDeal(deal.id)}
-                  className="px-3 py-1.5 rounded-md text-[12px] font-medium border border-gray-200 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-colors text-gray-600"
-                >
-                  Reuse with new expiry
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => reuseDeal(deal.id)}
+                    className="px-3 py-1.5 rounded-md text-[12px] font-medium border border-gray-200 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-colors text-gray-600"
+                  >
+                    Reuse with new expiry
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeDeal(deal.id)}
+                    className="px-3 py-1.5 rounded-md text-[12px] font-medium border border-gray-200 text-gray-500 hover:bg-red-50 hover:text-red-700 hover:border-red-100 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
             </div>
           ))}
+          {hasMorePast && (
+            <button
+              type="button"
+              onClick={() =>
+                setPastDealsVisible((n) => n + PAST_DEALS_PAGE_SIZE)
+              }
+              className="w-full py-2.5 text-[13px] font-medium text-gray-600 border border-dashed border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+            >
+              Show more past deals ({inactiveDeals.length - visibleInactive.length}{" "}
+              remaining)
+            </button>
+          )}
         </div>
       )}
     </>

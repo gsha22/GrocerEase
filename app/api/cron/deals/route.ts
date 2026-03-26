@@ -20,5 +20,9 @@ export async function GET(req: NextRequest) {
   }
 
   const result = await runDealMaintenance();
-  return NextResponse.json({ ok: true, ...result });
+  return NextResponse.json({
+    ok: true,
+    ...result,
+    ranAt: new Date().toISOString(),
+  });
 }
