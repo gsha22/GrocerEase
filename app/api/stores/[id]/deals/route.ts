@@ -111,9 +111,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (typeof body.source_deal_id !== "string" || !body.source_deal_id.trim()) {
       return NextResponse.json({ error: "source_deal_id must be a non-empty string" }, { status: 400 });
     }
-  }
-
-  if (hasSourceDealId) {
     const source = await prisma.deal.findFirst({
       where: { id: body.source_deal_id, storeId, deletedAt: null },
     });

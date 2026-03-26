@@ -115,6 +115,22 @@ async function main() {
     beforeInvalidCount,
     "Invalid source_deal_id must not create a new deal",
   );
+  const crossStoreDuplicate = await postJson(
+    `/api/stores/${STORE_ID}/deals`,
+    { source_deal_id: ids.deals.crescentHistorical, expires_at: duplicateExpiry },
+    cookieHeader,
+  );
+  assert.equal(
+    crossStoreDuplicate.res.status,
+    400,
+    "source_deal_id from another store should return 400",
+  );
+  const afterCrossStoreCount = await prisma.deal.count({ where: { storeId: STORE_ID } });
+  assert.equal(
+    afterCrossStoreCount,
+    beforeInvalidCount,
+    "Cross-store source_deal_id must not create a new deal",
+  );
   const blankSource = await postJson(
     `/api/stores/${STORE_ID}/deals`,
     { source_deal_id: "", expires_at: duplicateExpiry },
