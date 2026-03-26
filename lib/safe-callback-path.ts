@@ -2,10 +2,13 @@
  * Accepts only same-app relative paths for post-login redirects.
  * Rejects protocol-relative URLs (`//…`) and non-path values.
  */
-export function safeCallbackPath(raw: string | null | undefined): string {
-  if (raw == null || raw === "") return "/dashboard";
+export function safeCallbackPath(
+  raw: string | null | undefined,
+  fallback: string = "/dashboard",
+): string {
+  if (raw == null || raw === "") return fallback;
   const t = raw.trim();
-  if (!isSafeRelativeAppPath(t)) return "/dashboard";
+  if (!isSafeRelativeAppPath(t)) return fallback;
   return t;
 }
 

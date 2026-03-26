@@ -5,6 +5,8 @@ import SignOutButton from "@/components/SignOutButton";
 export default async function Navbar() {
   const session = await auth();
   const authed = !!session?.user;
+  const isShopper = session?.role === "shopper";
+  const isOwner = authed && !isShopper;
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
@@ -43,27 +45,43 @@ export default async function Navbar() {
 
         {authed ? (
           <div className="flex flex-wrap gap-2 items-center justify-end ml-auto">
-            <Link
-              href="/dashboard"
-              className="px-4 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors"
-            >
-              Owner portal
-            </Link>
+            {isOwner && (
+              <Link
+                href="/dashboard"
+                className="px-4 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors"
+              >
+                Owner portal
+              </Link>
+            )}
+            {isShopper && (
+              <Link
+                href="/shopper/account"
+                className="px-4 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors"
+              >
+                My account
+              </Link>
+            )}
             <SignOutButton className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors" />
           </div>
         ) : (
-          <div className="flex gap-2 items-center ml-auto">
+          <div className="flex flex-wrap gap-2 items-center justify-end ml-auto">
+            <Link
+              href="/shopper/login"
+              className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors"
+            >
+              Shopper log in
+            </Link>
             <Link
               href="/login"
               className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors"
             >
-              Log in
+              Owner log in
             </Link>
             <Link
               href="/signup"
               className="px-4 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors"
             >
-              Sign up free
+              List your store
             </Link>
           </div>
         )}

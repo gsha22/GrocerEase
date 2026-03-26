@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
 type SearchResult = {
   id: string;
@@ -18,8 +19,6 @@ type Props = {
   storeName: string;
   storeAddress: string;
 };
-
-const DEMO_SHOPPER_ID = "55555555-5555-5555-5555-555555555555";
 
 function toRelativeTime(isoDate: string): string {
   const timestamp = new Date(isoDate).getTime();
@@ -54,10 +53,51 @@ export default function ItemAvailabilitySearch({
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [notifyByItemId, setNotifyByItemId] = useState<Record<string, boolean>>({});
+  const [notifyByItemId, setNotifyByItemId] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [authRequired, setAuthRequired] = useState(false);
 
   const hasQuery = query.trim().length > 0;
   const queryHint = useMemo(() => (hasQuery ? query.trim() : ""), [hasQuery, query]);
+
+  const loginHref = `/shopper/login?callbackUrl=${encodeURIComponent(`/stores/${storeId}`)}`;
+
+  useEffect(() => {
+    if (results.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const res = await fetch("/api/alerts", { credentials: "include" });
+      if (cancelled) return;
+      if (res.status === 401) {
+        setAuthRequired(true);
+        return;
+      }
+      setAuthRequired(false);
+      if (!res.ok) return;
+      const alerts = (await res.json()) as Array<{
+        itemId: string | null;
+        storeId: string | null;
+        type: string;
+      }>;
+      setNotifyByItemId((prev) => {
+        const next = { ...prev };
+        for (const item of results) {
+          const on = alerts.some(
+            (a) =>
+              a.type === "item_restock" &&
+              a.itemId === item.id &&
+              (a.storeId ?? item.store_id) === item.store_id
+          );
+          next[item.id] = on;
+        }
+        return next;
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [results]);
 
   async function runSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -83,13 +123,20 @@ export default function ItemAvailabilitySearch({
   }
 
   async function toggleNotify(item: SearchResult) {
+    const probe = await fetch("/api/alerts", { credentials: "include" });
+    if (probe.status === 401) {
+      setAuthRequired(true);
+      return;
+    }
+    setAuthRequired(false);
+
     const currentlyOn = Boolean(notifyByItemId[item.id]);
     if (!currentlyOn) {
       const res = await fetch("/api/alerts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          shopperId: DEMO_SHOPPER_ID,
           type: "item_restock",
           itemId: item.id,
           storeId: item.store_id,
@@ -101,7 +148,7 @@ export default function ItemAvailabilitySearch({
       return;
     }
 
-    const listRes = await fetch(`/api/alerts?shopperId=${DEMO_SHOPPER_ID}`);
+    const listRes = await fetch("/api/alerts", { credentials: "include" });
     if (!listRes.ok) return;
     const alerts = (await listRes.json()) as Array<{
       id: string;
@@ -116,10 +163,10 @@ export default function ItemAvailabilitySearch({
       return;
     }
 
-    const deleteRes = await fetch(
-      `/api/alerts/${existing.id}?shopperId=${DEMO_SHOPPER_ID}`,
-      { method: "DELETE" }
-    );
+    const deleteRes = await fetch(`/api/alerts/${existing.id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
     if (deleteRes.ok) {
       setNotifyByItemId((prev) => ({ ...prev, [item.id]: false }));
     }
@@ -156,6 +203,15 @@ export default function ItemAvailabilitySearch({
         </p>
       )}
 
+      {authRequired && results.length > 0 && (
+        <p className="text-[13px] text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mb-4">
+          <Link href={loginHref} className="font-medium text-green-700 underline">
+            Log in as a shopper
+          </Link>{" "}
+          to turn on restock alerts for items at this store.
+        </p>
+      )}
+
       <div className="space-y-2.5">
         {results.map((item) => (
           <div
@@ -183,11 +239,17 @@ export default function ItemAvailabilitySearch({
               <button
                 type="button"
                 onClick={() => toggleNotify(item)}
+                disabled={authRequired}
+                title={
+                  authRequired
+                    ? "Log in as a shopper to use alerts"
+                    : undefined
+                }
                 className={`text-[12px] px-2.5 py-1 rounded-full border transition-colors ${
                   notifyByItemId[item.id]
                     ? "border-green-300 bg-green-50 text-green-700"
                     : "border-gray-200 bg-white text-gray-600 hover:border-green-300 hover:text-green-700"
-                }`}
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {notifyByItemId[item.id] ? "Notify me: On" : "Notify me"}
               </button>

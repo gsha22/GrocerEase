@@ -3,5 +3,11 @@ import MobileNavClient from "@/components/MobileNavClient";
 
 export default async function MobileNav() {
   const session = await auth();
-  return <MobileNavClient authed={!!session?.user} />;
+  const accountKind =
+    session?.role === "shopper"
+      ? "shopper"
+      : session?.user
+        ? "owner"
+        : "guest";
+  return <MobileNavClient accountKind={accountKind} />;
 }

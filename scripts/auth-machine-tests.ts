@@ -140,8 +140,16 @@ async function main() {
   {
     const { res, json } = await fetchAuthSession(sessionCookie);
     assert.equal(res.status, 200, "GET /api/auth/session with cookie should be 200");
-    const body = json as { user?: { email?: string; name?: string } };
+    const body = json as {
+      user?: { email?: string; name?: string };
+      role?: string;
+    };
     assert.ok(body?.user?.email, "session should include user.email");
+    assert.equal(
+      body.role,
+      "owner",
+      "owner login session should include role owner"
+    );
     assert.equal(
       body.user!.email!.toLowerCase(),
       OWNER_EMAIL_LINH,

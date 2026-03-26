@@ -31,11 +31,14 @@ export function safeRedirectPathForClient(
   }
 }
 
+export type CredentialsAccountType = "owner" | "shopper";
+
 export function buildCredentialsAuthRequest(
   req: NextRequest,
   email: string,
   password: string,
-  callbackUrl: string
+  callbackUrl: string,
+  accountType: CredentialsAccountType = "owner"
 ) {
   const origin = req.nextUrl.origin;
   const url = new URL(`${origin}/api/auth/callback/credentials`);
@@ -44,7 +47,7 @@ export function buildCredentialsAuthRequest(
   return new Request(url.toString(), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, accountType }),
   });
 }
 
@@ -89,13 +92,15 @@ export async function runCredentialsSignIn(
   req: NextRequest,
   email: string,
   password: string,
-  callbackUrl: string
+  callbackUrl: string,
+  accountType: CredentialsAccountType = "owner"
 ): Promise<NextResponse> {
   const authRequest = buildCredentialsAuthRequest(
     req,
     email,
     password,
-    callbackUrl
+    callbackUrl,
+    accountType
   );
   const authRes = await Auth(authRequest, {
     ...authConfig,

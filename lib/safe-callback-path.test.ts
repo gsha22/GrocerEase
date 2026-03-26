@@ -16,6 +16,11 @@ describe("safeCallbackPath", () => {
     assert.equal(safeCallbackPath("/dashboard"), "/dashboard");
     assert.equal(safeCallbackPath(" /profile "), "/profile");
   });
+
+  it("uses custom fallback for invalid values", () => {
+    assert.equal(safeCallbackPath(null, "/shopper/account"), "/shopper/account");
+    assert.equal(safeCallbackPath("/ok", "/shopper/account"), "/ok");
+  });
 });
 
 describe("safeRedirectPathForClient", () => {

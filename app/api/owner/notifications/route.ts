@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { requireOwnerSession } from "@/lib/require-owner-session";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const gate = await requireOwnerSession();
+  if (!gate.ok) return gate.response;
+  const { session } = gate;
 
   const notifications = await prisma.ownerNotification.findMany({
     where: { ownerId: session.user.id },
@@ -29,10 +28,9 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const gate = await requireOwnerSession();
+  if (!gate.ok) return gate.response;
+  const { session } = gate;
 
   const body = await request.json().catch(() => null);
   const id = body?.id as string | undefined;

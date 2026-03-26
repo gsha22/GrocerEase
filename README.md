@@ -77,6 +77,9 @@ app/
     deals/page.tsx       — deals feed
     login/page.tsx       — owner login
     signup/page.tsx      — owner registration
+    shopper/login/page.tsx — shopper login
+    shopper/signup/page.tsx — shopper registration
+    shopper/account/page.tsx — shopper account (auth-protected)
   (dashboard)/           — owner routes (auth-protected)
     dashboard/page.tsx
     dashboard/profile/page.tsx
@@ -85,6 +88,8 @@ app/
   auth/                  — JSON auth helpers
     login/route.ts
     signup/route.ts
+    shopper/login/route.ts
+    shopper/signup/route.ts
   api/                   — API routes
     auth/[...nextauth]/route.ts
     stores/route.ts
@@ -113,6 +118,7 @@ middleware.ts            — protects /dashboard/* routes
 | `npx prisma studio` | Open Prisma Studio (DB browser) |
 | `npx prisma migrate dev` | Run pending migrations |
 | `npm run test:auth` | HTTP integration tests for auth & session (needs running app) |
+| `npm run test:shopper-auth` | HTTP integration tests for shopper signup/login & alerts (needs running app + DB) |
 | `npm run test:signup` | HTTP integration tests for `POST /auth/signup` (needs running app + DB) |
 | `npm run test:store-profile` | HTTP integration tests for store profile create/edit (needs running app + DB) |
 | `npm run test:geocode` | Geocoding branch tests (mocked; optional real Google API check) |
@@ -163,6 +169,20 @@ These tests call a **live** Next.js server and your database (same as local dev)
 
 The script (`scripts/auth-machine-tests.ts`) covers login, dashboard protection, owner-only APIs, forgot-password stub, and **session persistence** (cookie still valid for `/api/auth/session` and `/` after login, `/login` redirects to `/dashboard` when already signed in).
 
+### Running `test:shopper-auth`
+
+Same prerequisites as `test:auth` (running server, migrated DB, **`npm run db:seed`** so shoppers have password hashes). Then:
+
+```bash
+npm run test:shopper-auth
+```
+
+Optional: `TEST_BASE_URL=http://localhost:3000 npm run test:shopper-auth`.
+
+The script (`scripts/shopper-auth-machine-tests.ts`) covers `POST /auth/shopper/signup` and `POST /auth/shopper/login`, duplicate email (**409**), session `role: "shopper"`, `/api/alerts` requiring a shopper session, and shoppers blocked from `/dashboard` and `POST /api/stores`.
+
+If shopper login tests return **401** while owner login still works, restart the dev server (`npm run dev`) so it picks up the latest auth code, or run against a production build (`npm run build && npm run start`).
+
 ### Running `test:signup`
 
 Same prerequisites as `test:auth` (running Next server, `DATABASE_URL`, secrets). Then:
@@ -200,9 +220,30 @@ After `npm run db:seed`, every seeded store shares the same fixture password. Us
 
 Owners in the seed **without** a linked store (useful for onboarding flows): `newowner@no-store.test`, `backupowner@no-store.test` — same password **`OwnerPass123!`**.
 
-> These credentials are for **local/demo databases only**. Do not reuse this password in production.
+### Seeded shopper logins (testing)
 
-New owners can also self-register at **`/signup`** (email, password, display name).
+After `npm run db:seed`, every seeded shopper shares the same fixture password. Sign in at **`/shopper/login`** (not `/login`, which is for store owners).
+
+| Display name (seed) | Login email | Password |
+| --- | --- | --- |
+| Nina Shopper | `nina.shopper@testmail.com` | `ShopperPass123!` |
+| Jordan Shopper | `jordan.shopper@testmail.com` | `ShopperPass123!` |
+| Alex Shopper | `alex.shopper@testmail.com` | `ShopperPass123!` |
+| Taylor Shopper | `taylor.shopper@testmail.com` | `ShopperPass123!` |
+| Sam Shopper | `sam.shopper@testmail.com` | `ShopperPass123!` |
+| Riley Shopper | `riley.shopper@testmail.com` | `ShopperPass123!` |
+| Morgan Shopper | `morgan.shopper@testmail.com` | `ShopperPass123!` |
+| Jamie Shopper | `jamie.shopper@testmail.com` | `ShopperPass123!` |
+| Drew Shopper | `drew.shopper@testmail.com` | `ShopperPass123!` |
+| Casey Shopper | `casey.shopper2@testmail.com` | `ShopperPass123!` |
+| Cameron Shopper | `cameron.shopper@testmail.com` | `ShopperPass123!` |
+| Peyton Shopper | `peyton.shopper@testmail.com` | `ShopperPass123!` |
+
+Nina and Jordan have sample **alerts** in the seed data (useful for checking `/api/alerts` after logging in as a shopper).
+
+> These credentials are for **local/demo databases only**. Do not reuse these passwords in production.
+
+New shoppers can also self-register at **`/shopper/signup`**. New owners can register at **`/signup`** (email, password, display name).
 
 ## Branch Strategy
 

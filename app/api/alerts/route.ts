@@ -1,26 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { AlertType } from "@/app/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
+import { requireShopperSession } from "@/lib/require-shopper-session";
 
-function getShopperId(req: NextRequest): string | null {
-  return (
-    req.headers.get("x-shopper-id") ??
-    req.nextUrl.searchParams.get("shopperId") ??
-    null
-  );
-}
+// GET /api/alerts — List own active alerts (shopper session required)
+export async function GET() {
+  const gate = await requireShopperSession();
+  if (!gate.ok) return gate.response;
+  const shopperId = gate.session.user.id;
 
-// Story 5: GET /api/alerts — List own active alerts (shopper auth required)
-export async function GET(req: NextRequest) {
   try {
-    const shopperId = getShopperId(req);
-    if (!shopperId) {
-      return NextResponse.json(
-        { error: "shopperId is required" },
-        { status: 400 }
-      );
-    }
-
     const alerts = await prisma.alert.findMany({
       where: { shopperId, isActive: true },
       orderBy: { createdAt: "desc" },
@@ -29,27 +18,25 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(alerts);
   } catch (error) {
     console.error("GET /api/alerts error:", error);
-    return NextResponse.json({ error: "Failed to list alerts" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to list alerts" },
+      { status: 500 }
+    );
   }
 }
 
-// Story 5: POST /api/alerts — Create alert (item_restock or store_follow)
+// POST /api/alerts — Create alert (item_restock or store_follow)
 export async function POST(req: NextRequest) {
+  const gate = await requireShopperSession();
+  if (!gate.ok) return gate.response;
+  const shopperId = gate.session.user.id;
+
   try {
     const body = (await req.json()) as {
-      shopperId?: string;
       itemId?: string | null;
       storeId?: string | null;
       type?: string;
     };
-
-    const shopperId = body.shopperId ?? getShopperId(req);
-    if (!shopperId) {
-      return NextResponse.json(
-        { error: "shopperId is required" },
-        { status: 400 }
-      );
-    }
 
     if (body.type !== AlertType.item_restock && body.type !== AlertType.store_follow) {
       return NextResponse.json(
@@ -98,6 +85,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(alert, { status: 201 });
   } catch (error) {
     console.error("POST /api/alerts error:", error);
-    return NextResponse.json({ error: "Failed to create alert" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create alert" },
+      { status: 500 }
+    );
   }
 }

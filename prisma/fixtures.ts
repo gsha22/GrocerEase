@@ -13,6 +13,7 @@ export const fixtureMeta = {
   baseTime: BASE_TIME,
   publicNowHint: "2026-03-20T16:00:00.000Z",
   ownerPlaintextPassword: "OwnerPass123!",
+  shopperPlaintextPassword: "ShopperPass123!",
 };
 
 export const ids = {
@@ -224,77 +225,94 @@ export const stores = [
   },
 ];
 
+const shopperPasswordHash = bcrypt.hashSync(
+  fixtureMeta.shopperPlaintextPassword,
+  BCRYPT_SALT,
+);
+
 export const shoppers = [
   {
     id: ids.shoppers.nina,
     email: "nina.shopper@testmail.com",
     name: "Nina Shopper",
+    passwordHash: shopperPasswordHash,
     createdAt: atDays(-10),
   },
   {
     id: ids.shoppers.jordan,
     email: "jordan.shopper@testmail.com",
     name: "Jordan Shopper",
+    passwordHash: shopperPasswordHash,
     createdAt: atDays(-8),
   },
   {
     id: ids.shoppers.shopper03,
     email: "alex.shopper@testmail.com",
     name: "Alex Shopper",
+    passwordHash: shopperPasswordHash,
     createdAt: atDays(-7),
   },
   {
     id: ids.shoppers.shopper04,
     email: "taylor.shopper@testmail.com",
     name: "Taylor Shopper",
+    passwordHash: shopperPasswordHash,
     createdAt: atDays(-6),
   },
   {
     id: ids.shoppers.shopper05,
     email: "sam.shopper@testmail.com",
     name: "Sam Shopper",
+    passwordHash: shopperPasswordHash,
     createdAt: atDays(-6),
   },
   {
     id: ids.shoppers.shopper06,
     email: "riley.shopper@testmail.com",
     name: "Riley Shopper",
+    passwordHash: shopperPasswordHash,
     createdAt: atDays(-5),
   },
   {
     id: ids.shoppers.shopper07,
     email: "morgan.shopper@testmail.com",
     name: "Morgan Shopper",
+    passwordHash: shopperPasswordHash,
     createdAt: atDays(-5),
   },
   {
     id: ids.shoppers.shopper08,
     email: "jamie.shopper@testmail.com",
     name: "Jamie Shopper",
+    passwordHash: shopperPasswordHash,
     createdAt: atDays(-4),
   },
   {
     id: ids.shoppers.shopper09,
     email: "drew.shopper@testmail.com",
     name: "Drew Shopper",
+    passwordHash: shopperPasswordHash,
     createdAt: atDays(-4),
   },
   {
     id: ids.shoppers.shopper10,
     email: "casey.shopper2@testmail.com",
     name: "Casey Shopper",
+    passwordHash: shopperPasswordHash,
     createdAt: atDays(-3),
   },
   {
     id: ids.shoppers.shopper11,
     email: "cameron.shopper@testmail.com",
     name: "Cameron Shopper",
+    passwordHash: shopperPasswordHash,
     createdAt: atDays(-3),
   },
   {
     id: ids.shoppers.shopper12,
     email: "peyton.shopper@testmail.com",
     name: "Peyton Shopper",
+    passwordHash: shopperPasswordHash,
     createdAt: atDays(-2),
   },
 ];
