@@ -43,6 +43,23 @@ async function deleteDeal(
   return { res, json };
 }
 
+async function patchDeal(
+  storeId: string,
+  dealId: string,
+  body: unknown,
+  cookieHeader?: string,
+) {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (cookieHeader) headers.Cookie = cookieHeader;
+  const res = await fetch(`${BASE}/api/stores/${storeId}/deals/${dealId}`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify(body),
+  });
+  const json = await res.json().catch(() => null);
+  return { res, json };
+}
+
 async function login() {
   const res = await fetch(`${BASE}/auth/login`, {
     method: "POST",
@@ -72,6 +89,45 @@ async function main() {
   assert.equal(valid.res.status, 201, "Valid POST /stores/:id/deals should return 201");
   const createdId = (valid.json as { deal?: { id?: string } })?.deal?.id;
   assert.ok(createdId, "Expected created deal id");
+
+  // 1a) PATCH edit existing deal => 200 and persisted
+  const updatedExpiryIso = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString();
+  const patchRes = await patchDeal(
+    STORE_ID,
+    createdId!,
+    {
+      price: 4.49,
+      description: "Machine criteria edited deal",
+      title: "Edited machine deal",
+      expires_at: updatedExpiryIso,
+    },
+    cookieHeader,
+  );
+  assert.equal(
+    patchRes.res.status,
+    200,
+    "PATCH /stores/:id/deals/:dealId should return 200",
+  );
+  const patchedDeal = (patchRes.json as { deal?: { price?: string; description?: string | null; title?: string; expiresAt?: string } })?.deal;
+  assert.equal(patchedDeal?.price, "4.49", "PATCH should update deal price");
+  assert.equal(
+    patchedDeal?.description,
+    "Machine criteria edited deal",
+    "PATCH should update deal description",
+  );
+  assert.equal(patchedDeal?.title, "Edited machine deal", "PATCH should update deal title");
+  assert.ok(
+    typeof patchedDeal?.expiresAt === "string" &&
+      new Date(patchedDeal.expiresAt).getTime() > Date.now(),
+    "PATCH should keep deal expiry in future",
+  );
+
+  const persistedPatched = await prisma.deal.findUnique({ where: { id: createdId! } });
+  assert.equal(
+    persistedPatched?.description,
+    "Machine criteria edited deal",
+    "PATCH should persist edited description",
+  );
 
   // 1b) POST source_deal_id valid => 201 with new id and timestamp
   const duplicateExpiry = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();

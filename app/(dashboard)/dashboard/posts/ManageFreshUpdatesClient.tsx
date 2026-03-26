@@ -22,6 +22,11 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editItemName, setEditItemName] = useState("");
+  const [editNote, setEditNote] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const mountedRef = useRef(true);
   const submitAbortRef = useRef<AbortController | null>(null);
@@ -125,6 +130,102 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
       setError("Could not post update.");
     } finally {
       if (mountedRef.current && !ac.signal.aborted) setSubmitting(false);
+    }
+  }
+
+  function beginEdit(update: ApiFreshUpdate) {
+    setError(null);
+    setSuccess(null);
+    setEditingId(update.id);
+    setEditItemName(update.itemName);
+    setEditNote(update.note ?? "");
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditItemName("");
+    setEditNote("");
+  }
+
+  async function saveEdit(postId: string) {
+    setError(null);
+    setSuccess(null);
+    const name = editItemName.trim();
+    if (!name) {
+      setError("Item name is required.");
+      return;
+    }
+
+    setSavingEdit(true);
+    try {
+      const res = await fetch(`/api/stores/${storeId}/posts/${postId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          item_name: name,
+          note: editNote.trim() || "",
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        post?: {
+          id: string;
+          itemName: string;
+          note: string | null;
+          createdAt: string;
+        };
+      };
+      if (!res.ok) {
+        setError(typeof data.error === "string" ? data.error : "Could not save edits.");
+        return;
+      }
+
+      const post = data.post;
+      if (post) {
+        setUpdates((current) =>
+          current.map((u) =>
+            u.id === post.id
+              ? {
+                  ...u,
+                  itemName: post.itemName,
+                  note: post.note,
+                }
+              : u,
+          ),
+        );
+      }
+      cancelEdit();
+      setSuccess("Post updated.");
+    } catch {
+      setError("Could not save edits.");
+    } finally {
+      if (mountedRef.current) setSavingEdit(false);
+    }
+  }
+
+  async function deletePost(postId: string) {
+    const confirmed = window.confirm("Delete this post? This cannot be undone.");
+    if (!confirmed) return;
+
+    setError(null);
+    setSuccess(null);
+    setDeletingId(postId);
+    try {
+      const res = await fetch(`/api/stores/${storeId}/posts/${postId}`, {
+        method: "DELETE",
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setError(typeof data.error === "string" ? data.error : "Could not delete post.");
+        return;
+      }
+      setUpdates((current) => current.filter((u) => u.id !== postId));
+      if (editingId === postId) cancelEdit();
+      setSuccess("Post deleted.");
+    } catch {
+      setError("Could not delete post.");
+    } finally {
+      if (mountedRef.current) setDeletingId(null);
     }
   }
 
@@ -237,17 +338,39 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
                 }`}
               >
                 <div className="min-w-0">
-                  <div
-                    className={`font-medium text-gray-800 truncate ${
-                      stale ? "text-[14px]" : "text-[15px]"
-                    }`}
-                  >
-                    {u.itemName}
-                  </div>
-                  {u.note && (
-                    <div className="text-[13px] text-gray-500 mt-0.5 line-clamp-2">
-                      {u.note}
+                  {editingId === u.id ? (
+                    <div className="space-y-2">
+                      <input
+                        value={editItemName}
+                        maxLength={MAX_ITEM_NAME_LEN}
+                        onChange={(e) => setEditItemName(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-md border border-gray-300 text-[14px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
+                        aria-label="Edit item name"
+                      />
+                      <textarea
+                        value={editNote}
+                        maxLength={MAX_NOTE_LEN}
+                        rows={2}
+                        onChange={(e) => setEditNote(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-md border border-gray-300 text-[13px] text-gray-700 bg-white outline-none focus:border-green-400 transition-colors resize-y min-h-[70px]"
+                        aria-label="Edit note"
+                      />
                     </div>
+                  ) : (
+                    <>
+                      <div
+                        className={`font-medium text-gray-800 truncate ${
+                          stale ? "text-[14px]" : "text-[15px]"
+                        }`}
+                      >
+                        {u.itemName}
+                      </div>
+                      {u.note && (
+                        <div className="text-[13px] text-gray-500 mt-0.5 line-clamp-2">
+                          {u.note}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -260,6 +383,44 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
                   >
                     {when ?? "—"}
                   </span>
+                  {editingId === u.id ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => void saveEdit(u.id)}
+                        disabled={savingEdit}
+                        className="text-[12px] px-2 py-0.5 rounded-md font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-60"
+                      >
+                        {savingEdit ? "Saving..." : "Save"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEdit}
+                        disabled={savingEdit}
+                        className="text-[12px] px-2 py-0.5 rounded-md font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-60"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => beginEdit(u)}
+                        className="text-[12px] px-2 py-0.5 rounded-md font-medium text-gray-700 bg-gray-100 hover:bg-gray-200"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void deletePost(u.id)}
+                        disabled={deletingId === u.id}
+                        className="text-[12px] px-2 py-0.5 rounded-md font-medium text-red-700 bg-red-50 hover:bg-red-100 disabled:opacity-60"
+                      >
+                        {deletingId === u.id ? "Deleting..." : "Delete"}
+                      </button>
+                    </>
+                  )}
                 </div>
               </li>
             );

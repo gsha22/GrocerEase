@@ -56,6 +56,41 @@ async function getJson(path: string, cookieHeader?: string) {
   return { res, json };
 }
 
+async function patchJson(path: string, body: unknown, cookieHeader?: string) {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (cookieHeader) headers.Cookie = cookieHeader;
+  const res = await fetch(`${BASE}${path}`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify(body),
+  });
+  const text = await res.text();
+  let json: unknown = null;
+  try {
+    json = text ? (JSON.parse(text) as unknown) : null;
+  } catch {
+    json = text;
+  }
+  return { res, json };
+}
+
+async function deleteJson(path: string, cookieHeader?: string) {
+  const headers: Record<string, string> = {};
+  if (cookieHeader) headers.Cookie = cookieHeader;
+  const res = await fetch(`${BASE}${path}`, {
+    method: "DELETE",
+    headers,
+  });
+  const text = await res.text();
+  let json: unknown = null;
+  try {
+    json = text ? (JSON.parse(text) as unknown) : null;
+  } catch {
+    json = text;
+  }
+  return { res, json };
+}
+
 async function login(email: string) {
   const { res, setCookies } = await postJson("/auth/login", {
     email,
@@ -138,6 +173,50 @@ async function main() {
     assert.ok(row, "row should exist in DB");
     assert.equal(row!.storeId, lotusId);
     assert.equal(row!.itemName, uniqueName);
+  }
+
+  // PATCH ownership guard
+  {
+    const { res } = await patchJson(
+      `/api/stores/${lotusId}/posts/${createdId}`,
+      { item_name: "nope" },
+      crescentCookie,
+    );
+    assert.equal(res.status, 403, "non-owner PATCH should be 403");
+  }
+
+  // PATCH invalid body
+  {
+    const { res } = await patchJson(
+      `/api/stores/${lotusId}/posts/${createdId}`,
+      {},
+      lotusCookie,
+    );
+    assert.equal(res.status, 400, "PATCH without fields should be 400");
+  }
+
+  // PATCH success
+  const editedName = `${uniqueName} (Edited)`;
+  const editedNote = "Updated integration note";
+  {
+    const { res, json } = await patchJson(
+      `/api/stores/${lotusId}/posts/${createdId}`,
+      { item_name: editedName, description: editedNote },
+      lotusCookie,
+    );
+    assert.equal(res.status, 200, "owner PATCH should succeed");
+    const post = (json as {
+      post?: { id: string; itemName: string; note: string | null };
+    }).post;
+    assert.ok(post?.id === createdId, "PATCH response should include same id");
+    assert.equal(post?.itemName, editedName, "PATCH should update itemName");
+    assert.equal(post?.note, editedNote, "PATCH should update note");
+  }
+
+  {
+    const row = await prisma.freshUpdate.findUnique({ where: { id: createdId } });
+    assert.equal(row?.itemName, editedName, "DB should persist edited item name");
+    assert.equal(row?.note, editedNote, "DB should persist edited note");
   }
 
   // public GET: newest first and includes our row
@@ -230,6 +309,39 @@ async function main() {
       const b = new Date(updates[i]!.createdAt).getTime();
       assert.ok(a >= b, "owner list should stay newest-first");
     }
+  }
+
+  // DELETE ownership guard
+  {
+    const { res } = await deleteJson(
+      `/api/stores/${lotusId}/posts/${createdId}`,
+      crescentCookie,
+    );
+    assert.equal(res.status, 403, "non-owner DELETE should be 403");
+  }
+
+  // DELETE success (soft delete)
+  {
+    const { res } = await deleteJson(
+      `/api/stores/${lotusId}/posts/${createdId}`,
+      lotusCookie,
+    );
+    assert.equal(res.status, 200, "owner DELETE should succeed");
+  }
+
+  {
+    const row = await prisma.freshUpdate.findUnique({ where: { id: createdId } });
+    assert.ok(row?.deletedAt, "DELETE should soft-delete with deletedAt");
+  }
+
+  {
+    const { res, json } = await getJson(`/api/stores/${lotusId}/updates`);
+    assert.equal(res.status, 200);
+    const updates = (json as { updates: UpdateRow[] }).updates;
+    assert.ok(
+      !updates.some((u) => u.id === createdId),
+      "soft-deleted post should not appear in public list",
+    );
   }
 
   console.log("All fresh-updates machine tests passed.");
