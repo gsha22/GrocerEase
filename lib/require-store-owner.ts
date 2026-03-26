@@ -20,7 +20,7 @@ export async function requireStoreOwnerForStore(storeId: string) {
   if (store.ownerId !== session.user.id) {
     return {
       response: NextResponse.json(
-        { error: "You do not have permission to modify this store." },
+        { error: "You do not have permission for this store." },
         { status: 403 }
       ),
     };

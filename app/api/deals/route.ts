@@ -1,38 +1,23 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { findActivePublishedDeals } from "@/lib/active-published-deals";
 
-// Story 2: GET /api/deals — All active deals across all stores, sorted by expiry (soonest first)
+// Story 2 / 8: GET /api/deals — Active deals across published stores, soonest expiry first
 export async function GET() {
-  const now = new Date();
-
-  const deals = await prisma.deal.findMany({
-    where: {
-      deletedAt: null,
-      isExpired: false,
-      expiresAt: { gt: now },
-      store: { isPublished: true },
-    },
-    orderBy: { expiresAt: "asc" },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      discountPct: true,
-      expiresAt: true,
-      createdAt: true,
-      store: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-    },
-  });
+  const deals = await findActivePublishedDeals();
 
   const storeIds = new Set(deals.map((d) => d.store.id));
 
   return NextResponse.json({
-    deals,
+    deals: deals.map((d) => ({
+      id: d.id,
+      title: d.title,
+      description: d.description,
+      price: d.price != null ? d.price.toString() : null,
+      discountPct: d.discountPct,
+      expiresAt: d.expiresAt.toISOString(),
+      createdAt: d.createdAt.toISOString(),
+      store: d.store,
+    })),
     meta: {
       totalDeals: deals.length,
       totalStores: storeIds.size,
