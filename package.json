@@ -11,6 +11,7 @@
     "db:reset": "prisma migrate reset --force && npm run db:seed",
     "deals:cron": "curl -sf -H \"Authorization: Bearer ${CRON_SECRET}\" \"${NEXTAUTH_URL:-http://localhost:3000}/api/cron/deals\"",
     "test:auth": "tsx scripts/auth-machine-tests.ts",
+    "test:signup": "tsx scripts/signup-machine-tests.ts",
     "test:deals-machine": "tsx scripts/deals-machine-tests.ts",
     "test:deals-smoke": "tsx scripts/smoke-deals.ts",
     "test:geocode": "tsx scripts/geocode-branch-tests.ts",

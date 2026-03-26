@@ -29,7 +29,10 @@ export default function MobileNavClient({ authed }: { authed: boolean }) {
       icon: "👤",
       active:
         accountActive ||
-        (!authed && (pathname === "/login" || pathname.startsWith("/login/"))),
+        (!authed &&
+          (pathname === "/login" ||
+            pathname.startsWith("/login/") ||
+            pathname === "/signup")),
     },
   ];
 

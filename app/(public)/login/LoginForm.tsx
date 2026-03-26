@@ -3,11 +3,15 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
+import {
+  isSafeRelativeAppPath,
+  safeCallbackPath,
+} from "@/lib/safe-callback-path";
 
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const callbackUrl = safeCallbackPath(searchParams.get("callbackUrl"));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +44,11 @@ export default function LoginForm() {
         return;
       }
 
-      if (data.ok && typeof data.redirectUrl === "string") {
+      if (
+        data.ok &&
+        typeof data.redirectUrl === "string" &&
+        isSafeRelativeAppPath(data.redirectUrl)
+      ) {
         router.push(data.redirectUrl);
         router.refresh();
         return;
