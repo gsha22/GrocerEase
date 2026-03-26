@@ -1,0 +1,200 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+type SearchResult = {
+  id: string;
+  name: string;
+  stock_count: number;
+  in_stock: boolean;
+  store_id: string;
+  store_name: string;
+  store_location: string;
+  last_updated: string;
+};
+
+type Props = {
+  storeId: string;
+  storeName: string;
+  storeAddress: string;
+};
+
+const DEMO_SHOPPER_ID = "55555555-5555-5555-5555-555555555555";
+
+function toRelativeTime(isoDate: string): string {
+  const timestamp = new Date(isoDate).getTime();
+  if (Number.isNaN(timestamp)) return "updated recently";
+
+  const diffMs = timestamp - Date.now();
+  const absMs = Math.abs(diffMs);
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+
+  const minute = 60_000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+
+  if (absMs < hour) {
+    const minutes = Math.max(1, Math.round(diffMs / minute));
+    return rtf.format(minutes, "minute");
+  }
+  if (absMs < day) {
+    const hours = Math.round(diffMs / hour);
+    return rtf.format(hours, "hour");
+  }
+  const days = Math.round(diffMs / day);
+  return rtf.format(days, "day");
+}
+
+export default function ItemAvailabilitySearch({
+  storeId,
+  storeName,
+  storeAddress,
+}: Props) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [notifyByItemId, setNotifyByItemId] = useState<Record<string, boolean>>({});
+
+  const hasQuery = query.trim().length > 0;
+  const queryHint = useMemo(() => (hasQuery ? query.trim() : ""), [hasQuery, query]);
+
+  async function runSearch(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!hasQuery) return;
+
+    setLoading(true);
+    setSearched(true);
+    try {
+      const params = new URLSearchParams({
+        q: query.trim(),
+        location: storeAddress,
+      });
+      const response = await fetch(`/api/stores/${storeId}/items?${params.toString()}`);
+      if (!response.ok) {
+        setResults([]);
+        return;
+      }
+      const data = (await response.json()) as SearchResult[];
+      setResults(data);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function toggleNotify(item: SearchResult) {
+    const currentlyOn = Boolean(notifyByItemId[item.id]);
+    if (!currentlyOn) {
+      const res = await fetch("/api/alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shopperId: DEMO_SHOPPER_ID,
+          type: "item_restock",
+          itemId: item.id,
+          storeId: item.store_id,
+        }),
+      });
+      if (res.ok) {
+        setNotifyByItemId((prev) => ({ ...prev, [item.id]: true }));
+      }
+      return;
+    }
+
+    const listRes = await fetch(`/api/alerts?shopperId=${DEMO_SHOPPER_ID}`);
+    if (!listRes.ok) return;
+    const alerts = (await listRes.json()) as Array<{
+      id: string;
+      itemId: string | null;
+      type: string;
+    }>;
+    const existing = alerts.find(
+      (alert) => alert.type === "item_restock" && alert.itemId === item.id
+    );
+    if (!existing) {
+      setNotifyByItemId((prev) => ({ ...prev, [item.id]: false }));
+      return;
+    }
+
+    const deleteRes = await fetch(
+      `/api/alerts/${existing.id}?shopperId=${DEMO_SHOPPER_ID}`,
+      { method: "DELETE" }
+    );
+    if (deleteRes.ok) {
+      setNotifyByItemId((prev) => ({ ...prev, [item.id]: false }));
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-4">
+      <h2 className="text-[17px] font-semibold text-gray-800 mb-1.5">
+        Search Inventory
+      </h2>
+      <p className="text-[13px] text-gray-500 mb-4">
+        Check {storeName} stock before you head out.
+      </p>
+
+      <form onSubmit={runSearch} className="flex flex-col sm:flex-row gap-2.5 mb-5">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Try: bok choy, shin ramen"
+          className="flex-1 px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] bg-white outline-none focus:border-green-400 transition-colors"
+        />
+        <button
+          type="submit"
+          disabled={!hasQuery || loading}
+          className="px-4 py-2.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-green-300 transition-colors"
+        >
+          {loading ? "Searching..." : "Search"}
+        </button>
+      </form>
+
+      {searched && !loading && results.length === 0 && (
+        <p className="text-[14px] text-gray-500">
+          No matches found for &quot;{queryHint}&quot; at this location.
+        </p>
+      )}
+
+      <div className="space-y-2.5">
+        {results.map((item) => (
+          <div
+            key={item.id}
+            className="border border-gray-200 rounded-xl px-3.5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+          >
+            <div className="min-w-0">
+              <div className="font-medium text-[15px] text-gray-800">{item.name}</div>
+              <div className="text-[12px] text-gray-500 mt-0.5">
+                Updated {toRelativeTime(item.last_updated)} (
+                {new Date(item.last_updated).toISOString()})
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0">
+              <span
+                className={`text-[12px] px-2.5 py-1 rounded-full font-medium ${
+                  item.stock_count === 0
+                    ? "bg-red-50 text-red-700"
+                    : "bg-green-50 text-green-700"
+                }`}
+              >
+                {item.stock_count === 0 ? "Out of Stock" : "In-Stock"}
+              </span>
+              <button
+                type="button"
+                onClick={() => toggleNotify(item)}
+                className={`text-[12px] px-2.5 py-1 rounded-full border transition-colors ${
+                  notifyByItemId[item.id]
+                    ? "border-green-300 bg-green-50 text-green-700"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-green-300 hover:text-green-700"
+                }`}
+              >
+                {notifyByItemId[item.id] ? "Notify me: On" : "Notify me"}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

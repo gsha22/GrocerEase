@@ -1,7 +1,9 @@
 import type { Prisma } from "@/app/generated/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { geocodeAddress } from "@/lib/geocode-address";
 import { prisma } from "@/lib/prisma";
 import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
+import { validateStoreProfilePatch } from "@/lib/store-profile";
 
 // Story 3: GET /api/stores/:id — Get single store profile
 // Story 12: No auth required
@@ -51,24 +53,48 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const data: {
-    name?: string;
-    address?: string;
-    hours?: unknown;
-    categories?: string[];
-    is_published?: boolean;
-    isPublished?: boolean;
-  } = body;
+  const validated = validateStoreProfilePatch(body as Record<string, unknown>);
+  if (!validated.ok) {
+    return NextResponse.json(
+      { error: "Validation failed", fieldErrors: validated.errors },
+      { status: 400 }
+    );
+  }
 
   const patch: Prisma.StoreUpdateInput = {};
-  if (typeof data.name === "string") patch.name = data.name;
-  if (typeof data.address === "string") patch.address = data.address;
-  if (data.hours !== undefined) patch.hours = data.hours as Prisma.InputJsonValue;
-  if (Array.isArray(data.categories)) patch.categories = data.categories;
-  if (typeof data.is_published === "boolean")
-    patch.isPublished = data.is_published;
-  if (typeof data.isPublished === "boolean")
-    patch.isPublished = data.isPublished;
+  const v = validated.data;
+  if (v.name !== undefined) patch.name = v.name;
+  if (v.address !== undefined) patch.address = v.address;
+  if (v.hours !== undefined) patch.hours = v.hours as Prisma.InputJsonValue;
+  if (v.categories !== undefined) patch.categories = v.categories;
+  if (v.isPublished !== undefined) patch.isPublished = v.isPublished;
+
+  const nextPublished = (patch.isPublished as boolean | undefined) ?? gate.store.isPublished;
+  const togglingToPublished = patch.isPublished === true && !gate.store.isPublished;
+  const nextAddress = (patch.address as string | undefined) ?? gate.store.address;
+  const nextCategories = (patch.categories as string[] | undefined) ?? gate.store.categories;
+  const nextHours =
+    (patch.hours as Prisma.InputJsonValue | undefined) ?? (gate.store.hours as Prisma.JsonValue);
+
+  if (
+    togglingToPublished &&
+    (!nextAddress || !nextHours || !Array.isArray(nextCategories) || nextCategories.length === 0)
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Published profiles require address, hours, and at least one specialty category.",
+      },
+      { status: 400 }
+    );
+  }
+
+  const shouldGeocode = Boolean(nextPublished && patch.address);
+  if (shouldGeocode) {
+    const coords = await geocodeAddress(nextAddress);
+    patch.lat = coords.lat;
+    patch.lng = coords.lng;
+  }
 
   if (Object.keys(patch).length === 0) {
     return NextResponse.json(

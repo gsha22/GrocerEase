@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { geocodeAddress } from "@/lib/geocode-address";
 import { prisma } from "@/lib/prisma";
+import { validateStoreProfileCreate } from "@/lib/store-profile";
 
 type StoreResult = {
   id: string;
@@ -98,6 +101,46 @@ export async function GET(req: NextRequest) {
 }
 
 // Story 7: POST /api/stores — Create store profile (triggers geocoding)
-export async function POST() {
-  return NextResponse.json({ message: "TODO: Create store" }, { status: 501 });
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await req.json().catch(() => null);
+  const validated = validateStoreProfileCreate(body);
+  if (!validated.ok) {
+    return NextResponse.json(
+      { error: "Validation failed", fieldErrors: validated.errors },
+      { status: 400 }
+    );
+  }
+
+  const existing = await prisma.store.findUnique({
+    where: { ownerId: session.user.id },
+    select: { id: true },
+  });
+  if (existing) {
+    return NextResponse.json(
+      { error: "Store already exists for this owner." },
+      { status: 409 }
+    );
+  }
+
+  const coords = await geocodeAddress(validated.data.address);
+
+  const store = await prisma.store.create({
+    data: {
+      ownerId: session.user.id,
+      name: validated.data.name,
+      address: validated.data.address,
+      hours: validated.data.hours,
+      categories: validated.data.categories,
+      isPublished: true,
+      lat: coords.lat,
+      lng: coords.lng,
+    },
+  });
+
+  return NextResponse.json({ store }, { status: 201 });
 }
