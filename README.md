@@ -109,6 +109,26 @@ middleware.ts            — protects /dashboard/* routes
 | `npx prisma studio` | Open Prisma Studio (DB browser) |
 | `npx prisma migrate dev` | Run pending migrations |
 | `npm run test:auth` | HTTP integration tests for auth & session (needs running app) |
+| `npm run test:store-profile` | HTTP integration tests for store profile create/edit (needs running app + DB) |
+| `npm run test:geocode` | Geocoding branch tests (mocked; optional real Google API check) |
+
+### Running `test:geocode`
+
+`scripts/geocode-branch-tests.ts` exercises `lib/geocode-address.ts` in two ways:
+
+1. **Mocked (default, no network required)** — Always runs when you execute `npm run test:geocode`. It stubs `fetch` so you can assert both behaviors deterministically:
+   - Google returns `OK` → coordinates come from the API response.
+   - Google fails or the key is unset → deterministic Pittsburgh-area fallback is used.
+
+2. **Live integration (optional)** — Makes one real request to the Google Geocoding API to confirm your key, billing, and API restrictions work from your machine. Requires network access and `GOOGLE_MAPS_API_KEY` in `.env` (loaded via `dotenv`).
+
+   ```bash
+   GEOCODE_LIVE_TEST=1 npm run test:geocode
+   ```
+
+   If the live step passes, you should see a log line with `lat`/`lng` for a fixed Pittsburgh test address. If it fails, fix the key or Google Cloud console settings (Geocoding API enabled, key not overly restricted for server-side use) before relying on production geocoding.
+
+The live check is optional because CI and offline runs cannot depend on Google’s availability or quotas; the mocked tests are the stable regression suite.
 
 ### Running `test:auth`
 
