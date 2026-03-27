@@ -179,8 +179,15 @@ async function main() {
       headers: { Cookie: shopperCookie },
     });
     assert.equal(res.status, 200, "shopper GET /api/alerts should succeed");
-    const data = (await res.json()) as unknown[];
-    assert.ok(Array.isArray(data), "alerts response should be array");
+    const data = (await res.json()) as
+      | unknown[]
+      | { alerts?: unknown[] };
+    const alerts = Array.isArray(data)
+      ? data
+      : Array.isArray(data.alerts)
+        ? data.alerts
+        : null;
+    assert.ok(Array.isArray(alerts), "alerts response should include an alerts array");
     assertNoPasswordLeak(data, SHOPPER_PASSWORD);
   }
 
