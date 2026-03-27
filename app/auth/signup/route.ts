@@ -3,11 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { runCredentialsSignIn } from "@/lib/credentials-sign-in-response";
-import { validateOwnerSignup } from "@/lib/validate-owner-signup";
+import { isAuthRateLimited } from "@/lib/rate-limit";
+import { validateSignupInput } from "@/lib/validate-owner-signup";
 
 const BCRYPT_ROUNDS = 12;
 
 export async function POST(req: NextRequest) {
+  if (isAuthRateLimited(req, "owner-signup")) {
+    return NextResponse.json(
+      { error: "Too many attempts. Please try again in a minute." },
+      { status: 429 }
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -15,7 +23,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const validated = validateOwnerSignup(body);
+  const validated = validateSignupInput(body);
   if (!validated.ok) {
     return NextResponse.json(
       { error: "Validation failed", fieldErrors: validated.errors },

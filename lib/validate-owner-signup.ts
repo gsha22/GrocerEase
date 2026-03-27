@@ -15,7 +15,7 @@ export type SignupValidationResult =
 const EMAIL_RE =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
-export function validateOwnerSignup(
+export function validateSignupInput(
   body: unknown,
   defaultCallbackPath: string = "/dashboard",
 ): SignupValidationResult {
@@ -86,3 +86,6 @@ export function validateOwnerSignup(
     },
   };
 }
+
+// Backward-compatible alias while call sites migrate.
+export const validateOwnerSignup = validateSignupInput;

@@ -86,9 +86,7 @@ export const authConfig = {
     },
     async session({ session, token }) {
       const role: "owner" | "shopper" =
-        token.role === "shopper" || token.shopperId
-          ? "shopper"
-          : "owner";
+        token.role === "shopper" ? "shopper" : "owner";
       session.role = role;
       if (role === "shopper") {
         session.user.id = (token.shopperId as string) ?? session.user.id;

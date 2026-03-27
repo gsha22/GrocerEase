@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runCredentialsSignIn } from "@/lib/credentials-sign-in-response";
+import { isAuthRateLimited } from "@/lib/rate-limit";
 import { safeCallbackPath } from "@/lib/safe-callback-path";
 
 export async function POST(req: NextRequest) {
+  if (isAuthRateLimited(req, "shopper-login")) {
+    return NextResponse.json(
+      { error: "Too many attempts. Please try again in a minute." },
+      { status: 429 }
+    );
+  }
+
   let body: { email?: string; password?: string; callbackUrl?: string };
   try {
     body = await req.json();
@@ -25,5 +33,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return runCredentialsSignIn(req, email, password, callbackUrl, "shopper");
+  return runCredentialsSignIn(
+    req,
+    email,
+    password,
+    callbackUrl,
+    "shopper",
+    "/shopper/account"
+  );
 }

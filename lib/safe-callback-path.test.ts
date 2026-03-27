@@ -47,4 +47,11 @@ describe("safeRedirectPathForClient", () => {
   it("rejects protocol-relative URLs", () => {
     assert.equal(safeRedirectPathForClient("//evil.test/hi", origin), "/dashboard");
   });
+
+  it("uses provided redirect fallback", () => {
+    assert.equal(
+      safeRedirectPathForClient("//evil.test/hi", origin, "/shopper/account"),
+      "/shopper/account",
+    );
+  });
 });

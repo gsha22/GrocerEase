@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
           },
         });
 
-    return NextResponse.json(alert, { status: 201 });
+    return NextResponse.json(alert, { status: existing ? 200 : 201 });
   } catch (error) {
     console.error("POST /api/alerts error:", error);
     return NextResponse.json(

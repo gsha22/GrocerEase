@@ -295,6 +295,18 @@ async function main() {
     assertNoPasswordLeak(json, newPassword);
   }
 
+  // --- Best-effort cleanup for ad-hoc runs against shared DBs
+  if (process.env.DATABASE_URL) {
+    const prisma = new PrismaClient({
+      adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+    });
+    try {
+      await prisma.shopper.deleteMany({ where: { email: newEmail } });
+    } finally {
+      await prisma.$disconnect();
+    }
+  }
+
   console.log("\nAll shopper auth machine tests passed.");
 }
 

@@ -22,8 +22,14 @@ export async function authenticateShopper(
   });
 
   if (!shopper?.passwordHash) return null;
+  if (!/^\$2[aby]\$/.test(shopper.passwordHash)) return null;
 
-  const valid = await bcrypt.compare(password, shopper.passwordHash);
+  let valid = false;
+  try {
+    valid = await bcrypt.compare(password, shopper.passwordHash);
+  } catch {
+    valid = false;
+  }
   if (!valid) return null;
 
   return {

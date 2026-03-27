@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireShopperSession } from "@/lib/require-shopper-session";
 
-// DELETE /api/alerts/:id — Deactivate alert (shopper session required)
+// DELETE /api/alerts/:id — Soft-delete (deactivate) alert for shopper session
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
