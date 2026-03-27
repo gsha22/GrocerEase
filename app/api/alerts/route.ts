@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AlertType } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireShopperSession } from "@/lib/require-shopper";
+import { requireShopperSession } from "@/lib/require-shopper-session";
 
 function serializeAlert(row: {
   id: string;
@@ -30,10 +30,10 @@ function serializeAlert(row: {
 /** GET /api/alerts — active alerts for the logged-in shopper */
 export async function GET() {
   const gate = await requireShopperSession();
-  if ("response" in gate) return gate.response;
+  if (!gate.ok) return gate.response;
 
   const alerts = await prisma.alert.findMany({
-    where: { shopperId: gate.shopperId, isActive: true },
+    where: { shopperId: gate.session.user.id, isActive: true },
     orderBy: { createdAt: "desc" },
     include: {
       store: { select: { id: true, name: true } },
@@ -49,7 +49,7 @@ export async function GET() {
 /** POST /api/alerts — create store_follow or item_restock (session shopper only) */
 export async function POST(req: NextRequest) {
   const gate = await requireShopperSession();
-  if ("response" in gate) return gate.response;
+  if (!gate.ok) return gate.response;
 
   const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
   if (!body || typeof body !== "object") {
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
 
     const existing = await prisma.alert.findFirst({
       where: {
-        shopperId: gate.shopperId,
+        shopperId: gate.session.user.id,
         type: AlertType.store_follow,
         storeId,
         itemId: null,
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
         })
       : await prisma.alert.create({
           data: {
-            shopperId: gate.shopperId,
+            shopperId: gate.session.user.id,
             type: AlertType.store_follow,
             storeId,
             itemId: null,
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
 
   const existing = await prisma.alert.findFirst({
     where: {
-      shopperId: gate.shopperId,
+      shopperId: gate.session.user.id,
       type: AlertType.item_restock,
       storeId,
       itemId,
@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
       })
     : await prisma.alert.create({
         data: {
-          shopperId: gate.shopperId,
+          shopperId: gate.session.user.id,
           type: AlertType.item_restock,
           storeId,
           itemId,

@@ -8,11 +8,11 @@ export type ShopperAuthUser = {
 };
 
 /**
- * Validates email/password against shoppers (for Auth.js + tests).
+ * Validates email/password against shoppers. Used by Auth.js shopper provider.
  */
 export async function authenticateShopper(
   email: string | undefined,
-  password: string | undefined,
+  password: string | undefined
 ): Promise<ShopperAuthUser | null> {
   if (!email || !password) return null;
 
@@ -21,9 +21,15 @@ export async function authenticateShopper(
     where: { email: normalized },
   });
 
-  if (!shopper) return null;
+  if (!shopper?.passwordHash) return null;
+  if (!/^\$2[aby]\$/.test(shopper.passwordHash)) return null;
 
-  const valid = await bcrypt.compare(password, shopper.passwordHash);
+  let valid = false;
+  try {
+    valid = await bcrypt.compare(password, shopper.passwordHash);
+  } catch {
+    valid = false;
+  }
   if (!valid) return null;
 
   return {

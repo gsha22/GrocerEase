@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { geocodeAddress } from "@/lib/geocode-address";
 import { prisma } from "@/lib/prisma";
+import { requireOwnerSession } from "@/lib/require-owner-session";
 import { validateStoreProfileCreate } from "@/lib/store-profile";
 
 type StoreResult = {
@@ -102,10 +102,9 @@ export async function GET(req: NextRequest) {
 
 // Story 7: POST /api/stores — Create store profile (triggers geocoding)
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const gate = await requireOwnerSession();
+  if (!gate.ok) return gate.response;
+  const { session } = gate;
 
   const body = await req.json().catch(() => null);
   const validated = validateStoreProfileCreate(body);

@@ -1,31 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireShopperSession } from "@/lib/require-shopper";
+import { requireShopperSession } from "@/lib/require-shopper-session";
 
-/** DELETE /api/alerts/:id — set isActive false for the logged-in shopper */
+// DELETE /api/alerts/:id — Soft-delete (deactivate) alert for shopper session
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const gate = await requireShopperSession();
-  if ("response" in gate) return gate.response;
+  if (!gate.ok) return gate.response;
+  const shopperId = gate.session.user.id;
 
-  const { id } = await params;
-  const existing = await prisma.alert.findUnique({ where: { id } });
-  if (!existing || existing.shopperId !== gate.shopperId) {
-    return NextResponse.json({ error: "Alert not found" }, { status: 404 });
+  try {
+    const { id } = await params;
+    const existing = await prisma.alert.findUnique({ where: { id } });
+    if (!existing || existing.shopperId !== shopperId) {
+      return NextResponse.json({ error: "Alert not found" }, { status: 404 });
+    }
+
+    const alert = await prisma.alert.update({
+      where: { id },
+      data: { isActive: false },
+    });
+
+    return NextResponse.json(alert);
+  } catch (error) {
+    console.error("DELETE /api/alerts/:id error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete alert" },
+      { status: 500 }
+    );
   }
-
-  const alert = await prisma.alert.update({
-    where: { id },
-    data: { isActive: false },
-  });
-
-  return NextResponse.json({
-    id: alert.id,
-    isActive: alert.isActive,
-    type: alert.type,
-    storeId: alert.storeId,
-    itemId: alert.itemId,
-  });
 }

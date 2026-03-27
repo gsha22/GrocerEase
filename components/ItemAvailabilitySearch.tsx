@@ -1,9 +1,8 @@
 "use client";
 
-import type { ViewerRole } from "@/lib/viewer-role";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { ViewerRole } from "@/lib/viewer-role";
 
 type SearchResult = {
   id: string;
@@ -20,7 +19,7 @@ type Props = {
   storeId: string;
   storeName: string;
   storeAddress: string;
-  viewerRole: ViewerRole;
+  viewerRole?: ViewerRole;
 };
 
 function toRelativeTime(isoDate: string): string {
@@ -53,50 +52,55 @@ export default function ItemAvailabilitySearch({
   storeAddress,
   viewerRole,
 }: Props) {
-  const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [notifyByItemId, setNotifyByItemId] = useState<Record<string, boolean>>(
-    {},
+    {}
   );
-
-  const callbackPath = `/stores/${storeId}`;
-  const loginHref = `/login?callbackUrl=${encodeURIComponent(callbackPath)}`;
+  const [authRequired, setAuthRequired] = useState(false);
 
   const hasQuery = query.trim().length > 0;
   const queryHint = useMemo(() => (hasQuery ? query.trim() : ""), [hasQuery, query]);
 
-  useEffect(() => {
-    if (viewerRole !== "shopper") {
-      setNotifyByItemId({});
-      return;
-    }
+  const loginHref = `/login?callbackUrl=${encodeURIComponent(`/stores/${storeId}`)}`;
 
+  useEffect(() => {
+    if (results.length === 0) return;
     let cancelled = false;
     (async () => {
       const res = await fetch("/api/alerts", { credentials: "include" });
-      if (!res.ok || cancelled) return;
-      const data = (await res.json()) as {
-        alerts?: Array<{ type: string; itemId: string | null; storeId: string | null }>;
-      };
-      const next: Record<string, boolean> = {};
-      for (const a of data.alerts ?? []) {
-        if (
-          a.type === "item_restock" &&
-          a.itemId &&
-          a.storeId === storeId
-        ) {
-          next[a.itemId] = true;
-        }
+      if (cancelled) return;
+      if (res.status === 401) {
+        setAuthRequired(true);
+        return;
       }
-      setNotifyByItemId(next);
+      setAuthRequired(false);
+      if (!res.ok) return;
+      const alerts = (await res.json()) as Array<{
+        itemId: string | null;
+        storeId: string | null;
+        type: string;
+      }>;
+      setNotifyByItemId((prev) => {
+        const next = { ...prev };
+        for (const item of results) {
+          const on = alerts.some(
+            (a) =>
+              a.type === "item_restock" &&
+              a.itemId === item.id &&
+              (a.storeId ?? item.store_id) === item.store_id
+          );
+          next[item.id] = on;
+        }
+        return next;
+      });
     })();
     return () => {
       cancelled = true;
     };
-  }, [viewerRole, storeId]);
+  }, [results]);
 
   async function runSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -122,67 +126,54 @@ export default function ItemAvailabilitySearch({
   }
 
   async function toggleNotify(item: SearchResult) {
-    if (viewerRole !== "shopper") {
-      router.push(loginHref);
+    const probe = await fetch("/api/alerts", { credentials: "include" });
+    if (probe.status === 401) {
+      setAuthRequired(true);
       return;
     }
+    setAuthRequired(false);
 
     const currentlyOn = Boolean(notifyByItemId[item.id]);
     if (!currentlyOn) {
-      setNotifyByItemId((prev) => ({ ...prev, [item.id]: true }));
       const res = await fetch("/api/alerts", {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           type: "item_restock",
           itemId: item.id,
           storeId: item.store_id,
         }),
       });
-      if (!res.ok) {
-        setNotifyByItemId((prev) => {
-          const n = { ...prev };
-          delete n[item.id];
-          return n;
-        });
+      if (res.ok) {
+        setNotifyByItemId((prev) => ({ ...prev, [item.id]: true }));
       }
-      router.refresh();
       return;
     }
-
-    setNotifyByItemId((prev) => {
-      const n = { ...prev };
-      delete n[item.id];
-      return n;
-    });
 
     const listRes = await fetch("/api/alerts", { credentials: "include" });
-    if (!listRes.ok) {
-      setNotifyByItemId((prev) => ({ ...prev, [item.id]: true }));
+    if (!listRes.ok) return;
+    const alerts = (await listRes.json()) as Array<{
+      id: string;
+      itemId: string | null;
+      type: string;
+    }>;
+    const existing = alerts.find(
+      (alert) => alert.type === "item_restock" && alert.itemId === item.id
+    );
+    if (!existing) {
+      setNotifyByItemId((prev) => ({ ...prev, [item.id]: false }));
       return;
     }
-    const data = (await listRes.json()) as {
-      alerts?: Array<{ id: string; itemId: string | null; type: string }>;
-    };
-    const existing = (data.alerts ?? []).find(
-      (alert) =>
-        alert.type === "item_restock" && alert.itemId === item.id,
-    );
-    if (!existing) return;
 
     const deleteRes = await fetch(`/api/alerts/${existing.id}`, {
       method: "DELETE",
       credentials: "include",
     });
-    if (!deleteRes.ok) {
-      setNotifyByItemId((prev) => ({ ...prev, [item.id]: true }));
-      return;
+    if (deleteRes.ok) {
+      setNotifyByItemId((prev) => ({ ...prev, [item.id]: false }));
     }
-    router.refresh();
   }
-
-  const hideNotifyForOwner = viewerRole === "owner";
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-4">
@@ -215,6 +206,15 @@ export default function ItemAvailabilitySearch({
         </p>
       )}
 
+      {authRequired && results.length > 0 && (
+        <p className="text-[13px] text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mb-4">
+          <Link href={loginHref} className="font-medium text-green-700 underline">
+            {viewerRole === "owner" ? "Switch to shopper login" : "Log in as a shopper"}
+          </Link>{" "}
+          to turn on restock alerts for items at this store.
+        </p>
+      )}
+
       <div className="space-y-2.5">
         {results.map((item) => (
           <div
@@ -239,27 +239,23 @@ export default function ItemAvailabilitySearch({
               >
                 {item.stock_count === 0 ? "Out of Stock" : "In-Stock"}
               </span>
-              {!hideNotifyForOwner &&
-                (viewerRole === null ? (
-                  <Link
-                    href={loginHref}
-                    className="text-[12px] px-2.5 py-1 rounded-full border border-gray-200 bg-white text-gray-600 hover:border-green-300 hover:text-green-700 transition-colors"
-                  >
-                    Notify me
-                  </Link>
-                ) : viewerRole === "shopper" ? (
-                  <button
-                    type="button"
-                    onClick={() => toggleNotify(item)}
-                    className={`text-[12px] px-2.5 py-1 rounded-full border transition-colors ${
-                      notifyByItemId[item.id]
-                        ? "border-green-300 bg-green-50 text-green-700"
-                        : "border-gray-200 bg-white text-gray-600 hover:border-green-300 hover:text-green-700"
-                    }`}
-                  >
-                    {notifyByItemId[item.id] ? "Notify me: On" : "Notify me"}
-                  </button>
-                ) : null)}
+              <button
+                type="button"
+                onClick={() => toggleNotify(item)}
+                disabled={authRequired}
+                title={
+                  authRequired
+                    ? "Log in as a shopper to use alerts"
+                    : undefined
+                }
+                className={`text-[12px] px-2.5 py-1 rounded-full border transition-colors ${
+                  notifyByItemId[item.id]
+                    ? "border-green-300 bg-green-50 text-green-700"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-green-300 hover:text-green-700"
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {notifyByItemId[item.id] ? "Notify me: On" : "Notify me"}
+              </button>
             </div>
           </div>
         ))}

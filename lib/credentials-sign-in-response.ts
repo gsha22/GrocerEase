@@ -9,9 +9,10 @@ import { authConfig } from "@/auth";
 export function safeRedirectPathForClient(
   locationHeader: string,
   requestOrigin: string,
+  fallbackPath: string = "/dashboard",
 ): string {
   const loc = locationHeader.trim();
-  if (!loc || loc.startsWith("//")) return "/dashboard";
+  if (!loc || loc.startsWith("//")) return fallbackPath;
 
   let absolute: string;
   if (loc.startsWith("http://") || loc.startsWith("https://")) {
@@ -23,19 +24,22 @@ export function safeRedirectPathForClient(
 
   try {
     const u = new URL(absolute);
-    if (u.origin !== new URL(requestOrigin).origin) return "/dashboard";
+    if (u.origin !== new URL(requestOrigin).origin) return fallbackPath;
     const out = `${u.pathname}${u.search}${u.hash}`;
-    return out || "/dashboard";
+    return out || fallbackPath;
   } catch {
-    return "/dashboard";
+    return fallbackPath;
   }
 }
+
+export type CredentialsAccountType = "owner" | "shopper";
 
 export function buildCredentialsAuthRequest(
   req: NextRequest,
   email: string,
   password: string,
-  callbackUrl: string
+  callbackUrl: string,
+  accountType: CredentialsAccountType = "owner"
 ) {
   const origin = req.nextUrl.origin;
   const url = new URL(`${origin}/api/auth/callback/credentials`);
@@ -44,7 +48,7 @@ export function buildCredentialsAuthRequest(
   return new Request(url.toString(), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, accountType }),
   });
 }
 
@@ -53,7 +57,8 @@ export function buildCredentialsAuthRequest(
  */
 export function nextResponseFromCredentialsAuth(
   req: NextRequest,
-  authRes: Response
+  authRes: Response,
+  fallbackPath: string = "/dashboard",
 ): NextResponse {
   const location = authRes.headers.get("Location") ?? "";
 
@@ -70,7 +75,11 @@ export function nextResponseFromCredentialsAuth(
   if (authRes.status === 302 || authRes.status === 303) {
     const res = NextResponse.json({
       ok: true,
-      redirectUrl: safeRedirectPathForClient(location, req.nextUrl.origin),
+      redirectUrl: safeRedirectPathForClient(
+        location,
+        req.nextUrl.origin,
+        fallbackPath
+      ),
     });
     const rawCookies = authRes.headers.getSetCookie?.() ?? [];
     for (const cookie of rawCookies) {
@@ -89,17 +98,20 @@ export async function runCredentialsSignIn(
   req: NextRequest,
   email: string,
   password: string,
-  callbackUrl: string
+  callbackUrl: string,
+  accountType: CredentialsAccountType = "owner",
+  fallbackPath: string = "/dashboard"
 ): Promise<NextResponse> {
   const authRequest = buildCredentialsAuthRequest(
     req,
     email,
     password,
-    callbackUrl
+    callbackUrl,
+    accountType
   );
   const authRes = await Auth(authRequest, {
     ...authConfig,
     skipCSRFCheck,
   });
-  return nextResponseFromCredentialsAuth(req, authRes);
+  return nextResponseFromCredentialsAuth(req, authRes, fallbackPath);
 }

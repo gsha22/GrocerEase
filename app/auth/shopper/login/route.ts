@@ -4,7 +4,7 @@ import { isAuthRateLimited } from "@/lib/rate-limit";
 import { safeCallbackPath } from "@/lib/safe-callback-path";
 
 export async function POST(req: NextRequest) {
-  if (isAuthRateLimited(req, "owner-login")) {
+  if (isAuthRateLimited(req, "shopper-login")) {
     return NextResponse.json(
       { error: "Too many attempts. Please try again in a minute." },
       { status: 429 }
@@ -21,7 +21,10 @@ export async function POST(req: NextRequest) {
   const rawEmail = typeof body.email === "string" ? body.email : "";
   const email = rawEmail.trim().toLowerCase();
   const password = typeof body.password === "string" ? body.password : "";
-  const callbackUrl = safeCallbackPath(body.callbackUrl);
+  const callbackUrl = safeCallbackPath(
+    body.callbackUrl,
+    "/shopper/account"
+  );
 
   if (!email || !password) {
     return NextResponse.json(
@@ -30,5 +33,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return runCredentialsSignIn(req, email, password, callbackUrl);
+  return runCredentialsSignIn(
+    req,
+    email,
+    password,
+    callbackUrl,
+    "shopper",
+    "/shopper/account"
+  );
 }

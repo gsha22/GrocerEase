@@ -17,9 +17,9 @@ describe("safeCallbackPath", () => {
     assert.equal(safeCallbackPath(" /profile "), "/profile");
   });
 
-  it("uses custom default for missing values", () => {
-    assert.equal(safeCallbackPath(null, "/"), "/");
-    assert.equal(safeCallbackPath("//evil", "/"), "/");
+  it("uses custom fallback for invalid values", () => {
+    assert.equal(safeCallbackPath(null, "/shopper/account"), "/shopper/account");
+    assert.equal(safeCallbackPath("/ok", "/shopper/account"), "/ok");
   });
 });
 
@@ -46,5 +46,12 @@ describe("safeRedirectPathForClient", () => {
 
   it("rejects protocol-relative URLs", () => {
     assert.equal(safeRedirectPathForClient("//evil.test/hi", origin), "/dashboard");
+  });
+
+  it("uses provided redirect fallback", () => {
+    assert.equal(
+      safeRedirectPathForClient("//evil.test/hi", origin, "/shopper/account"),
+      "/shopper/account",
+    );
   });
 });

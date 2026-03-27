@@ -4,12 +4,11 @@
  */
 export function safeCallbackPath(
   raw: string | null | undefined,
-  /** When missing or unsafe (store owners default to dashboard; shoppers often `/`). */
-  defaultPath = "/dashboard",
+  fallback: string = "/dashboard",
 ): string {
-  if (raw == null || raw === "") return defaultPath;
+  if (raw == null || raw === "") return fallback;
   const t = raw.trim();
-  if (!isSafeRelativeAppPath(t)) return defaultPath;
+  if (!isSafeRelativeAppPath(t)) return fallback;
   return t;
 }
 

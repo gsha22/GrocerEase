@@ -15,7 +15,10 @@ export type SignupValidationResult =
 const EMAIL_RE =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
-export function validateOwnerSignup(body: unknown): SignupValidationResult {
+export function validateSignupInput(
+  body: unknown,
+  defaultCallbackPath: string = "/dashboard",
+): SignupValidationResult {
   if (!body || typeof body !== "object") {
     return { ok: false, errors: { form: "Invalid JSON body." } };
   }
@@ -70,6 +73,7 @@ export function validateOwnerSignup(body: unknown): SignupValidationResult {
 
   const callbackUrl = safeCallbackPath(
     typeof input.callbackUrl === "string" ? input.callbackUrl : undefined,
+    defaultCallbackPath,
   );
 
   return {
@@ -82,3 +86,6 @@ export function validateOwnerSignup(body: unknown): SignupValidationResult {
     },
   };
 }
+
+// Backward-compatible alias while call sites migrate.
+export const validateOwnerSignup = validateSignupInput;
