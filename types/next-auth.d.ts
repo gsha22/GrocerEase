@@ -8,12 +8,19 @@ declare module "next-auth" {
       name: string;
     };
     storeId: string | null;
+    /** Present on new sessions; missing tokens default to `"owner"` in the session callback. */
+    role: "owner" | "shopper";
+  }
+
+  interface User {
+    role?: "owner" | "shopper";
+    storeId?: string | null;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    ownerId: string;
     storeId: string | null;
+    role?: "owner" | "shopper";
   }
 }

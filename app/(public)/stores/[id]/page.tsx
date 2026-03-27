@@ -1,7 +1,10 @@
 // Story 1: Fresh Today (Shopper view)
 // Story 2: Deals This Week (Shopper view)
 // Story 12: No auth required
+// Shopper alerts: store follow + item restock (session-backed)
 
+import { AlertType } from "@/app/generated/prisma/client";
+import { auth } from "@/auth";
 import DealCard from "@/components/DealCard";
 import {
   enrichFreshUpdatesWithStale,
@@ -12,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
+import StoreAlertSubscribe from "@/components/StoreAlertSubscribe";
 import StoreFreshUpdatesFeed from "@/components/StoreFreshUpdatesFeed";
 
 export const dynamic = "force-dynamic";
@@ -49,6 +53,21 @@ export default async function StoreProfilePage({
   });
 
   if (!store || !store.isPublished) notFound();
+
+  const session = await auth();
+  let initialStoreFollow = false;
+  if (session?.role === "shopper") {
+    const follow = await prisma.alert.findFirst({
+      where: {
+        shopperId: session.user.id,
+        type: AlertType.store_follow,
+        storeId: id,
+        isActive: true,
+      },
+      select: { id: true },
+    });
+    initialStoreFollow = Boolean(follow);
+  }
 
   const freshUpdatesDisplay = enrichFreshUpdatesWithStale(
     store.freshUpdates,
@@ -108,6 +127,14 @@ export default async function StoreProfilePage({
             </div>
           )}
         </div>
+      </div>
+
+      <div className="mb-4">
+        <StoreAlertSubscribe
+          storeId={store.id}
+          storeName={store.name}
+          initialSubscribed={initialStoreFollow}
+        />
       </div>
 
       <ItemAvailabilitySearch

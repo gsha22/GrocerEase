@@ -132,10 +132,11 @@ model OwnerNotification {
 }
 
 model Shopper {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   alerts Alert[]
 

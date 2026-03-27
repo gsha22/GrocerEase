@@ -49,6 +49,7 @@ async function main() {
   console.log("Deterministic GrocerEase test data seeded.");
   console.log(`Seed clock: ${fixtureMeta.baseTime.toISOString()}`);
   console.log(`Owner login password (fixtures): ${fixtureMeta.ownerPlaintextPassword}`);
+  console.log(`Shopper login password (fixtures): ${fixtureMeta.shopperPlaintextPassword}`);
 }
 
 main()

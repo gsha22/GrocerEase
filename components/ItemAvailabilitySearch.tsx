@@ -1,6 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useMemo, useState, useEffect } from "react";
 
 type SearchResult = {
   id: string;
@@ -18,8 +21,6 @@ type Props = {
   storeName: string;
   storeAddress: string;
 };
-
-const DEMO_SHOPPER_ID = "55555555-5555-5555-5555-555555555555";
 
 function toRelativeTime(isoDate: string): string {
   const timestamp = new Date(isoDate).getTime();
@@ -50,14 +51,51 @@ export default function ItemAvailabilitySearch({
   storeName,
   storeAddress,
 }: Props) {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [notifyByItemId, setNotifyByItemId] = useState<Record<string, boolean>>({});
+  const [notifyByItemId, setNotifyByItemId] = useState<Record<string, boolean>>(
+    {},
+  );
+
+  const callbackPath = `/stores/${storeId}`;
+  const loginHref = `/login?callbackUrl=${encodeURIComponent(callbackPath)}`;
 
   const hasQuery = query.trim().length > 0;
   const queryHint = useMemo(() => (hasQuery ? query.trim() : ""), [hasQuery, query]);
+
+  useEffect(() => {
+    if (status !== "authenticated" || session?.role !== "shopper") {
+      setNotifyByItemId({});
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      const res = await fetch("/api/alerts", { credentials: "include" });
+      if (!res.ok || cancelled) return;
+      const data = (await res.json()) as {
+        alerts?: Array<{ type: string; itemId: string | null; storeId: string | null }>;
+      };
+      const next: Record<string, boolean> = {};
+      for (const a of data.alerts ?? []) {
+        if (
+          a.type === "item_restock" &&
+          a.itemId &&
+          a.storeId === storeId
+        ) {
+          next[a.itemId] = true;
+        }
+      }
+      setNotifyByItemId(next);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [status, session?.role, storeId]);
 
   async function runSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -83,47 +121,67 @@ export default function ItemAvailabilitySearch({
   }
 
   async function toggleNotify(item: SearchResult) {
+    if (status !== "authenticated" || session?.role !== "shopper") {
+      router.push(loginHref);
+      return;
+    }
+
     const currentlyOn = Boolean(notifyByItemId[item.id]);
     if (!currentlyOn) {
+      setNotifyByItemId((prev) => ({ ...prev, [item.id]: true }));
       const res = await fetch("/api/alerts", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          shopperId: DEMO_SHOPPER_ID,
           type: "item_restock",
           itemId: item.id,
           storeId: item.store_id,
         }),
       });
-      if (res.ok) {
-        setNotifyByItemId((prev) => ({ ...prev, [item.id]: true }));
+      if (!res.ok) {
+        setNotifyByItemId((prev) => {
+          const n = { ...prev };
+          delete n[item.id];
+          return n;
+        });
       }
+      router.refresh();
       return;
     }
 
-    const listRes = await fetch(`/api/alerts?shopperId=${DEMO_SHOPPER_ID}`);
-    if (!listRes.ok) return;
-    const alerts = (await listRes.json()) as Array<{
-      id: string;
-      itemId: string | null;
-      type: string;
-    }>;
-    const existing = alerts.find(
-      (alert) => alert.type === "item_restock" && alert.itemId === item.id
-    );
-    if (!existing) {
-      setNotifyByItemId((prev) => ({ ...prev, [item.id]: false }));
+    setNotifyByItemId((prev) => {
+      const n = { ...prev };
+      delete n[item.id];
+      return n;
+    });
+
+    const listRes = await fetch("/api/alerts", { credentials: "include" });
+    if (!listRes.ok) {
+      setNotifyByItemId((prev) => ({ ...prev, [item.id]: true }));
       return;
     }
-
-    const deleteRes = await fetch(
-      `/api/alerts/${existing.id}?shopperId=${DEMO_SHOPPER_ID}`,
-      { method: "DELETE" }
+    const data = (await listRes.json()) as {
+      alerts?: Array<{ id: string; itemId: string | null; type: string }>;
+    };
+    const existing = (data.alerts ?? []).find(
+      (alert) =>
+        alert.type === "item_restock" && alert.itemId === item.id,
     );
-    if (deleteRes.ok) {
-      setNotifyByItemId((prev) => ({ ...prev, [item.id]: false }));
+    if (!existing) return;
+
+    const deleteRes = await fetch(`/api/alerts/${existing.id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (!deleteRes.ok) {
+      setNotifyByItemId((prev) => ({ ...prev, [item.id]: true }));
+      return;
     }
+    router.refresh();
   }
+
+  const hideNotifyForOwner = session?.role === "owner";
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-4">
@@ -180,17 +238,27 @@ export default function ItemAvailabilitySearch({
               >
                 {item.stock_count === 0 ? "Out of Stock" : "In-Stock"}
               </span>
-              <button
-                type="button"
-                onClick={() => toggleNotify(item)}
-                className={`text-[12px] px-2.5 py-1 rounded-full border transition-colors ${
-                  notifyByItemId[item.id]
-                    ? "border-green-300 bg-green-50 text-green-700"
-                    : "border-gray-200 bg-white text-gray-600 hover:border-green-300 hover:text-green-700"
-                }`}
-              >
-                {notifyByItemId[item.id] ? "Notify me: On" : "Notify me"}
-              </button>
+              {!hideNotifyForOwner &&
+                (status === "unauthenticated" ? (
+                  <Link
+                    href={loginHref}
+                    className="text-[12px] px-2.5 py-1 rounded-full border border-gray-200 bg-white text-gray-600 hover:border-green-300 hover:text-green-700 transition-colors"
+                  >
+                    Notify me
+                  </Link>
+                ) : session?.role === "shopper" ? (
+                  <button
+                    type="button"
+                    onClick={() => toggleNotify(item)}
+                    className={`text-[12px] px-2.5 py-1 rounded-full border transition-colors ${
+                      notifyByItemId[item.id]
+                        ? "border-green-300 bg-green-50 text-green-700"
+                        : "border-gray-200 bg-white text-gray-600 hover:border-green-300 hover:text-green-700"
+                    }`}
+                  >
+                    {notifyByItemId[item.id] ? "Notify me: On" : "Notify me"}
+                  </button>
+                ) : null)}
             </div>
           </div>
         ))}
