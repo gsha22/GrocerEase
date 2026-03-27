@@ -11,12 +11,12 @@ export default async function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
       <nav
-        className="mx-auto flex items-center gap-0 px-6 h-[58px]"
+        className="mx-auto flex h-[58px] items-center gap-2 px-4 sm:px-6"
         aria-label="Main navigation"
       >
         <Link
           href="/"
-          className="font-display text-[22px] font-semibold text-green-600 tracking-tight mr-10 shrink-0"
+          className="font-display text-[20px] sm:text-[22px] font-semibold text-green-600 tracking-tight mr-2 sm:mr-10 shrink-0"
         >
           Local<span className="text-green-200">Grocer</span>
         </Link>
@@ -44,7 +44,7 @@ export default async function Navbar() {
         </div>
 
         {authed ? (
-          <div className="flex flex-wrap gap-2 items-center justify-end ml-auto">
+          <div className="hidden sm:flex flex-wrap gap-2 items-center justify-end ml-auto">
             {isOwner && (
               <Link
                 href="/dashboard"
@@ -64,7 +64,7 @@ export default async function Navbar() {
             <SignOutButton className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors" />
           </div>
         ) : (
-          <div className="flex flex-wrap gap-2 items-center justify-end ml-auto">
+          <div className="hidden sm:flex flex-wrap gap-2 items-center justify-end ml-auto">
             <Link
               href="/shopper/login"
               className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors"
@@ -82,6 +82,50 @@ export default async function Navbar() {
               className="px-4 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors"
             >
               List your store
+            </Link>
+          </div>
+        )}
+
+        {/* Compact mobile actions to avoid horizontal overflow */}
+        {authed ? (
+          <div className="sm:hidden ml-auto flex items-center gap-1.5 min-w-0">
+            {isOwner && (
+              <Link
+                href="/dashboard"
+                className="px-2.5 py-1 rounded-md text-xs font-medium text-white bg-green-600 hover:bg-green-800 transition-colors whitespace-nowrap"
+              >
+                Owner
+              </Link>
+            )}
+            {isShopper && (
+              <Link
+                href="/my-alerts"
+                className="px-2.5 py-1 rounded-md text-xs font-medium text-white bg-green-600 hover:bg-green-800 transition-colors whitespace-nowrap"
+              >
+                Alerts
+              </Link>
+            )}
+            <SignOutButton className="px-2.5 py-1 rounded-md text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors whitespace-nowrap" />
+          </div>
+        ) : (
+          <div className="sm:hidden ml-auto flex items-center gap-1.5 min-w-0">
+            <Link
+              href="/shopper/login"
+              className="px-2.5 py-1 rounded-md text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors whitespace-nowrap"
+            >
+              Shopper
+            </Link>
+            <Link
+              href="/login"
+              className="px-2.5 py-1 rounded-md text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors whitespace-nowrap"
+            >
+              Owner
+            </Link>
+            <Link
+              href="/signup"
+              className="px-2.5 py-1 rounded-md text-xs font-medium text-white bg-green-600 hover:bg-green-800 transition-colors whitespace-nowrap"
+            >
+              List
             </Link>
           </div>
         )}
