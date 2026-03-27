@@ -55,10 +55,10 @@ export default async function Navbar() {
             )}
             {isShopper && (
               <Link
-                href="/shopper/account"
+                href="/my-alerts"
                 className="px-4 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors"
               >
-                My account
+                My alerts
               </Link>
             )}
             <SignOutButton className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors" />

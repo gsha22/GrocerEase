@@ -18,13 +18,13 @@ export default function MobileNavClient({
 
   const accountHref =
     accountKind === "shopper"
-      ? "/shopper/account"
+      ? "/my-alerts"
       : accountKind === "owner"
         ? "/dashboard"
         : "/shopper/login";
   const accountLabel =
     accountKind === "shopper"
-      ? "Account"
+      ? "Alerts"
       : accountKind === "owner"
         ? "Owner"
         : "Account";
@@ -32,8 +32,7 @@ export default function MobileNavClient({
     (accountKind === "owner" &&
       (pathname === "/dashboard" || pathname.startsWith("/dashboard/"))) ||
     (accountKind === "shopper" &&
-      (pathname === "/shopper/account" ||
-        pathname.startsWith("/shopper/account/")));
+      (pathname === "/my-alerts" || pathname.startsWith("/my-alerts/")));
 
   const items = [
     ...baseItems.map((item) => ({
@@ -43,7 +42,7 @@ export default function MobileNavClient({
     {
       href: accountHref,
       label: accountLabel,
-      icon: "👤",
+      icon: accountKind === "shopper" ? "🔔" : "👤",
       active:
         accountActive ||
         (accountKind === "guest" &&
