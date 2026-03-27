@@ -26,8 +26,7 @@ export default async function MyAlertsPage() {
         My alerts
       </h1>
       <p className="text-[14px] text-gray-500 mb-8">
-        Active subscriptions for deals and restocks. Turn off any alert below
-        to unsubscribe.
+        See what stores you follow have posted, and manage your subscriptions.
       </p>
       <MyAlertsClient />
     </div>

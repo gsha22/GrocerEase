@@ -1,27 +1,35 @@
 "use client";
 
 import Link from "next/link";
+import type { ViewerRole } from "@/lib/viewer-role";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Props = {
   storeId: string;
   storeName: string;
   /** Server-known active store_follow subscription */
   initialSubscribed: boolean;
+  /** From server auth() — client useSession can lag behind this */
+  viewerRole: ViewerRole;
 };
 
 export default function StoreAlertSubscribe({
   storeId,
   storeName,
   initialSubscribed,
+  viewerRole,
 }: Props) {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  // Must match server on first paint — do not read sessionStorage here (hydration error).
   const [subscribed, setSubscribed] = useState(initialSubscribed);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // When user unsubscribes elsewhere (e.g. My alerts) or server data updates, follow the server.
+  useEffect(() => {
+    setSubscribed(initialSubscribed);
+  }, [initialSubscribed, storeId]);
 
   const callbackPath = `/stores/${storeId}`;
   const loginHref = `/login?callbackUrl=${encodeURIComponent(callbackPath)}`;
@@ -29,7 +37,7 @@ export default function StoreAlertSubscribe({
 
   async function toggle() {
     setError(null);
-    if (status !== "authenticated" || session?.role !== "shopper") {
+    if (viewerRole !== "shopper") {
       router.push(loginHref);
       return;
     }
@@ -37,99 +45,111 @@ export default function StoreAlertSubscribe({
     if (!subscribed) {
       setSubscribed(true);
       setPending(true);
-      const res = await fetch("/api/alerts", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "store_follow", storeId }),
-      });
-      setPending(false);
-      if (!res.ok) {
+      try {
+        const res = await fetch("/api/alerts", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "store_follow", storeId }),
+        });
+        const payload = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          isActive?: boolean;
+        };
+
+        if (!res.ok) {
+          setSubscribed(false);
+          setError(
+            typeof payload.error === "string"
+              ? payload.error
+              : res.status === 403
+                ? "This account can’t subscribe (try a shopper login)."
+                : res.status === 401
+                  ? "Sign in again, then retry."
+                  : "Could not subscribe.",
+          );
+          return;
+        }
+
+        setSubscribed(true);
+      } catch {
         setSubscribed(false);
-        const d = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(d.error ?? "Could not subscribe.");
+        setError("Network error — check your connection and try again.");
+      } finally {
+        setPending(false);
       }
-      router.refresh();
       return;
     }
 
     setSubscribed(false);
     setPending(true);
-    const listRes = await fetch("/api/alerts", { credentials: "include" });
-    if (!listRes.ok) {
-      setSubscribed(true);
-      setPending(false);
-      setError("Could not update subscription.");
-      return;
-    }
-    const data = (await listRes.json()) as {
-      alerts?: Array<{ id: string; type: string; storeId: string | null }>;
-    };
-    const row = (data.alerts ?? []).find(
-      (a) => a.type === "store_follow" && a.storeId === storeId,
-    );
-    if (!row) {
-      setPending(false);
+    try {
+      const listRes = await fetch("/api/alerts", { credentials: "include" });
+      if (!listRes.ok) {
+        setSubscribed(true);
+        setError("Could not update subscription.");
+        return;
+      }
+      const data = (await listRes.json()) as {
+        alerts?: Array<{ id: string; type: string; storeId: string | null }>;
+      };
+      const row = (data.alerts ?? []).find(
+        (a) => a.type === "store_follow" && a.storeId === storeId,
+      );
+      if (!row) {
+        setSubscribed(false);
+        router.refresh();
+        return;
+      }
+      const del = await fetch(`/api/alerts/${row.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!del.ok) {
+        setSubscribed(true);
+        setError("Could not unsubscribe.");
+        return;
+      }
+      setSubscribed(false);
       router.refresh();
-      return;
+    } finally {
+      setPending(false);
     }
-    const del = await fetch(`/api/alerts/${row.id}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    setPending(false);
-    if (!del.ok) {
-      setSubscribed(true);
-      setError("Could not unsubscribe.");
-      return;
-    }
-    router.refresh();
   }
 
-  if (status === "loading") {
-    return (
-      <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-[13px] text-gray-400">
-        Checking alerts…
-      </div>
-    );
-  }
-
-  if (session?.role === "owner") {
-    return null;
-  }
-
-  if (status !== "authenticated") {
+  if (viewerRole === null) {
     return (
       <div className="rounded-xl border border-amber-100 bg-amber-50/80 px-4 py-3">
         <p className="text-[14px] text-amber-950 font-medium">
           Get deals &amp; restocks from {storeName}
         </p>
         <p className="text-[13px] text-amber-900/80 mt-1">
-          <Link href={loginHref} className="font-semibold text-green-700 hover:underline">
-            Sign in
-          </Link>{" "}
-          or{" "}
-          <Link href={signupHref} className="font-semibold text-green-700 hover:underline">
-            create a free shopper account
-          </Link>{" "}
-          to subscribe — you&apos;ll return here after.
+          Use a free shopper account so this store can land in{" "}
+          <strong className="text-amber-950">My alerts</strong>.
         </p>
+        <div className="mt-3 flex flex-col sm:flex-row flex-wrap gap-2">
+          <Link
+            href={loginHref}
+            className="inline-flex justify-center items-center px-4 py-2 rounded-lg text-[13px] font-semibold bg-green-600 text-white hover:bg-green-800 transition-colors text-center"
+          >
+            Subscribe — log in
+          </Link>
+          <Link
+            href={signupHref}
+            className="inline-flex justify-center items-center px-4 py-2 rounded-lg text-[13px] font-semibold border border-amber-200/80 text-amber-950 bg-white/70 hover:bg-white transition-colors text-center"
+          >
+            Subscribe — sign up free
+          </Link>
+        </div>
       </div>
     );
-  }
-
-  if (session.role !== "shopper") {
-    return null;
   }
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <p className="text-[14px] font-semibold text-gray-800">
-            {subscribed ? "You’re subscribed" : "Follow this store"}
-          </p>
-          <p className="text-[13px] text-gray-500 mt-0.5">
+          <p className="text-[13px] text-gray-600 leading-snug">
             {subscribed
               ? `We’ll highlight activity for ${storeName}.`
               : `Get notified about new deals and restocks at ${storeName}.`}
@@ -151,7 +171,7 @@ export default function StoreAlertSubscribe({
       {subscribed && (
         <p className="text-[11px] text-green-700 font-medium mt-2">Active · store alerts on</p>
       )}
-      {!subscribed && session && (
+      {!subscribed && (
         <p className="text-[11px] text-gray-400 mt-2">Inactive · not following this store</p>
       )}
       {error && (

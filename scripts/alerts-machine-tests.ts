@@ -39,6 +39,36 @@ async function main() {
     Cookie: cookieHeader,
   };
 
+  // POST validation (acceptance criteria)
+  const noStoreFollow = await fetch(`${BASE}/api/alerts`, {
+    method: "POST",
+    headers: headersJson,
+    body: JSON.stringify({ type: "store_follow" }),
+  });
+  assert.equal(noStoreFollow.status, 400, "store_follow without storeId should be 400");
+
+  const noItemRestock = await fetch(`${BASE}/api/alerts`, {
+    method: "POST",
+    headers: headersJson,
+    body: JSON.stringify({ type: "item_restock", storeId: STORE_ID }),
+  });
+  assert.equal(
+    noItemRestock.status,
+    400,
+    "item_restock without itemId should be 400",
+  );
+
+  const noStoreItemRestock = await fetch(`${BASE}/api/alerts`, {
+    method: "POST",
+    headers: headersJson,
+    body: JSON.stringify({ type: "item_restock", itemId: ITEM_ID }),
+  });
+  assert.equal(
+    noStoreItemRestock.status,
+    400,
+    "item_restock without storeId should be 400",
+  );
+
   // POST store_follow
   const follow = await fetch(`${BASE}/api/alerts`, {
     method: "POST",

@@ -1,8 +1,8 @@
 "use client";
 
+import type { ViewerRole } from "@/lib/viewer-role";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useMemo, useState, useEffect } from "react";
 
 type SearchResult = {
@@ -20,6 +20,7 @@ type Props = {
   storeId: string;
   storeName: string;
   storeAddress: string;
+  viewerRole: ViewerRole;
 };
 
 function toRelativeTime(isoDate: string): string {
@@ -50,9 +51,9 @@ export default function ItemAvailabilitySearch({
   storeId,
   storeName,
   storeAddress,
+  viewerRole,
 }: Props) {
   const router = useRouter();
-  const { data: session, status } = useSession();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -68,7 +69,7 @@ export default function ItemAvailabilitySearch({
   const queryHint = useMemo(() => (hasQuery ? query.trim() : ""), [hasQuery, query]);
 
   useEffect(() => {
-    if (status !== "authenticated" || session?.role !== "shopper") {
+    if (viewerRole !== "shopper") {
       setNotifyByItemId({});
       return;
     }
@@ -95,7 +96,7 @@ export default function ItemAvailabilitySearch({
     return () => {
       cancelled = true;
     };
-  }, [status, session?.role, storeId]);
+  }, [viewerRole, storeId]);
 
   async function runSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -121,7 +122,7 @@ export default function ItemAvailabilitySearch({
   }
 
   async function toggleNotify(item: SearchResult) {
-    if (status !== "authenticated" || session?.role !== "shopper") {
+    if (viewerRole !== "shopper") {
       router.push(loginHref);
       return;
     }
@@ -181,7 +182,7 @@ export default function ItemAvailabilitySearch({
     router.refresh();
   }
 
-  const hideNotifyForOwner = session?.role === "owner";
+  const hideNotifyForOwner = viewerRole === "owner";
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-4">
@@ -239,14 +240,14 @@ export default function ItemAvailabilitySearch({
                 {item.stock_count === 0 ? "Out of Stock" : "In-Stock"}
               </span>
               {!hideNotifyForOwner &&
-                (status === "unauthenticated" ? (
+                (viewerRole === null ? (
                   <Link
                     href={loginHref}
                     className="text-[12px] px-2.5 py-1 rounded-full border border-gray-200 bg-white text-gray-600 hover:border-green-300 hover:text-green-700 transition-colors"
                   >
                     Notify me
                   </Link>
-                ) : session?.role === "shopper" ? (
+                ) : viewerRole === "shopper" ? (
                   <button
                     type="button"
                     onClick={() => toggleNotify(item)}

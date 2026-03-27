@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/app/generated/prisma/client";
+import { notifyStoreFollowersOfNewDeal } from "@/lib/notify-store-followers";
 import { prisma } from "@/lib/prisma";
 import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
 
@@ -99,6 +100,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const { id: storeId } = await context.params;
   const gate = await requireStoreOwnerForStore(storeId);
   if ("response" in gate) return gate.response;
+  const { store } = gate;
 
   const now = new Date();
   const body = await request.json().catch(() => null);
@@ -166,6 +168,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
+    void notifyStoreFollowersOfNewDeal({
+      storeId,
+      storeName: store.name,
+      dealId: deal.id,
+      dealTitle: deal.title,
+      price: deal.price,
+    });
+
     return NextResponse.json({ deal: dealJson(deal) }, { status: 201 });
   }
 
@@ -209,6 +219,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       isExpired: false,
       expiryNotifiedAt: null,
     },
+  });
+
+  void notifyStoreFollowersOfNewDeal({
+    storeId,
+    storeName: store.name,
+    dealId: deal.id,
+    dealTitle: deal.title,
+    price: deal.price,
   });
 
   return NextResponse.json({ deal: dealJson(deal) }, { status: 201 });
