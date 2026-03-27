@@ -9,14 +9,22 @@ const baseItems = [
   { href: "/deals", label: "Deals", icon: "🏷" },
 ] as const;
 
-export default function MobileNavClient({ authed }: { authed: boolean }) {
+export default function MobileNavClient({
+  authed,
+  isShopper,
+}: {
+  authed: boolean;
+  isShopper: boolean;
+}) {
   const pathname = usePathname();
 
-  const accountHref = authed ? "/dashboard" : "/login";
-  const accountLabel = authed ? "Owner" : "Account";
+  const accountHref = authed ? (isShopper ? "/my-alerts" : "/dashboard") : "/login";
+  const accountLabel = authed ? (isShopper ? "Alerts" : "Owner") : "Account";
   const accountActive =
     authed &&
-    (pathname === "/dashboard" || pathname.startsWith("/dashboard/"));
+    (isShopper
+      ? pathname === "/my-alerts"
+      : pathname === "/dashboard" || pathname.startsWith("/dashboard/"));
 
   const items = [
     ...baseItems.map((item) => ({
@@ -32,7 +40,8 @@ export default function MobileNavClient({ authed }: { authed: boolean }) {
         (!authed &&
           (pathname === "/login" ||
             pathname.startsWith("/login/") ||
-            pathname === "/signup")),
+            pathname === "/signup" ||
+            pathname.startsWith("/signup/"))),
     },
   ];
 

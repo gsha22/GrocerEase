@@ -3,9 +3,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { safeCallbackPath } from "@/lib/safe-callback-path";
-import LoginForm from "./LoginForm";
+import ShopperSignupForm from "./ShopperSignupForm";
 
-export default async function LoginPage({
+export default async function ShopperSignupPage({
   searchParams,
 }: {
   searchParams: Promise<{ callbackUrl?: string }>;
@@ -26,27 +26,24 @@ export default async function LoginPage({
           LocalGrocer
         </div>
         <p className="text-[14px] text-gray-400 mb-7">
-          Sign in as a store owner or a shopper
+          Create a free shopper account for deal and restock alerts
         </p>
 
         <Suspense fallback={<div className="text-sm text-gray-500">Loading…</div>}>
-          <LoginForm />
+          <ShopperSignupForm />
         </Suspense>
 
         <hr className="border-gray-100 my-5" />
 
         <p className="text-center text-[13px] text-gray-400">
-          New store owner?{" "}
+          Run a store?{" "}
           <Link href="/signup" className="text-green-600">
-            Create an owner account
+            Owner signup
           </Link>
-          <br />
-          <span className="inline-block mt-2">
-            Shopper?{" "}
-            <Link href="/signup/shopper" className="text-green-600">
-              Free shopper signup
-            </Link>
-          </span>
+          {" · "}
+          <Link href="/" className="text-green-600">
+            Home
+          </Link>
         </p>
       </div>
     </div>

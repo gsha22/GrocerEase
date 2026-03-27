@@ -1,7 +1,10 @@
 // Story 1: Fresh Today (Shopper view)
 // Story 2: Deals This Week (Shopper view)
 // Story 12: No auth required
+// Shopper alerts: store follow + item restock (session-backed)
 
+import { AlertType } from "@/app/generated/prisma/client";
+import { auth } from "@/auth";
 import DealCard from "@/components/DealCard";
 import {
   enrichFreshUpdatesWithStale,
@@ -12,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
+import StoreAlertSubscribe from "@/components/StoreAlertSubscribe";
 import StoreFreshUpdatesFeed from "@/components/StoreFreshUpdatesFeed";
 
 export const dynamic = "force-dynamic";
@@ -49,6 +53,27 @@ export default async function StoreProfilePage({
   });
 
   if (!store || !store.isPublished) notFound();
+
+  const session = await auth();
+  const rawRole = session?.user ? session.role : null;
+  const viewerRole =
+    rawRole === "shopper" || rawRole === "owner" ? rawRole : null;
+
+  let initialStoreFollow = false;
+  let storeFollowAlertId: string | null = null;
+  if (session?.role === "shopper") {
+    const follow = await prisma.alert.findFirst({
+      where: {
+        shopperId: session.user.id,
+        type: AlertType.store_follow,
+        storeId: id,
+        isActive: true,
+      },
+      select: { id: true },
+    });
+    initialStoreFollow = Boolean(follow);
+    storeFollowAlertId = follow?.id ?? null;
+  }
 
   const freshUpdatesDisplay = enrichFreshUpdatesWithStale(
     store.freshUpdates,
@@ -110,10 +135,60 @@ export default async function StoreProfilePage({
         </div>
       </div>
 
+      {viewerRole === "owner" ? (
+        <div className="mb-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-[13px] text-gray-600 leading-relaxed">
+          <p>
+            You&apos;re signed in as a <strong className="text-gray-800">store owner</strong>.
+            Following a store (subscribe / <strong className="text-gray-800">My alerts</strong>)
+            needs a <strong className="text-gray-800">shopper</strong> login — owners can&apos;t
+            create shopper alerts from this dashboard account.
+          </p>
+          <div className="mt-3 flex flex-col sm:flex-row flex-wrap gap-2">
+            <Link
+              href={`/login?callbackUrl=${encodeURIComponent(`/stores/${store.id}`)}`}
+              className="inline-flex justify-center items-center px-4 py-2 rounded-lg text-[13px] font-semibold bg-green-600 text-white hover:bg-green-800 transition-colors text-center"
+            >
+              Subscribe as shopper — log in
+            </Link>
+            <Link
+              href={`/signup/shopper?callbackUrl=${encodeURIComponent(`/stores/${store.id}`)}`}
+              className="inline-flex justify-center items-center px-4 py-2 rounded-lg text-[13px] font-semibold border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 transition-colors text-center"
+            >
+              Subscribe as shopper — sign up
+            </Link>
+          </div>
+          <p className="mt-2 text-[12px] text-gray-500">
+            Tip: use an incognito window if you want to stay logged in as an owner in
+            another tab.
+          </p>
+        </div>
+      ) : (
+        <section className="mb-4 space-y-3" aria-labelledby="store-follow-heading">
+          <h2
+            id="store-follow-heading"
+            className="text-[17px] font-semibold text-gray-800 flex items-center gap-2"
+          >
+            <span aria-hidden>🔔</span>
+            {viewerRole === "shopper" && initialStoreFollow
+              ? "You’re following this store"
+              : "Follow this store"}
+          </h2>
+          <StoreAlertSubscribe
+            key={store.id}
+            storeId={store.id}
+            storeName={store.name}
+            initialSubscribed={initialStoreFollow}
+            initialStoreFollowAlertId={storeFollowAlertId}
+            viewerRole={viewerRole}
+          />
+        </section>
+      )}
+
       <ItemAvailabilitySearch
         storeId={store.id}
         storeName={store.name}
         storeAddress={store.address}
+        viewerRole={viewerRole}
       />
 
       {/* Fresh Today — Story 1 */}

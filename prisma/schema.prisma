@@ -12,6 +12,11 @@ enum AlertType {
   store_follow
 }
 
+enum ShopperNotificationKind {
+  store_fresh_update
+  store_new_deal
+}
+
 model StoreOwner {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -55,7 +60,8 @@ model Store {
   items        Item[]
   freshUpdates FreshUpdate[]
   deals        Deal[]
-  alerts       Alert[]
+  alerts               Alert[]
+  shopperNotifications ShopperNotification[]
 
   @@map("stores")
 }
@@ -132,14 +138,35 @@ model OwnerNotification {
 }
 
 model Shopper {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
 
-  alerts Alert[]
+  alerts               Alert[]
+  notifications        ShopperNotification[]
 
   @@map("shoppers")
+}
+
+model ShopperNotification {
+  id         String                  @id @default(uuid())
+  shopperId  String                  @map("shopper_id")
+  kind       ShopperNotificationKind
+  sourceId   String                  @map("source_id")
+  storeId    String                  @map("store_id")
+  title      String
+  body       String?
+  readAt     DateTime?               @map("read_at")
+  createdAt  DateTime                @default(now()) @map("created_at")
+
+  shopper Shopper @relation(fields: [shopperId], references: [id], onDelete: Cascade)
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([shopperId, kind, sourceId])
+  @@index([shopperId, createdAt(sort: Desc)])
+  @@map("shopper_notifications")
 }
 
 model Alert {

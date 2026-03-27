@@ -7,6 +7,9 @@ import SignupForm from "./SignupForm";
 export default async function SignupPage() {
   const session = await auth();
   if (session?.user) {
+    if (session.role === "shopper") {
+      redirect("/");
+    }
     redirect("/dashboard");
   }
 

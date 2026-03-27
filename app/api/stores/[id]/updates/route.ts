@@ -6,6 +6,7 @@ import {
   parseFreshUpdatePostBody,
 } from "@/lib/fresh-updates";
 import { broadcastPostEvent } from "@/lib/post-events";
+import { notifyStoreFollowersOfFreshUpdate } from "@/lib/notify-store-followers";
 import { prisma } from "@/lib/prisma";
 import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
 
@@ -59,6 +60,7 @@ export async function POST(
 
   const gate = await requireStoreOwnerForStore(storeId);
   if ("response" in gate) return gate.response;
+  const { store } = gate;
 
   const body = await request.json().catch(() => null);
   const parsed = parseFreshUpdatePostBody(body);
@@ -78,6 +80,14 @@ export async function POST(
     storeId,
     postId: update.id,
     type: "POST_CREATE",
+  });
+
+  void notifyStoreFollowersOfFreshUpdate({
+    storeId,
+    storeName: store.name,
+    freshUpdateId: update.id,
+    itemName: update.itemName,
+    note: update.note,
   });
 
   return NextResponse.json({ update }, { status: 201 });

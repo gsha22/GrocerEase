@@ -1,83 +1,93 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { AlertType } from "@/app/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
+import { requireShopperSession } from "@/lib/require-shopper";
 
-function getShopperId(req: NextRequest): string | null {
-  return (
-    req.headers.get("x-shopper-id") ??
-    req.nextUrl.searchParams.get("shopperId") ??
-    null
-  );
+function serializeAlert(row: {
+  id: string;
+  shopperId: string;
+  itemId: string | null;
+  storeId: string | null;
+  type: AlertType;
+  isActive: boolean;
+  createdAt: Date;
+  store: { id: string; name: string } | null;
+  item: { id: string; name: string } | null;
+}) {
+  return {
+    id: row.id,
+    shopperId: row.shopperId,
+    itemId: row.itemId,
+    storeId: row.storeId,
+    type: row.type,
+    isActive: row.isActive,
+    createdAt: row.createdAt.toISOString(),
+    store: row.store,
+    item: row.item,
+  };
 }
 
-// Story 5: GET /api/alerts — List own active alerts (shopper auth required)
-export async function GET(req: NextRequest) {
-  try {
-    const shopperId = getShopperId(req);
-    if (!shopperId) {
-      return NextResponse.json(
-        { error: "shopperId is required" },
-        { status: 400 }
-      );
-    }
+/** GET /api/alerts — active alerts for the logged-in shopper */
+export async function GET() {
+  const gate = await requireShopperSession();
+  if ("response" in gate) return gate.response;
 
-    const alerts = await prisma.alert.findMany({
-      where: { shopperId, isActive: true },
-      orderBy: { createdAt: "desc" },
-    });
+  const alerts = await prisma.alert.findMany({
+    where: { shopperId: gate.shopperId, isActive: true },
+    orderBy: { createdAt: "desc" },
+    include: {
+      store: { select: { id: true, name: true } },
+      item: { select: { id: true, name: true } },
+    },
+  });
 
-    return NextResponse.json(alerts);
-  } catch (error) {
-    console.error("GET /api/alerts error:", error);
-    return NextResponse.json({ error: "Failed to list alerts" }, { status: 500 });
-  }
+  return NextResponse.json({
+    alerts: alerts.map(serializeAlert),
+  });
 }
 
-// Story 5: POST /api/alerts — Create alert (item_restock or store_follow)
+/** POST /api/alerts — create store_follow or item_restock (session shopper only) */
 export async function POST(req: NextRequest) {
-  try {
-    const body = (await req.json()) as {
-      shopperId?: string;
-      itemId?: string | null;
-      storeId?: string | null;
-      type?: string;
-    };
+  const gate = await requireShopperSession();
+  if ("response" in gate) return gate.response;
 
-    const shopperId = body.shopperId ?? getShopperId(req);
-    if (!shopperId) {
-      return NextResponse.json(
-        { error: "shopperId is required" },
-        { status: 400 }
-      );
-    }
+  const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-    if (body.type !== AlertType.item_restock && body.type !== AlertType.store_follow) {
-      return NextResponse.json(
-        { error: "type must be item_restock or store_follow" },
-        { status: 400 }
-      );
-    }
+  const typeRaw = body.type;
+  if (typeRaw !== AlertType.item_restock && typeRaw !== AlertType.store_follow) {
+    return NextResponse.json(
+      { error: "type must be item_restock or store_follow" },
+      { status: 400 },
+    );
+  }
+  const type = typeRaw as AlertType;
 
-    if (body.type === AlertType.item_restock && !body.itemId) {
-      return NextResponse.json(
-        { error: "itemId is required for item_restock alerts" },
-        { status: 400 }
-      );
-    }
-
-    if (body.type === AlertType.store_follow && !body.storeId) {
+  if (type === AlertType.store_follow) {
+    const storeId = typeof body.storeId === "string" ? body.storeId.trim() : "";
+    if (!storeId) {
       return NextResponse.json(
         { error: "storeId is required for store_follow alerts" },
-        { status: 400 }
+        { status: 400 },
       );
+    }
+
+    const store = await prisma.store.findFirst({
+      where: { id: storeId, isPublished: true },
+      select: { id: true },
+    });
+    if (!store) {
+      return NextResponse.json({ error: "Store not found or not published" }, { status: 400 });
     }
 
     const existing = await prisma.alert.findFirst({
       where: {
-        shopperId,
-        type: body.type,
-        itemId: body.itemId ?? null,
-        storeId: body.storeId ?? null,
+        shopperId: gate.shopperId,
+        type: AlertType.store_follow,
+        storeId,
+        itemId: null,
       },
     });
 
@@ -85,19 +95,77 @@ export async function POST(req: NextRequest) {
       ? await prisma.alert.update({
           where: { id: existing.id },
           data: { isActive: true },
+          include: {
+            store: { select: { id: true, name: true } },
+            item: { select: { id: true, name: true } },
+          },
         })
       : await prisma.alert.create({
           data: {
-            shopperId,
-            type: body.type,
-            itemId: body.itemId ?? null,
-            storeId: body.storeId ?? null,
+            shopperId: gate.shopperId,
+            type: AlertType.store_follow,
+            storeId,
+            itemId: null,
+          },
+          include: {
+            store: { select: { id: true, name: true } },
+            item: { select: { id: true, name: true } },
           },
         });
 
-    return NextResponse.json(alert, { status: 201 });
-  } catch (error) {
-    console.error("POST /api/alerts error:", error);
-    return NextResponse.json({ error: "Failed to create alert" }, { status: 500 });
+    return NextResponse.json(serializeAlert(alert), { status: 201 });
   }
+
+  const storeId = typeof body.storeId === "string" ? body.storeId.trim() : "";
+  const itemId = typeof body.itemId === "string" ? body.itemId.trim() : "";
+  if (!storeId || !itemId) {
+    return NextResponse.json(
+      { error: "storeId and itemId are required for item_restock alerts" },
+      { status: 400 },
+    );
+  }
+
+  const item = await prisma.item.findFirst({
+    where: { id: itemId, storeId },
+    include: { store: { select: { isPublished: true } } },
+  });
+  if (!item || !item.store.isPublished) {
+    return NextResponse.json(
+      { error: "Item not found or store is not published" },
+      { status: 400 },
+    );
+  }
+
+  const existing = await prisma.alert.findFirst({
+    where: {
+      shopperId: gate.shopperId,
+      type: AlertType.item_restock,
+      storeId,
+      itemId,
+    },
+  });
+
+  const alert = existing
+    ? await prisma.alert.update({
+        where: { id: existing.id },
+        data: { isActive: true },
+        include: {
+          store: { select: { id: true, name: true } },
+          item: { select: { id: true, name: true } },
+        },
+      })
+    : await prisma.alert.create({
+        data: {
+          shopperId: gate.shopperId,
+          type: AlertType.item_restock,
+          storeId,
+          itemId,
+        },
+        include: {
+          store: { select: { id: true, name: true } },
+          item: { select: { id: true, name: true } },
+        },
+      });
+
+  return NextResponse.json(serializeAlert(alert), { status: 201 });
 }
