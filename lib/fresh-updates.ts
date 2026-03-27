@@ -19,6 +19,10 @@ export type ParsedFreshUpdatePost =
   | { ok: true; itemName: string; note: string | null }
   | { ok: false; error: string };
 
+export type ParsedFreshUpdatePatch =
+  | { ok: true; data: { itemName?: string; note?: string | null } }
+  | { ok: false; error: string };
+
 /**
  * Validates JSON body for POST /api/stores/:id/updates.
  */
@@ -61,6 +65,64 @@ export function parseFreshUpdatePostBody(body: unknown): ParsedFreshUpdatePost {
   }
 
   return { ok: true, itemName, note };
+}
+
+/**
+ * Validates JSON body for PATCH /api/stores/:id/posts/:postId.
+ * Supports either `note` or `description` as the optional text field.
+ */
+export function parseFreshUpdatePatchBody(
+  body: unknown,
+): ParsedFreshUpdatePatch {
+  if (body === null || typeof body !== "object") {
+    return { ok: false, error: "Request body must be a JSON object." };
+  }
+  const o = body as Record<string, unknown>;
+  const hasItemName = Object.prototype.hasOwnProperty.call(o, "item_name");
+  const hasNote = Object.prototype.hasOwnProperty.call(o, "note");
+  const hasDescription = Object.prototype.hasOwnProperty.call(o, "description");
+  if (!hasItemName && !hasNote && !hasDescription) {
+    return {
+      ok: false,
+      error: "Provide at least one of item_name, note, or description.",
+    };
+  }
+
+  const data: { itemName?: string; note?: string | null } = {};
+
+  if (hasItemName) {
+    if (typeof o.item_name !== "string") {
+      return { ok: false, error: "item_name must be a string." };
+    }
+    const itemName = o.item_name.trim();
+    if (!itemName) {
+      return { ok: false, error: "item_name cannot be empty." };
+    }
+    if (itemName.length > MAX_ITEM_NAME_LEN) {
+      return {
+        ok: false,
+        error: `item_name must be at most ${MAX_ITEM_NAME_LEN} characters.`,
+      };
+    }
+    data.itemName = itemName;
+  }
+
+  if (hasNote || hasDescription) {
+    const raw = hasNote ? o.note : o.description;
+    if (raw !== undefined && raw !== null && typeof raw !== "string") {
+      return { ok: false, error: "note/description must be a string when provided." };
+    }
+    const text = typeof raw === "string" ? raw.trim() : "";
+    if (text.length > MAX_NOTE_LEN) {
+      return {
+        ok: false,
+        error: `note/description must be at most ${MAX_NOTE_LEN} characters.`,
+      };
+    }
+    data.note = text.length > 0 ? text : null;
+  }
+
+  return { ok: true, data };
 }
 
 export function enrichFreshUpdatesWithStale<T extends { createdAt: Date }>(

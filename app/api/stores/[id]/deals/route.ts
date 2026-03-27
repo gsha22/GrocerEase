@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/app/generated/prisma/client";
+import { notifyStoreFollowersOfNewDeal } from "@/lib/notify-store-followers";
 import { prisma } from "@/lib/prisma";
 import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
 
@@ -24,6 +25,21 @@ function dealJson(deal: {
     expiresAt: deal.expiresAt.toISOString(),
     createdAt: deal.createdAt.toISOString(),
   };
+}
+
+function jsonCreatedDeal(
+  deal: Parameters<typeof dealJson>[0],
+  storeId: string,
+  store: { name: string },
+) {
+  void notifyStoreFollowersOfNewDeal({
+    storeId,
+    storeName: store.name,
+    dealId: deal.id,
+    dealTitle: deal.title,
+    price: deal.price,
+  });
+  return NextResponse.json({ deal: dealJson(deal) }, { status: 201 });
 }
 
 function parsePrice(raw: unknown): { ok: true; value: Prisma.Decimal } | { ok: false; error: string } {
@@ -99,6 +115,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const { id: storeId } = await context.params;
   const gate = await requireStoreOwnerForStore(storeId);
   if ("response" in gate) return gate.response;
+  const { store } = gate;
 
   const now = new Date();
   const body = await request.json().catch(() => null);
@@ -166,7 +183,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
-    return NextResponse.json({ deal: dealJson(deal) }, { status: 201 });
+    return jsonCreatedDeal(deal, storeId, store);
   }
 
   const priceResult = parsePrice(body.price);
@@ -211,5 +228,5 @@ export async function POST(request: NextRequest, context: RouteContext) {
     },
   });
 
-  return NextResponse.json({ deal: dealJson(deal) }, { status: 201 });
+  return jsonCreatedDeal(deal, storeId, store);
 }

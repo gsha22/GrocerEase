@@ -39,6 +39,11 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  const role = token.role as string | undefined;
+  if (role === "shopper") {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
   return NextResponse.next();
 }
 

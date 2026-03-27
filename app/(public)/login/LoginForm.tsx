@@ -85,7 +85,7 @@ export default function LoginForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@yourstore.com"
+          placeholder="you@example.com"
           className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
         />
       </div>
@@ -122,7 +122,7 @@ export default function LoginForm() {
         disabled={pending}
         className="w-full py-3 rounded-md text-[15px] font-semibold text-white bg-green-600 hover:bg-green-800 transition-colors mt-1 disabled:opacity-60"
       >
-        {pending ? "Signing in…" : "Sign in to dashboard"}
+        {pending ? "Signing in…" : "Sign in"}
       </button>
     </form>
   );
