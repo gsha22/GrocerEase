@@ -15,6 +15,25 @@ type SearchResult = {
   last_updated: string;
 };
 
+type AlertRow = {
+  id: string;
+  itemId: string | null;
+  storeId: string | null;
+  type: string;
+};
+
+function normalizeAlertsPayload(payload: unknown): AlertRow[] {
+  if (Array.isArray(payload)) return payload as AlertRow[];
+  if (
+    payload &&
+    typeof payload === "object" &&
+    Array.isArray((payload as { alerts?: unknown }).alerts)
+  ) {
+    return (payload as { alerts: AlertRow[] }).alerts;
+  }
+  return [];
+}
+
 type Props = {
   storeId: string;
   storeName: string;
@@ -78,11 +97,7 @@ export default function ItemAvailabilitySearch({
       }
       setAuthRequired(false);
       if (!res.ok) return;
-      const alerts = (await res.json()) as Array<{
-        itemId: string | null;
-        storeId: string | null;
-        type: string;
-      }>;
+      const alerts = normalizeAlertsPayload(await res.json().catch(() => null));
       setNotifyByItemId((prev) => {
         const next = { ...prev };
         for (const item of results) {
@@ -153,11 +168,7 @@ export default function ItemAvailabilitySearch({
 
     const listRes = await fetch("/api/alerts", { credentials: "include" });
     if (!listRes.ok) return;
-    const alerts = (await listRes.json()) as Array<{
-      id: string;
-      itemId: string | null;
-      type: string;
-    }>;
+    const alerts = normalizeAlertsPayload(await listRes.json().catch(() => null));
     const existing = alerts.find(
       (alert) => alert.type === "item_restock" && alert.itemId === item.id
     );
