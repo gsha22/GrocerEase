@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import type { ViewerRole } from "@/lib/viewer-role";
 
 type SearchResult = {
   id: string;
@@ -18,6 +19,7 @@ type Props = {
   storeId: string;
   storeName: string;
   storeAddress: string;
+  viewerRole?: ViewerRole;
 };
 
 function toRelativeTime(isoDate: string): string {
@@ -48,6 +50,7 @@ export default function ItemAvailabilitySearch({
   storeId,
   storeName,
   storeAddress,
+  viewerRole,
 }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -61,7 +64,7 @@ export default function ItemAvailabilitySearch({
   const hasQuery = query.trim().length > 0;
   const queryHint = useMemo(() => (hasQuery ? query.trim() : ""), [hasQuery, query]);
 
-  const loginHref = `/shopper/login?callbackUrl=${encodeURIComponent(`/stores/${storeId}`)}`;
+  const loginHref = `/login?callbackUrl=${encodeURIComponent(`/stores/${storeId}`)}`;
 
   useEffect(() => {
     if (results.length === 0) return;
@@ -206,7 +209,7 @@ export default function ItemAvailabilitySearch({
       {authRequired && results.length > 0 && (
         <p className="text-[13px] text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mb-4">
           <Link href={loginHref} className="font-medium text-green-700 underline">
-            Log in as a shopper
+            {viewerRole === "owner" ? "Switch to shopper login" : "Log in as a shopper"}
           </Link>{" "}
           to turn on restock alerts for items at this store.
         </p>
