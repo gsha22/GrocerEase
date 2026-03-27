@@ -17,12 +17,8 @@ export async function PATCH(
   }
 
   let read = true;
-  try {
-    const body = (await req.json().catch(() => null)) as { read?: unknown } | null;
-    if (body && typeof body.read === "boolean") read = body.read;
-  } catch {
-    /* default read true */
-  }
+  const body = (await req.json().catch(() => null)) as { read?: unknown } | null;
+  if (body && typeof body.read === "boolean") read = body.read;
 
   const updated = await prisma.shopperNotification.update({
     where: { id },

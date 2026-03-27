@@ -23,10 +23,13 @@ type NotificationRow = {
   store: { id: string; name: string };
 };
 
+const KIND_LABELS: Record<string, string> = {
+  store_fresh_update: "Fresh update",
+  store_new_deal: "New deal",
+};
+
 function kindLabel(kind: string): string {
-  if (kind === "store_fresh_update") return "Fresh update";
-  if (kind === "store_new_deal") return "New deal";
-  return kind;
+  return KIND_LABELS[kind] ?? kind;
 }
 
 function byCreatedDesc(a: NotificationRow, b: NotificationRow): number {
@@ -106,14 +109,20 @@ function InboxNotificationRow({
 export default function MyAlertsClient() {
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
+  const [inboxHasMore, setInboxHasMore] = useState(false);
+  const [inboxLoadingMore, setInboxLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [inboxError, setInboxError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
+    setInboxError(null);
     const [aRes, nRes] = await Promise.all([
       fetch("/api/alerts", { credentials: "include" }),
-      fetch("/api/shopper/notifications", { credentials: "include" }),
+      fetch("/api/shopper/notifications?skip=0&take=50", {
+        credentials: "include",
+      }),
     ]);
 
     if (!aRes.ok) {
@@ -132,10 +141,23 @@ export default function MyAlertsClient() {
     }
 
     if (nRes.ok) {
-      const nd = (await nRes.json()) as { notifications?: NotificationRow[] };
+      const nd = (await nRes.json()) as {
+        notifications?: NotificationRow[];
+        hasMore?: boolean;
+      };
       setNotifications(Array.isArray(nd.notifications) ? nd.notifications : []);
+      setInboxHasMore(Boolean(nd.hasMore));
     } else {
+      let msg = "Could not load activity.";
+      try {
+        const d = (await nRes.json()) as { error?: string };
+        if (d.error) msg = d.error;
+      } catch {
+        /* ignore */
+      }
+      setInboxError(msg);
       setNotifications([]);
+      setInboxHasMore(false);
     }
   }, []);
 
@@ -165,19 +187,53 @@ export default function MyAlertsClient() {
   }
 
   async function markNotificationRead(id: string, read: boolean) {
+    setInboxError(null);
     const res = await fetch(`/api/shopper/notifications/${id}`, {
       method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ read }),
     });
-    if (!res.ok) return;
+    if (!res.ok) {
+      setInboxError("Could not update read status. Try again.");
+      return;
+    }
     const data = (await res.json()) as { readAt?: string | null };
     setNotifications((list) =>
       list.map((n) =>
         n.id === id ? { ...n, readAt: data.readAt ?? null } : n,
       ),
     );
+  }
+
+  async function loadMoreInbox() {
+    if (!inboxHasMore || inboxLoadingMore) return;
+    setInboxError(null);
+    setInboxLoadingMore(true);
+    try {
+      const skip = notifications.length;
+      const res = await fetch(
+        `/api/shopper/notifications?skip=${skip}&take=50`,
+        { credentials: "include" },
+      );
+      if (!res.ok) {
+        setInboxError("Could not load more activity.");
+        return;
+      }
+      const data = (await res.json()) as {
+        notifications?: NotificationRow[];
+        hasMore?: boolean;
+      };
+      const more = Array.isArray(data.notifications) ? data.notifications : [];
+      setNotifications((prev) => {
+        const seen = new Set(prev.map((n) => n.id));
+        const merged = more.filter((n) => !seen.has(n.id));
+        return [...prev, ...merged];
+      });
+      setInboxHasMore(Boolean(data.hasMore));
+    } finally {
+      setInboxLoadingMore(false);
+    }
   }
 
   const { inboxUnread, inboxRead } = useMemo(() => {
@@ -214,14 +270,26 @@ export default function MyAlertsClient() {
           ) : null}
         </div>
 
+        {inboxError ? (
+          <p
+            className="text-[13px] text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-3"
+            role="alert"
+          >
+            {inboxError}
+          </p>
+        ) : null}
+
         {notifications.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 px-4 py-10 text-center">
-            <p className="text-[14px] text-gray-600 mb-1">No activity yet</p>
-            <p className="text-[13px] text-gray-500 max-w-[320px] mx-auto">
-              When a store you follow posts in <strong className="text-gray-700">Fresh today</strong>{" "}
-              or adds a deal, it will show up here.
-            </p>
-          </div>
+          inboxError ? null : (
+            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 px-4 py-10 text-center">
+              <p className="text-[14px] text-gray-600 mb-1">No activity yet</p>
+              <p className="text-[13px] text-gray-500 max-w-[320px] mx-auto">
+                When a store you follow posts in{" "}
+                <strong className="text-gray-700">Fresh today</strong> or adds a deal, it will show
+                up here.
+              </p>
+            </div>
+          )
         ) : (
           <ul className="space-y-2">
             {inboxUnread.map((n) => (
@@ -248,6 +316,19 @@ export default function MyAlertsClient() {
             ))}
           </ul>
         )}
+
+        {notifications.length > 0 && inboxHasMore ? (
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={() => void loadMoreInbox()}
+              disabled={inboxLoadingMore}
+              className="text-[13px] font-medium text-green-700 hover:text-green-900 disabled:opacity-50"
+            >
+              {inboxLoadingMore ? "Loading…" : "Load older activity"}
+            </button>
+          </div>
+        ) : null}
       </section>
 
       <section aria-labelledby="subscriptions-heading">

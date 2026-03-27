@@ -1,18 +1,34 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireShopperSession } from "@/lib/require-shopper";
 
-const TAKE = 50;
+const DEFAULT_TAKE = 50;
+const MAX_TAKE = 100;
+const MAX_SKIP = 5_000;
 
-/** GET /api/shopper/notifications — inbox items for the logged-in shopper (newest first). */
-export async function GET() {
+function clampInt(raw: string | null, fallback: number, max: number): number {
+  const n = Number.parseInt(raw ?? "", 10);
+  if (!Number.isFinite(n) || n < 0) return fallback;
+  return Math.min(n, max);
+}
+
+/** GET /api/shopper/notifications — inbox (newest first). Query: ?take=&skip= for pagination. */
+export async function GET(req: NextRequest) {
   const gate = await requireShopperSession();
   if ("response" in gate) return gate.response;
+
+  const take = clampInt(
+    req.nextUrl.searchParams.get("take"),
+    DEFAULT_TAKE,
+    MAX_TAKE,
+  );
+  const skip = clampInt(req.nextUrl.searchParams.get("skip"), 0, MAX_SKIP);
 
   const rows = await prisma.shopperNotification.findMany({
     where: { shopperId: gate.shopperId },
     orderBy: { createdAt: "desc" },
-    take: TAKE,
+    skip,
+    take,
     select: {
       id: true,
       kind: true,
@@ -34,5 +50,8 @@ export async function GET() {
       createdAt: n.createdAt.toISOString(),
       store: n.store,
     })),
+    hasMore: rows.length === take,
+    skip,
+    take,
   });
 }

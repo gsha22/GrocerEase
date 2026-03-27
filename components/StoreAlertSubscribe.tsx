@@ -10,6 +10,8 @@ type Props = {
   storeName: string;
   /** Server-known active store_follow subscription */
   initialSubscribed: boolean;
+  /** Active store_follow alert row id when subscribed (avoids GET before DELETE) */
+  initialStoreFollowAlertId: string | null;
   /** From server auth() — client useSession can lag behind this */
   viewerRole: ViewerRole;
 };
@@ -18,18 +20,22 @@ export default function StoreAlertSubscribe({
   storeId,
   storeName,
   initialSubscribed,
+  initialStoreFollowAlertId,
   viewerRole,
 }: Props) {
   const router = useRouter();
   // Must match server on first paint — do not read sessionStorage here (hydration error).
   const [subscribed, setSubscribed] = useState(initialSubscribed);
+  const [followAlertId, setFollowAlertId] = useState<string | null>(
+    initialStoreFollowAlertId,
+  );
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // When user unsubscribes elsewhere (e.g. My alerts) or server data updates, follow the server.
   useEffect(() => {
     setSubscribed(initialSubscribed);
-  }, [initialSubscribed, storeId]);
+    setFollowAlertId(initialStoreFollowAlertId);
+  }, [initialSubscribed, initialStoreFollowAlertId, storeId]);
 
   const callbackPath = `/stores/${storeId}`;
   const loginHref = `/login?callbackUrl=${encodeURIComponent(callbackPath)}`;
@@ -54,11 +60,12 @@ export default function StoreAlertSubscribe({
         });
         const payload = (await res.json().catch(() => ({}))) as {
           error?: string;
-          isActive?: boolean;
+          id?: string;
         };
 
         if (!res.ok) {
           setSubscribed(false);
+          setFollowAlertId(null);
           setError(
             typeof payload.error === "string"
               ? payload.error
@@ -72,8 +79,12 @@ export default function StoreAlertSubscribe({
         }
 
         setSubscribed(true);
+        setFollowAlertId(
+          typeof payload.id === "string" && payload.id ? payload.id : null,
+        );
       } catch {
         setSubscribed(false);
+        setFollowAlertId(null);
         setError("Network error — check your connection and try again.");
       } finally {
         setPending(false);
@@ -84,24 +95,30 @@ export default function StoreAlertSubscribe({
     setSubscribed(false);
     setPending(true);
     try {
-      const listRes = await fetch("/api/alerts", { credentials: "include" });
-      if (!listRes.ok) {
-        setSubscribed(true);
-        setError("Could not update subscription.");
-        return;
+      let alertId = followAlertId;
+      if (!alertId) {
+        const listRes = await fetch("/api/alerts", { credentials: "include" });
+        if (!listRes.ok) {
+          setSubscribed(true);
+          setError("Could not update subscription.");
+          return;
+        }
+        const data = (await listRes.json()) as {
+          alerts?: Array<{ id: string; type: string; storeId: string | null }>;
+        };
+        const row = (data.alerts ?? []).find(
+          (a) => a.type === "store_follow" && a.storeId === storeId,
+        );
+        if (!row) {
+          setFollowAlertId(null);
+          setSubscribed(false);
+          router.refresh();
+          return;
+        }
+        alertId = row.id;
       }
-      const data = (await listRes.json()) as {
-        alerts?: Array<{ id: string; type: string; storeId: string | null }>;
-      };
-      const row = (data.alerts ?? []).find(
-        (a) => a.type === "store_follow" && a.storeId === storeId,
-      );
-      if (!row) {
-        setSubscribed(false);
-        router.refresh();
-        return;
-      }
-      const del = await fetch(`/api/alerts/${row.id}`, {
+
+      const del = await fetch(`/api/alerts/${alertId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -110,6 +127,7 @@ export default function StoreAlertSubscribe({
         setError("Could not unsubscribe.");
         return;
       }
+      setFollowAlertId(null);
       setSubscribed(false);
       router.refresh();
     } finally {

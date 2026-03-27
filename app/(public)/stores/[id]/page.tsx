@@ -60,6 +60,7 @@ export default async function StoreProfilePage({
     rawRole === "shopper" || rawRole === "owner" ? rawRole : null;
 
   let initialStoreFollow = false;
+  let storeFollowAlertId: string | null = null;
   if (session?.role === "shopper") {
     const follow = await prisma.alert.findFirst({
       where: {
@@ -71,6 +72,7 @@ export default async function StoreProfilePage({
       select: { id: true },
     });
     initialStoreFollow = Boolean(follow);
+    storeFollowAlertId = follow?.id ?? null;
   }
 
   const freshUpdatesDisplay = enrichFreshUpdatesWithStale(
@@ -176,6 +178,7 @@ export default async function StoreProfilePage({
             storeId={store.id}
             storeName={store.name}
             initialSubscribed={initialStoreFollow}
+            initialStoreFollowAlertId={storeFollowAlertId}
             viewerRole={viewerRole}
           />
         </section>

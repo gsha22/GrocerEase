@@ -15,6 +15,8 @@ export const authConfig = {
         const email = credentials?.email as string | undefined;
         const password = credentials?.password as string | undefined;
 
+        // Owner session is tried first, then shopper. Same /login form for both; wrong-type
+        // credentials simply fail with a generic error (no role hint) — see README for QA emails.
         const owner = await authenticateStoreOwner(email, password);
         if (owner) {
           return {

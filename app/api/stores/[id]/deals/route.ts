@@ -27,6 +27,21 @@ function dealJson(deal: {
   };
 }
 
+function jsonCreatedDeal(
+  deal: Parameters<typeof dealJson>[0],
+  storeId: string,
+  store: { name: string },
+) {
+  void notifyStoreFollowersOfNewDeal({
+    storeId,
+    storeName: store.name,
+    dealId: deal.id,
+    dealTitle: deal.title,
+    price: deal.price,
+  });
+  return NextResponse.json({ deal: dealJson(deal) }, { status: 201 });
+}
+
 function parsePrice(raw: unknown): { ok: true; value: Prisma.Decimal } | { ok: false; error: string } {
   if (raw === undefined || raw === null || raw === "") {
     return { ok: false, error: "price is required" };
@@ -168,15 +183,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
-    void notifyStoreFollowersOfNewDeal({
-      storeId,
-      storeName: store.name,
-      dealId: deal.id,
-      dealTitle: deal.title,
-      price: deal.price,
-    });
-
-    return NextResponse.json({ deal: dealJson(deal) }, { status: 201 });
+    return jsonCreatedDeal(deal, storeId, store);
   }
 
   const priceResult = parsePrice(body.price);
@@ -221,13 +228,5 @@ export async function POST(request: NextRequest, context: RouteContext) {
     },
   });
 
-  void notifyStoreFollowersOfNewDeal({
-    storeId,
-    storeName: store.name,
-    dealId: deal.id,
-    dealTitle: deal.title,
-    price: deal.price,
-  });
-
-  return NextResponse.json({ deal: dealJson(deal) }, { status: 201 });
+  return jsonCreatedDeal(deal, storeId, store);
 }
