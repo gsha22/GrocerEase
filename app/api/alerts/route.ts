@@ -52,6 +52,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (body.type === AlertType.item_restock && !body.storeId) {
+      return NextResponse.json(
+        { error: "storeId is required for item_restock alerts" },
+        { status: 400 }
+      );
+    }
+
     if (body.type === AlertType.store_follow && !body.storeId) {
       return NextResponse.json(
         { error: "storeId is required for store_follow alerts" },
