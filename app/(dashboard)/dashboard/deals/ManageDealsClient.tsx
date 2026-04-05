@@ -5,7 +5,7 @@ import { formatExpiry, formatPriceUsd } from "@/lib/deals";
 
 const PAST_DEALS_PAGE_SIZE = 20;
 
-type ApiDeal = {
+export type ApiDeal = {
   id: string;
   title: string;
   description: string | null;
@@ -15,20 +15,20 @@ type ApiDeal = {
   createdAt: string;
 };
 
-function dateInputToIso(dateStr: string): string {
+export function dateInputToIso(dateStr: string): string {
   const [y, m, d] = dateStr.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999)).toISOString();
 }
 
-function isoToDateInput(iso: string): string {
+export function isoToDateInput(iso: string): string {
   return new Date(iso).toISOString().slice(0, 10);
 }
 
-function dealIsActive(d: ApiDeal): boolean {
+export function dealIsActive(d: ApiDeal): boolean {
   return !d.isExpired && new Date(d.expiresAt).getTime() > Date.now();
 }
 
-function formatDealMeta(d: ApiDeal): string {
+export function formatDealMeta(d: ApiDeal): string {
   const price = formatPriceUsd(d.price);
   const bits = [price, formatExpiry(d.expiresAt)].filter(Boolean);
   return bits.join(" · ");
