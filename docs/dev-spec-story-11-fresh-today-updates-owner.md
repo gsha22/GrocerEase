@@ -11,10 +11,8 @@ This document describes the **owner-side** implementation: posting and managing 
 
 | Role | Name / assignment |
 |------|-------------------|
-| **Primary owner** | _Assign from your team roster (Issue #13 owner / story lead)._ |
-| **Secondary owner** | _Assign backup engineer / reviewer for this story._ |
-
-_Update the table with your course team’s actual names before submission._
+| **Primary owner** | _Gabriel_ |
+| **Secondary owner** | _Andrew_ |
 
 ---
 
