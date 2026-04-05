@@ -453,10 +453,10 @@ US 3 **displays** **business** information (store **name**, **address**, categor
 
 ### Minors
 
-- **Does the system solicit or store minors’ PII?** *[Team policy: e.g. “No age gate today — accounts are 13+ per ToS” or “Unknown — require guardian flow”]*  
-- **Why?** *[Legal/product stance]*  
-- **Guardian permission?** *[Y/N + mechanism if any]*  
-- **Policy re: adults convicted/suspected of child abuse having access to minors’ PII?** *[e.g. background checks for anyone with prod DB; role-based denial; “N/A if no minors’ PII stored”]*  
+- **Does the system solicit or store minors’ PII?** The product **does not target minors** and **does not include a dedicated flow to solicit** registrations from people under 18 (no age prompt, no separate “minor account” type). Shopper and owner signup are **generic**: they collect email, display name, and password (and owners later enter store/business profile data). **There is no technical age verification**, so if a minor completes signup, the same **long-term PII** (e.g. email, name) **can be stored** in `shoppers` or `store_owners` like any other user—in other words, we **do not intentionally collect children’s data**, but we **may persist PII from minors** who self-register. **[Team: align wording with Terms of Service / intended age policy (e.g. 13+ or 18+ only).]**
+- **Why?** The platform is built for adult shoppers and local store operators; absence of an age gate today is a **product/legal gap** to close if minors must be excluded or COPPA/other rules apply.  
+- **Guardian permission?** **Not implemented** in the current application (no guardian consent capture or attestation in signup flows). **[Team: Y/N and mechanism if required by policy or regulation.]**  
+- **Policy re: adults convicted/suspected of child abuse having access to minors’ PII?** *[Team: e.g. who may access production data; background checks; “treat as N/A until age gating exists” is not a substitute for legal review.]*  
 
 ---
 
