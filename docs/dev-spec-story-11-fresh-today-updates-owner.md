@@ -33,31 +33,31 @@ Components run in the **shopper’s browser**, the **owner’s browser** (dashbo
 
 ```mermaid
 flowchart TB
-  subgraph client_shopper["Shopper browser (React client + RSC payload)"]
-    SP["Store profile page\n`app/(public)/stores/[id]/page.tsx`"]
-    FTF["`StoreFreshUpdatesFeed` / `FreshTodaySection`\n(client fetch + optional SSE)"]
+  subgraph client_shopper["Shopper browser"]
+    SP["Store profile page RSC"]
+    FTF["StoreFreshUpdatesFeed or FreshTodaySection"]
   end
 
-  subgraph client_owner["Owner browser (React client)"]
-    MP["`ManagePostsPage`\n`app/(dashboard)/dashboard/posts/page.tsx`"]
-    MFC["`ManageFreshUpdatesClient`\n(dashboard form + list)"]
+  subgraph client_owner["Owner browser"]
+    MP["ManagePostsPage dashboard"]
+    MFC["ManageFreshUpdatesClient"]
   end
 
-  subgraph next_server["Next.js server (Node.js)"]
-    API_GET["Route: GET `/api/stores/[id]/updates`"]
-    API_POST["Route: POST `/api/stores/[id]/updates`"]
-    API_PATCH["Route: PATCH/DELETE `/api/stores/[id]/posts/[postId]`"]
-    API_SSE["Route: GET `/api/stores/[id]/posts/events`\n(SSE)"]
-    LIB["`lib/fresh-updates.ts`, `require-store-owner`,\n`post-events`, `notify-store-followers`"]
-    AUTH["NextAuth session / JWT\n`auth`, `auth.config`"]
+  subgraph next_server["Next.js server Node.js"]
+    API_GET["GET api stores id updates"]
+    API_POST["POST api stores id updates"]
+    API_PATCH["PATCH DELETE api stores id posts postId"]
+    API_SSE["GET api stores id posts events SSE"]
+    LIB["lib fresh-updates require-store-owner post-events notify-store-followers"]
+    AUTH["NextAuth session JWT"]
   end
 
-  subgraph data["PostgreSQL (managed instance / local dev)"]
-    T1[("`fresh_updates`")]
-    T2[("`stores`")]
-    T3[("`store_owners`")]
-    T4[("`shopper_notifications`")]
-    T5[("`alerts`")]
+  subgraph data["PostgreSQL"]
+    T1[(fresh_updates)]
+    T2[(stores)]
+    T3[(store_owners)]
+    T4[(shopper_notifications)]
+    T5[(alerts)]
   end
 
   SP --> API_GET
@@ -78,6 +78,8 @@ flowchart TB
   API_POST --> T5
 ```
 
+_File paths and exact route strings appear in §12; diagram labels avoid backticks and bracket segments so GitHub Mermaid parses reliably._
+
 **Execution notes**
 
 - **Browser:** Renders UI; runs `fetch` and `EventSource` (SSE) for live refresh on the public store page.
@@ -92,23 +94,23 @@ flowchart TB
 flowchart LR
   Owner["Store owner"]
   Shopper["Shopper"]
-  Dash["Dashboard UI\n`ManageFreshUpdatesClient`"]
-  StorePage["Public store page\n+ `StoreFreshUpdatesFeed`"]
-  API["Next.js API routes\n`/api/stores/:id/updates`\n`/api/stores/:id/posts/...`"]
-  DB[("PostgreSQL\n`fresh_updates`, etc.")]
-  Followers["Followers\n(`alerts` + `shopper_notifications`)"]
+  Dash["Dashboard ManageFreshUpdatesClient"]
+  StorePage["Public store page StoreFreshUpdatesFeed"]
+  API["Next.js API routes stores updates and posts"]
+  DB[("PostgreSQL fresh_updates etc")]
+  Followers["Followers alerts and shopper_notifications"]
 
-  Owner -->|"item_name, optional note\n(HTTPS JSON body)"| Dash
-  Dash -->|"POST body: `{ item_name, note? }`\n+ session cookie (JWT)"| API
-  API -->|"INSERT row:\nstoreId, itemName, note,\ncreatedAt"| DB
-  API -->|"fan-out: title/body\nper follower"| Followers
+  Owner -->|HTTPS JSON item_name note| Dash
+  Dash -->|POST plus session cookie JWT| API
+  API -->|INSERT fresh_updates row| DB
+  API -->|fan-out notifications| Followers
 
-  Shopper -->|"GET (no auth)"| StorePage
-  StorePage -->|"GET `/api/stores/:id/updates`\n(or SSR reads via Prisma)"| API
-  API -->|"SELECT updates\n(7-day window, limit 10\nfor public list)"| DB
-  API -->|"JSON: id, itemName, note,\ncreatedAt, isStale"| StorePage
+  Shopper -->|browse| StorePage
+  StorePage -->|GET updates or SSR Prisma| API
+  API -->|SELECT 7-day window limit 10| DB
+  API -->|JSON updates array isStale| StorePage
 
-  API -->|"SSE `post-event`\n(after create/update/delete)"| StorePage
+  API -->|SSE post-event| StorePage
 ```
 
 **Data moved**
@@ -131,95 +133,95 @@ classDiagram
   direction TB
 
   class Store {
-    +id: string
-    +ownerId: string
-    +name: string
-    +address: string
+    +id string
+    +ownerId string
+    +name string
+    +address string
   }
 
   class FreshUpdate {
-    +id: string
-    +storeId: string
-    +itemId: string?
-    +itemName: string
-    +note: string?
-    +createdAt: DateTime
-    +deletedAt: DateTime?
+    +id string
+    +storeId string
+    +itemId optional string
+    +itemName string
+    +note optional string
+    +createdAt DateTime
+    +deletedAt optional DateTime
   }
 
   class Item {
-    +id: string
-    +storeId: string
-    +name: string
+    +id string
+    +storeId string
+    +name string
   }
 
   class ShopperNotification {
-    +id: string
-    +shopperId: string
-    +kind: ShopperNotificationKind
-    +sourceId: string
-    +storeId: string
-    +title: string
-    +body: string?
+    +id string
+    +shopperId string
+    +kind enum
+    +sourceId string
+    +storeId string
+    +title string
+    +body optional string
   }
 
   class User {
-    <<interface next-auth>>
-    +role?: owner | shopper
-    +storeId?: string | null
+    <<interface>>
+    +role optional
+    +storeId optional
   }
 
   class Session {
-    <<interface next-auth>>
-    +user: User
-    +role: owner | shopper
-    +storeId: string | null
+    <<interface>>
+    +user User
+    +role string
+    +storeId string
   }
 
   class JWT {
-    <<interface next-auth/jwt>>
-    +role?: owner | shopper
-    +ownerId?: string
-    +storeId?: string | null
+    <<interface>>
+    +role optional
+    +ownerId optional
+    +storeId optional
   }
 
   class PostEventPayload {
-    <<type lib/post-events>>
-    +storeId: string
-    +postId: string
-    +type: PostEventType
-    +occurredAt: string
+    <<datatype>>
+    +storeId string
+    +postId string
+    +type string
+    +occurredAt string
   }
 
   class RouteContextUpdates {
-    <<interface route.ts>>
-    +params: Promise~{ id: string }~
+    <<interface>>
+    +params id only
   }
 
   class RouteContextPostId {
-    <<interface posts/[postId]/route.ts>>
-    +params: Promise~{ id: string; postId: string }~
+    <<interface>>
+    +params id and postId
   }
 
   class RouteContextEvents {
-    <<interface posts/events/route.ts>>
-    +params: Promise~{ id: string }~
+    <<interface>>
+    +params id only
   }
 
   class EventEmitter {
-    <<Node.js events>>
-    +on(event, listener)
-    +emit(event, ...args)
-    +off(event, listener)
+    <<external>>
+    +on
+    +emit
+    +off
   }
 
-  Session *-- User : user
-  JWT ..> Session : callbacks populate session from token
-  Store "1" --> "*" FreshUpdate : freshUpdates
-  FreshUpdate "*" --> "0..1" Item : item
-  Store "1" --> "*" ShopperNotification : shopperNotifications
-  PostEventPayload ..> FreshUpdate : postId references row id
-  EventEmitter <.. PostEventPayload : emitted on bus keyed by storeId
+  Session *-- User
+  JWT ..> Session
+  Store --> FreshUpdate
+  FreshUpdate --> Item
+  Store --> ShopperNotification
+  PostEventPayload ..> FreshUpdate
+  EventEmitter <.. PostEventPayload
 ```
 
 **Subclass / extension notes**
@@ -498,14 +500,7 @@ Effects are **user-visible** (shopper/owner) or **internal** (ops/logs). This se
 
 ---
 
-## 11. Automated tests (Story 11–related)
-
-- **Unit:** `lib/fresh-updates.test.ts` — `parseFreshUpdatePostBody`, `enrichFreshUpdatesWithStale`, `parseFreshUpdatePatchBody`.
-- **Machine / integration:** `scripts/fresh-updates-machine-tests.ts` — exercises live HTTP against a running server and seeded store.
-
----
-
-## 12. LLM / documentation provenance
+## 11. LLM / documentation provenance
 
 This dev spec was drafted with assistance from an **LLM in Cursor** (analysis of repository files and `git log`). For course submission, attach:
 
@@ -514,7 +509,7 @@ This dev spec was drafted with assistance from an **LLM in Cursor** (analysis of
 
 ---
 
-## 13. References (implementation files)
+## 12. References (implementation files)
 
 - `app/api/stores/[id]/updates/route.ts`
 - `app/api/stores/[id]/posts/[postId]/route.ts`
