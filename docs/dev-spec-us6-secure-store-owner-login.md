@@ -292,6 +292,26 @@ classDiagram
         +isSafeRelativeAppPath(url : string) : boolean
     }
 
+    %% ── Audit module ───────────────────────────────────────────────
+
+    class AuthAuditModule {
+        <<module>>
+        +writeAuthAuditLog(params) : Promise~void~
+        +hashForAudit(value : string) : string
+    }
+
+    class AuthAuditLog {
+        <<model>>
+        +id : string
+        +createdAt : DateTime
+        +event : string
+        +outcome : string
+        +accountType : string
+        +emailHash : string?
+        +ownerId : string?
+        +ipAddress : string?
+    }
+
     %% ── Route handlers ─────────────────────────────────────────────
 
     class LoginRoute {
@@ -446,6 +466,10 @@ classDiagram
     %% ── Middleware ────────────────────────────────────────────────
     MiddlewareModule ..> NextAuthJWT : reads from cookie
     MiddlewareModule ..> AuthModule : uses getToken
+
+    %% ── Audit wiring ──────────────────────────────────────────────
+    AuthAuditModule ..> AuthAuditLog : writes to DB
+    LoginRoute ..> AuthAuditModule : logs every attempt
 
     %% ── Login route wiring ────────────────────────────────────────
     LoginRoute ..> RateLimitModule : checks
@@ -654,6 +678,19 @@ Prevents open-redirect attacks by validating that post-login `callbackUrl` value
 |---|---|
 | `safeCallbackPath(raw, fallback): string` | Returns `raw` if it passes `isSafeRelativeAppPath`; otherwise returns `fallback` (default: `"/dashboard"`). |
 | `isSafeRelativeAppPath(url: string): boolean` | Returns `true` only if the URL starts with `/` but not `//` (rejects protocol-relative cross-origin URLs). |
+
+---
+
+### `AuthAuditModule` — `lib/auth-audit.ts`
+
+Writes structured security events to the `auth_audit_logs` table. Designed to be fire-and-forget — failures are silently swallowed so they never interrupt the login flow.
+
+**Public methods**
+
+| Method | Description |
+|---|---|
+| `writeAuthAuditLog({ event, outcome, accountType, email?, ownerId?, ipAddress? }): Promise<void>` | Creates one `auth_audit_logs` row. Hashes the email via `hashForAudit` before writing. Catches and suppresses any Prisma exception so audit failures cannot break authentication. |
+| `hashForAudit(value: string): string` | Returns the lowercase-normalized SHA-256 hex digest of `value`. Used to store a correlation key for the email without persisting plaintext PII in the audit table. |
 
 ---
 
@@ -877,6 +914,25 @@ Stores hashed single-use tokens for the future password reset flow. Schema migra
 | `expiresAt: DateTime` | Expiry time for the token. |
 | `createdAt: DateTime` | Token creation timestamp. |
 | `owner: StoreOwner` | Relation back to the owning account. |
+
+---
+
+### `AuthAuditLog` — Prisma model (`auth_audit_logs` table)
+
+Append-only security audit record. One row per login attempt. Written by `AuthAuditModule`.
+
+**Public fields**
+
+| Field | Description |
+|---|---|
+| `id: string` | UUID primary key. |
+| `createdAt: DateTime` | Timestamp of the login attempt. Indexed for chronological queries. |
+| `event: string` | Event type label. Currently always `"login_attempt"`. |
+| `outcome: string` | Result of the attempt: `"success"`, `"invalid_credentials"`, `"rate_limited"`, or `"error"`. |
+| `accountType: string` | Account kind. `"owner"` for all US 6 login events. |
+| `emailHash: string?` | SHA-256 hex digest of the normalized email. `null` if email was not present in the request. Allows querying whether a specific address was targeted without exposing plaintext email in the audit log. |
+| `ownerId: string?` | Foreign key to `store_owners.id`. Set only on successful logins; `null` on failures since the owner cannot be confirmed. |
+| `ipAddress: string?` | Plaintext client IP address. Retained for brute-force detection and breach investigation. |
 
 ---
 
@@ -1235,6 +1291,26 @@ Schema-only addition from this PR. No active code path yet — the `POST /auth/f
 
 ---
 
+### `auth_audit_logs` table — Prisma model: `AuthAuditLog`
+
+Records every owner login attempt. Written by `lib/auth-audit.ts` from `app/auth/login/route.ts`. Used for security audits, breach investigations, and brute-force detection.
+
+| Column | PostgreSQL type | Nullable | Purpose | Size (bytes/row) |
+|---|---|---|---|---|
+| `id` | `TEXT` (UUID) | No | Primary key. | 37 |
+| `created_at` | `TIMESTAMP(3)` | No | Event timestamp. Indexed for chronological queries. | 8 |
+| `event` | `TEXT` | No | Event type. Currently always `"login_attempt"`. | ~16 |
+| `outcome` | `TEXT` | No | Result: `"success"`, `"invalid_credentials"`, `"rate_limited"`, or `"error"`. | ~17 |
+| `account_type` | `TEXT` | No | Account kind: `"owner"` for this flow. | ~6 |
+| `email_hash` | `TEXT` | Yes | SHA-256 hex digest of the normalized email (64 chars). Allows correlating attempts with a known email without storing plaintext PII. | 65 when set, 0 when NULL |
+| `owner_id` | `TEXT` (UUID) | Yes | Set on successful logins to link the event to the authenticated owner. Not set on failures (owner cannot be confirmed). | 37 when set, 0 when NULL |
+| `ip_address` | `TEXT` | Yes | Plaintext client IP from `x-forwarded-for`/`x-real-ip`. Stored for security investigation. | ~16 avg (IPv4) |
+
+**Row overhead:** 23 bytes.
+**Estimated total per row:** ~225 bytes (successful login with all fields set); ~160 bytes (failed attempt with NULL owner_id).
+
+---
+
 ### `stores` table — Prisma model: `Store` (partial, US 6 relevant fields only)
 
 The `requireStoreOwnerForStore` guard reads the `stores` table during every owner-scoped API call to confirm `store.ownerId === session.user.id`.
@@ -1431,18 +1507,44 @@ Same path as email through steps 1–5. Not currently rendered explicitly in `Da
 |---|---|
 | `store_owners` table (all columns) | Primary: `AvalonMei` (Eric Du) — authored the auth implementation. Secondary: `evelyn-lo` (Evelyn) — reviewed, merged, and co-owns the issue. |
 | `password_reset_tokens` table | Primary: `AvalonMei`. Secondary: `evelyn-lo`. (Schema added in this PR; implementation deferred.) |
+| `auth_audit_logs` table | Primary: `AvalonMei`. Secondary: `evelyn-lo`. |
 
 ---
 
 ### Audit procedures
 
-**Routine access:** All reads and writes to `store_owners` are made exclusively through Prisma queries in `lib/authenticate-store-owner.ts` and the signup route. There is no ad-hoc SQL access to production data. Prisma query logs can be enabled via `log: ['query']` in the Prisma client configuration to capture every SQL statement with its parameters redacted.
+**Automated audit trail:** Every call to `POST /auth/login` writes a row to the `auth_audit_logs` table via `lib/auth-audit.ts`. Each row records:
+- `event` — always `"login_attempt"` for this flow
+- `outcome` — `"success"`, `"invalid_credentials"`, or `"rate_limited"`
+- `account_type` — `"owner"`
+- `email_hash` — SHA-256 of the normalized email address (one-way hash; allows correlation with a known email without storing plaintext PII in the audit table)
+- `ip_address` — plaintext client IP extracted from `x-forwarded-for` / `x-real-ip` headers (retained for security investigations)
+- `created_at` — timestamp of the event
+
+Audit log writes are fire-and-forget; failures are swallowed so they cannot interrupt the login flow. Three indexes support common queries: by timestamp (chronological review), by `owner_id + created_at` (per-account activity), and by `email_hash + created_at` (targeted account investigation).
+
+**Routine access review:** All reads and writes to `store_owners` are made exclusively through Prisma queries in `lib/authenticate-store-owner.ts` and the signup route. There is no ad-hoc SQL access to production data. Prisma query logs can be enabled via `log: ['query']` in the Prisma client configuration to capture every SQL statement with parameters redacted.
+
+**Audit log queries:** To review login activity for a specific account, compute `SHA-256(email.toLowerCase())` and query:
+```sql
+SELECT created_at, outcome, ip_address
+FROM auth_audit_logs
+WHERE email_hash = '<sha256-hex>'
+ORDER BY created_at DESC;
+```
+
+To detect brute-force patterns:
+```sql
+SELECT ip_address, COUNT(*) AS attempts, COUNT(*) FILTER (WHERE outcome = 'success') AS successes
+FROM auth_audit_logs
+WHERE created_at > NOW() - INTERVAL '1 hour'
+GROUP BY ip_address
+ORDER BY attempts DESC;
+```
 
 **Non-routine access:** Any direct database access (e.g., via `psql` or a database GUI) by a team member to the production `store_owners` table must be documented in the project's incident log and reviewed by both the primary and secondary owners. Vercel Postgres access is gated by Vercel project membership; access grants and revocations are tracked in the Vercel dashboard audit log.
 
-**Breach procedure:** If a breach of `store_owners` is suspected, the immediate response is to rotate `NEXTAUTH_SECRET` (which invalidates all active JWT sessions) and notify affected users to reset their passwords. Because passwords are stored as bcrypt hashes, the risk from a hash leak is mitigated by bcrypt's computational cost — however, owners with weak passwords should be notified immediately.
-
-**No automated audit trail currently exists** in the application code. Adding an `auth_audit_log` table (recording login attempts, IPs, timestamps, and outcomes) is a recommended future improvement.
+**Breach procedure:** If a breach of `store_owners` is suspected, the immediate response is to rotate `NEXTAUTH_SECRET` (which invalidates all active JWT sessions) and notify affected users to reset their passwords. Because passwords are stored as bcrypt hashes, the risk from a hash leak is mitigated by bcrypt's computational cost — however, owners with weak passwords should be notified immediately. The `auth_audit_logs` table can be used post-breach to determine which accounts were accessed and from which IPs.
 
 ---
 
@@ -1458,13 +1560,13 @@ The platform's purpose requires that the account holder is a legal adult capable
 
 **Does the application solicit a guardian's permission?**
 
-No. Because the platform is not intended for minors, no guardian-consent flow is implemented. If a minor were to create an account by misrepresenting their age, the team's policy is to delete the account upon discovery.
+No. Because the platform is not intended for minors, no guardian-consent flow is implemented.
 
 **Policy for minors' PII and child abuse**
 
-GrocerEase does not have a formal policy document for this scenario at this time, as minors are not a target or expected user population. The team's working policy is:
+A formal policy is maintained in [docs/minor-pii-policy.md](minor-pii-policy.md). Key points:
 
-1. Any account identified as belonging to a minor is immediately suspended and its data deleted.
-2. The platform stores no content (photos, chat, location) beyond the store owner's business name, address, and email — limiting the scope of potential misuse.
-3. Any team member convicted or under active investigation for child abuse is immediately removed from all access to production infrastructure (Vercel project, database credentials, and GitHub repository) pending legal resolution.
-4. Access to production data is limited to the two named team members (primary and secondary owners) and requires multi-factor authentication on both GitHub and Vercel accounts.
+1. Any account identified as belonging to a minor is immediately suspended (`is_published = false`) and its data deleted within 72 hours of discovery, including cascade deletion of all associated store records.
+2. No age information is collected; compliance with the 18+ requirement is enforced through the Terms of Service affirmation at registration.
+3. Any team member convicted of, charged with, or under active law enforcement investigation for child abuse has all production access revoked immediately: removed from the Vercel project, all shared secrets rotated, and removed from the GitHub repository.
+4. Access to production data is limited to `AvalonMei` and `evelyn-lo`, both requiring multi-factor authentication on GitHub and Vercel.

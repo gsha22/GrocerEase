@@ -15,7 +15,7 @@ const globalStore = globalThis as typeof globalThis & {
 const store = globalStore.__authRateLimitStore ?? new Map<string, Bucket>();
 globalStore.__authRateLimitStore = store;
 
-function requestIp(req: NextRequest): string {
+export function requestIp(req: NextRequest): string {
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) return forwarded.split(",")[0]?.trim() ?? "unknown";
   const realIp = req.headers.get("x-real-ip");
