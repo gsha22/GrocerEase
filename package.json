@@ -19,7 +19,8 @@
     "test:store-profile": "tsx scripts/store-profile-machine-tests.ts",
     "test:fresh-updates": "node --import tsx --test lib/fresh-updates.test.ts",
     "test:fresh-updates-machine": "tsx scripts/fresh-updates-machine-tests.ts",
-    "test:alerts-machine": "tsx scripts/alerts-machine-tests.ts"
+    "test:alerts-machine": "tsx scripts/alerts-machine-tests.ts",
+    "test": "jest"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.5.0",
@@ -35,15 +36,25 @@
     "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.2",
+    "@babel/preset-react": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "babel-jest": "^30.3.0",
     "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "^16.2.1",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
