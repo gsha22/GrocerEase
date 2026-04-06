@@ -262,6 +262,32 @@ describe("ManageFreshUpdatesClient", () => {
       expect(global.fetch).toHaveBeenCalledTimes(1);
     });
 
+    it("sets error from data.error when PATCH !res.ok", async () => {
+      const user = userEvent.setup();
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce(jsonResponse({ updates: [sampleUpdate] }))
+        .mockResolvedValueOnce(
+          jsonResponse({ error: "Permission denied" }, false),
+        );
+
+      render(<ManageFreshUpdatesClient storeId={STORE_ID} />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Bok Choy")).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole("button", { name: /^edit$/i }));
+      await user.click(screen.getByRole("button", { name: /^save$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText("Permission denied")).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByRole("textbox", { name: /edit item name/i }),
+      ).toBeInTheDocument();
+    });
+
     it("PATCHes post, merges data.post into state, cancelEdit, success Post updated.", async () => {
       const user = userEvent.setup();
       const updated = {
@@ -332,6 +358,29 @@ describe("ManageFreshUpdatesClient", () => {
         "Delete this post? This cannot be undone.",
       );
       expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("sets error from data.error when DELETE !res.ok", async () => {
+      const user = userEvent.setup();
+      jest.spyOn(window, "confirm").mockReturnValue(true);
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce(jsonResponse({ updates: [sampleUpdate] }))
+        .mockResolvedValueOnce(jsonResponse({ error: "Already deleted" }, false));
+
+      render(<ManageFreshUpdatesClient storeId={STORE_ID} />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Bok Choy")).toBeInTheDocument();
+      });
+
+      const row = screen.getByText("Bok Choy").closest("li")!;
+      await user.click(within(row).getByRole("button", { name: /^delete$/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText("Already deleted")).toBeInTheDocument();
+      });
+
+      expect(screen.getByText("Bok Choy")).toBeInTheDocument();
     });
 
     it("DELETE succeeds: filters post out, sets Post deleted.", async () => {
