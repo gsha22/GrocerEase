@@ -60,6 +60,8 @@ flowchart TB
 
 **Legend:** Shopper discovery **list** and **map** pages run mostly as **client components** (`"use client"`); they call **`/api/stores`** on the **same origin** (Next server). **SQL** runs in the **Node** server context via Prisma/raw query. **Map tiles** load from **OpenStreetMap** (not self-hosted). **Geolocation** is resolved **in the browser**; coordinates are sent only as **query parameters** to the API (not written to DB by this story).
 
+> **Orphaned component not shown above:** `components/StoreDirectory.tsx` is a client component that also calls `GET /api/stores?category=...` (without geolocation). It is defined in the repository but is **not imported by any routed page** as of this spec. It is documented in the class diagram and class listing below for completeness.
+
 ---
 
 ## Diagram: US3 — Information flow
@@ -196,6 +198,16 @@ classDiagram
     +name: string
   }
 
+  class StoreDirectory {
+    <<client component — not currently routed>>
+    -filters: Set~FilterKey~
+    -stores: StoreData[]
+    -isPending: boolean
+    -initialLoad: boolean
+    -fetchStores(activeFilters: Set~FilterKey~): void
+    -handleFilterChange(next: Set~FilterKey~): void
+  }
+
   DiscoveryStoreBase <|-- StoreData
   DiscoveryStoreBase <|-- MapStoreDTO
   DiscoveryStoreBase <|-- StoreResult : query projection
@@ -204,9 +216,11 @@ classDiagram
   StoreFilterBarProps --> FilterKey
   Store "1" --> "1" StoreOwner : ownerId FK
   StoreResult ..> Store : same logical entity
+  StoreDirectory ..> FilterKey : uses
+  StoreDirectory ..> StoreData : uses
 ```
 
-**Note:** `MapStoreDTO` matches the anonymous `Store` type in `app/(public)/map/page.tsx` and `components/StoreMap.tsx` (duplicate definitions in source).
+**Note:** `MapStoreDTO` matches the anonymous `Store` type in `app/(public)/map/page.tsx` and `components/StoreMap.tsx` (duplicate definitions in source). `StoreDirectory` appears in the class diagram because it is defined in the repository and calls `GET /api/stores`; it is not currently imported by any routed page.
 
 ---
 
@@ -355,6 +369,23 @@ Below, **“public”** means exported API of the module or props the parent can
 
 ---
 
+### `StoreDirectory` *(default export function, `components/StoreDirectory.tsx` — not currently routed)*
+
+> **Note:** This component exists in source and is relevant to US 3 (it calls `GET /api/stores`), but as of this spec it is **not imported by any page route**. It is documented here because it is a real implementation unit visible in the repository.
+
+**Public**
+
+- **Default export** — Renders `StoreFilterBar` + responsive grid of `StoreCard`; fetches `GET /api/stores?category=...` on mount and on filter change. **No geolocation**: does not send `lat`/`lng` to the API; stores are returned alphabetically.
+
+**Private state & handlers**
+
+- *State:* **`filters`** (`Set<FilterKey>`), **`stores`** (`StoreData[]`), **`isPending`** (`boolean`), **`initialLoad`** (`boolean`) — Drive fetching and loading UI.
+- *Effect:* **`useEffect`** on `[filters, fetchStores]` — calls `fetchStores` whenever filters change.
+- *Memo:* **`fetchStores`** (`useCallback`) — Builds `?category=` query string, calls `/api/stores`, updates `stores`; sets `initialLoad` to `false` on first completion.
+- *Handler:* **`handleFilterChange`** — Updates `filters` state triggering the effect.
+
+---
+
 ## Technologies & external systems (not authored by the team)
 
 Versions below match **`package-lock.json`** where pinned; others as declared in `package.json` or environment.
@@ -372,7 +403,7 @@ Versions below match **`package-lock.json`** where pinned; others as declared in
 | **ESLint** | `^9` + **`eslint-config-next`** | Linting | Next-official rulesets | [https://eslint.org/](https://eslint.org/) — OpenJS — [https://eslint.org/docs/latest/](https://eslint.org/docs/latest/) |
 | **Prisma** | `7.5.0` | Schema, migrations, client to PostgreSQL | Type-safe DB access; team already on Prisma | [https://www.prisma.io/](https://www.prisma.io/) — Prisma Data — [https://www.prisma.io/docs](https://www.prisma.io/docs) |
 | **`@prisma/client`** | `7.5.0` | Generated DB client (`findMany` fallback path) | Same | [https://www.prisma.io/docs/orm/prisma-client](https://www.prisma.io/docs/orm/prisma-client) |
-| **`@prisma/adapter-pg`** | `^7.5.0` | Driver adapter | Connects Prisma to `pg` | Prisma docs |
+| **`@prisma/adapter-pg`** | `^7.5.0` | Driver adapter | Connects Prisma to `pg` | [https://www.prisma.io/docs/orm/overview/databases/database-drivers](https://www.prisma.io/docs/orm/overview/databases/database-drivers) — Prisma Data |
 | **`pg`** | `^8.20.0` | PostgreSQL wire protocol | Standard Node driver | [https://node-postgres.com/](https://node-postgres.com/) — Brian Carlson et al. |
 | **PostgreSQL** | *(managed version via host e.g. Supabase)* | Long-term storage for `stores` | Relational + PostGIS-friendly numeric lat/lng | [https://www.postgresql.org/](https://www.postgresql.org/) — PostgreSQL Global Development Group — [https://www.postgresql.org/docs/](https://www.postgresql.org/docs/) |
 | **Leaflet** | `1.9.4` | Interactive map (markers, tiles) | Lightweight OSS map library | [https://leafletjs.com/](https://leafletjs.com/) — Volodymyr Agafonkin — [https://leafletjs.com/reference.html](https://leafletjs.com/reference.html) |
@@ -437,12 +468,12 @@ US 3 **displays** **business** information (store **name**, **address**, categor
 
 | Data item | Justification to retain | How stored | How it entered | Path into storage | After storage (exposure path) | Security owner *(assign)* |
 |-----------|-------------------------|------------|----------------|-------------------|-------------------------------|---------------------------
-| **Shopper email** | Unique account identifier, login, alerts | PostgreSQL `shoppers.email` **unique** | `POST` signup routes / Prisma `create` | HTTP → auth route → Prisma → DB | Auth session, API responses that return profile | *[Team role: e.g. security lead]* |
-| **Shopper name** | Display in UI | `shoppers.name` `text` | Signup | Same | Profile / notifications copy | *[Assign]* |
-| **Shopper password** *(not PII but credential)* | Authentication | **bcrypt** hash in `password_hash` | Signup | Same | Only verification in login | *[Assign]* |
-| **Owner email / name** | Store operator identity | `store_owners` | Owner signup | Same | Dashboard / admin flows | *[Assign]* |
-| **Owner password hash** | Authentication | bcrypt in `password_hash` | Signup | Same | Login only | *[Assign]* |
-| **Store address** *(business)* | Discovery, geocoding | `stores.address` | Owner profile create / seed | API `POST /api/stores` → Prisma | **US 3 list/map**, public store pages | *[Assign]* |
+| **Shopper email** | Unique account identifier, login, alerts | PostgreSQL `shoppers.email` **unique** | `POST` signup form | `app/(public)/shopper/signup/ShopperSignupForm.tsx` → `POST /auth/shopper/signup` (`app/auth/shopper/signup/route.ts`) → `lib/validate-shopper-signup.ts` → `lib/authenticate-shopper.ts` → `prisma.shopper.create()` → `shoppers.email` | `app/auth/shopper/login/route.ts` → session cookie; `app/api/shopper/notifications/route.ts` → JSON response | *[Team role: e.g. security lead]* |
+| **Shopper name** | Display in UI | `shoppers.name` `text` | Same signup flow as above | Same path → `prisma.shopper.create()` → `shoppers.name` | Session cookie; shopper profile page `app/(public)/shopper/account/page.tsx`; notification payloads | *[Assign]* |
+| **Shopper password** *(not PII but credential)* | Authentication | **bcrypt** hash in `password_hash` | Same signup form | `lib/authenticate-shopper.ts` → `bcryptjs.hash()` → `prisma.shopper.create()` → `shoppers.password_hash` | `lib/authenticate-shopper.ts` → `bcryptjs.compare()` during login only; never returned in API responses | *[Assign]* |
+| **Owner email / name** | Store operator identity | `store_owners.email`, `store_owners.name` | Owner signup form | `app/(public)/signup/SignupForm.tsx` → `POST /auth/signup` (`app/auth/signup/route.ts`) → `lib/validate-owner-signup.ts` → `prisma.storeOwner.create()` → `store_owners` | `app/auth/login/route.ts` → session cookie; `app/(dashboard)/dashboard/` pages; `lib/require-owner-session.ts` gates | *[Assign]* |
+| **Owner password hash** | Authentication | bcrypt in `password_hash` | Same owner signup | `app/auth/signup/route.ts` → `bcryptjs.hash()` → `prisma.storeOwner.create()` → `store_owners.password_hash` | `app/auth/login/route.ts` → `bcryptjs.compare()` during login only | *[Assign]* |
+| **Store address** *(business)* | Discovery, geocoding | `stores.address` | Owner store-profile form | `app/(dashboard)/dashboard/profile/StoreProfileForm.tsx` → `POST /api/stores` (`app/api/stores/route.ts`) → `lib/store-profile.ts` (`validateStoreProfileCreate`) → `lib/geocode-address.ts` (optionally calls Google Maps) → `prisma.store.create()` → `stores.address` | **US 3:** `GET /api/stores` → `app/(public)/page.tsx` (`HomePage`) → `StoreCard` → browser; `GET /api/stores/:id` → `app/(public)/stores/[id]/page.tsx` | *[Assign]* |
 
 **US 3-specific shopper coordinates:** Browser geolocation is sent **only** as **query parameters** to `/api/stores`; the discovery handler **does not persist** lat/lng to the database. It may appear in **HTTP/server logs** depending on hosting configuration — **log redaction / retention policy** *[document team policy]*.
 
