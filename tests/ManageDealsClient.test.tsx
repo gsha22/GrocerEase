@@ -19,9 +19,13 @@ describe("dateInputToIso", () => {
     expect(result).toBe("2025-03-20T23:59:59.999Z");
   });
 
-  it("uses UTC so the day is not shifted by local timezone", () => {
+  it("always sets the time to 23:59:59.999 in UTC regardless of input date", () => {
     const result = dateInputToIso("2025-01-01");
-    expect(result).toBe("2025-01-01T23:59:59.999Z");
+    const d = new Date(result);
+    expect(d.getUTCHours()).toBe(23);
+    expect(d.getUTCMinutes()).toBe(59);
+    expect(d.getUTCSeconds()).toBe(59);
+    expect(d.getUTCMilliseconds()).toBe(999);
   });
 
   it("handles a leap day correctly", () => {
@@ -290,5 +294,52 @@ describe("ManageDealsClient component", () => {
     expect(
       screen.getByText(/choose a new expiry date before reusing/i),
     ).toBeInTheDocument();
+  });
+
+  it("removes an active deal when the Remove button is clicked and DELETE succeeds", async () => {
+    global.fetch = jest.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ deals: mockDeals }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({}),
+      } as Response) // DELETE response
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ deals: [mockDeals[1]] }),
+      } as Response); // reload after delete
+
+    render(<ManageDealsClient storeId="store-123" />);
+    await screen.findByText("Weekend Sale");
+
+    const removeButtons = screen.getAllByRole("button", { name: /^remove$/i });
+    fireEvent.click(removeButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.queryByText("Weekend Sale")).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows an error message when Remove fails on an inactive deal", async () => {
+    global.fetch = jest.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ deals: mockDeals }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: "Cannot remove deal." }),
+      } as Response); // DELETE fails
+
+    render(<ManageDealsClient storeId="store-123" />);
+    await screen.findByText("Old Deal");
+
+    // The inactive deal has its own Remove button (second Remove button in the list)
+    const removeButtons = screen.getAllByRole("button", { name: /^remove$/i });
+    fireEvent.click(removeButtons[removeButtons.length - 1]);
+
+    await screen.findByText("Cannot remove deal.");
   });
 });
