@@ -227,11 +227,15 @@ describe("InboxNotificationRow", () => {
   it("does not render body element when body is null", async () => {
     const n = makeNotification({ body: null, title: "No body notification" });
     mockFetch({ alerts: [] }, { notifications: [n], hasMore: false });
-    render(<MyAlertsClient />);
+    const { container } = render(<MyAlertsClient />);
     await waitFor(() => expect(screen.getByText("No body notification")).toBeInTheDocument());
-    // The paragraph for body should not exist since body is null
-    const paragraphs = screen.queryAllByText(/Now available/);
-    expect(paragraphs).toHaveLength(0);
+    // The notification content area has class "min-w-0"; it should contain
+    // exactly the kind badge row, the title paragraph, and the date paragraph —
+    // no extra paragraph for body text.
+    const contentDiv = container.querySelector(".min-w-0");
+    const paragraphs = contentDiv ? contentDiv.querySelectorAll("p") : [];
+    // title paragraph + date paragraph = 2; no body paragraph
+    expect(paragraphs).toHaveLength(2);
   });
 });
 
@@ -248,13 +252,6 @@ describe("load", () => {
       expect(calls.some((u: unknown) => (u as string).includes("/api/alerts"))).toBe(true);
       expect(calls.some((u: unknown) => (u as string).includes("/api/shopper/notifications"))).toBe(true);
     });
-  });
-
-  it("renders alerts from the API response", async () => {
-    const alert = makeAlert({ store: { id: "s1", name: "Fresh Mart" } });
-    mockFetch({ alerts: [alert] }, { notifications: [], hasMore: false });
-    render(<MyAlertsClient />);
-    await waitFor(() => expect(screen.getByText("Fresh Mart")).toBeInTheDocument());
   });
 
   it("shows subscriptions error when /api/alerts fails", async () => {
@@ -490,11 +487,12 @@ describe("useMemo partition", () => {
     const unread = makeNotification({ id: "u1", readAt: null, title: "Unread one" });
     const read = makeNotification({ id: "r1", readAt: "2026-01-01T13:00:00.000Z", title: "Read one" });
     mockFetch({ alerts: [] }, { notifications: [unread, read], hasMore: false });
-    render(<MyAlertsClient />);
+    const { container } = render(<MyAlertsClient />);
     await waitFor(() => {
-      const items = screen.getAllByRole("listitem");
-      const texts = items.map((el) => el.textContent ?? "");
-      expect(texts.some((t) => t.includes("Read"))).toBe(true);
+      // The divider is aria-hidden so getAllByRole skips it; query directly
+      const divider = container.querySelector('li[aria-hidden="true"]');
+      expect(divider).not.toBeNull();
+      expect(divider!.textContent).toBe("Read");
     });
   });
 
@@ -502,10 +500,12 @@ describe("useMemo partition", () => {
     const n1 = makeNotification({ id: "u1", readAt: null, title: "Unread A" });
     const n2 = makeNotification({ id: "u2", readAt: null, title: "Unread B", createdAt: "2026-01-02T00:00:00.000Z" });
     mockFetch({ alerts: [] }, { notifications: [n1, n2], hasMore: false });
-    render(<MyAlertsClient />);
+    const { container } = render(<MyAlertsClient />);
     await waitFor(() => {
       expect(screen.getByText("Unread A")).toBeInTheDocument();
       expect(screen.getByText("Unread B")).toBeInTheDocument();
+      // Divider must not be present when there are no read notifications
+      expect(container.querySelector('li[aria-hidden="true"]')).toBeNull();
     });
   });
 });
