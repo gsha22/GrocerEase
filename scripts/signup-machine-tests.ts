@@ -125,7 +125,7 @@ async function main() {
   }
 
   {
-    const { res, json } = await postSignup({
+    const { res } = await postSignup({
       name,
       email,
       password: "allletters",
@@ -135,7 +135,7 @@ async function main() {
   }
 
   {
-    const { res, json } = await postSignup({
+    const { res } = await postSignup({
       name,
       email,
       password: "12345678",
