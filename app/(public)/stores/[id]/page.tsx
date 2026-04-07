@@ -10,6 +10,7 @@ import {
   enrichFreshUpdatesWithStale,
   FRESH_UPDATE_PUBLIC_LIST_LIMIT,
   FRESH_UPDATE_PUBLIC_WINDOW_MS,
+  mapEnrichedFreshUpdatesToFeedItems,
 } from "@/lib/fresh-updates";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
@@ -79,13 +80,8 @@ export default async function StoreProfilePage({
     store.freshUpdates,
     asOf,
   );
-  const initialFreshUpdates = freshUpdatesDisplay.map((update) => ({
-    id: update.id,
-    itemName: update.itemName,
-    note: update.note,
-    createdAt: update.createdAt.toISOString(),
-    isStale: update.isStale,
-  }));
+  const initialFreshUpdates =
+    mapEnrichedFreshUpdatesToFeedItems(freshUpdatesDisplay);
 
   const hours = store.hours as { open?: string; close?: string } | null;
 
