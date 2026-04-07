@@ -19,7 +19,7 @@ const CATEGORY_EMOJI: Record<string, string> = {
   ebt: "\u{1F4B3}",
 };
 
-function heroEmoji(categories: string[]): string {
+export function heroEmoji(categories: string[]): string {
   for (const cat of categories) {
     const emoji = CATEGORY_EMOJI[cat.toLowerCase()];
     if (emoji) return emoji;
