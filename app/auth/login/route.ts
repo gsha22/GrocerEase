@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runCredentialsSignIn } from "@/lib/credentials-sign-in-response";
-import { isAuthRateLimited } from "@/lib/rate-limit";
+import { isAuthRateLimited, requestIp } from "@/lib/rate-limit";
 import { safeCallbackPath } from "@/lib/safe-callback-path";
+import { writeAuthAuditLog } from "@/lib/auth-audit";
 
 export async function POST(req: NextRequest) {
+  const ip = requestIp(req);
+
   if (isAuthRateLimited(req, "owner-login")) {
+    await writeAuthAuditLog({
+      event: "login_attempt",
+      outcome: "rate_limited",
+      accountType: "owner",
+      ipAddress: ip,
+    });
     return NextResponse.json(
       { error: "Too many attempts. Please try again in a minute." },
       { status: 429 }
@@ -30,5 +39,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return runCredentialsSignIn(req, email, password, callbackUrl);
+  const response = await runCredentialsSignIn(req, email, password, callbackUrl);
+
+  await writeAuthAuditLog({
+    event: "login_attempt",
+    outcome: response.status === 200 ? "success" : "invalid_credentials",
+    accountType: "owner",
+    email,
+    ipAddress: ip,
+  });
+
+  return response;
 }

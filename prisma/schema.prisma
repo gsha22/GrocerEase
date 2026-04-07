@@ -169,6 +169,22 @@ model ShopperNotification {
   @@map("shopper_notifications")
 }
 
+model AuthAuditLog {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  event       String
+  outcome     String
+  accountType String   @map("account_type")
+  emailHash   String?  @map("email_hash")
+  ownerId     String?  @map("owner_id")
+  ipAddress   String?  @map("ip_address")
+
+  @@index([createdAt])
+  @@index([ownerId, createdAt])
+  @@index([emailHash, createdAt])
+  @@map("auth_audit_logs")
+}
+
 model Alert {
   id        String    @id @default(uuid())
   shopperId String    @map("shopper_id")
