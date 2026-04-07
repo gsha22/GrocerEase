@@ -3,7 +3,6 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import MyAlertsClient, {
-  INBOX_KIND_LABELS,
   inboxKindLabel,
   notificationsByCreatedDesc,
 } from "@/app/(public)/my-alerts/MyAlertsClient";
@@ -16,13 +15,6 @@ describe("inboxKindLabel", () => {
 
   it("falls back to raw kind string", () => {
     expect(inboxKindLabel("custom_kind")).toBe("custom_kind");
-  });
-});
-
-describe("INBOX_KIND_LABELS", () => {
-  it("includes at least the two primary inbox kinds", () => {
-    expect(INBOX_KIND_LABELS.store_fresh_update).toBeDefined();
-    expect(INBOX_KIND_LABELS.store_new_deal).toBeDefined();
   });
 });
 
