@@ -85,9 +85,10 @@ describe("StoreFreshUpdatesFeed", () => {
       }),
     } as Response);
 
-    const esInstances: {
+    const esInstances: Array<{
+      url: string;
       listeners: Record<string, () => void>;
-    }[] = [];
+    }> = [];
     const orig = global.EventSource;
     global.EventSource = class MockES {
       listeners: Record<string, () => void> = {};
