@@ -73,9 +73,16 @@ describe("MapPage", () => {
   });
 
   it("shows loading skeleton before fetch resolves", () => {
-    jest.spyOn(global, "fetch").mockReturnValue(new Promise(() => {}));
+    let resolveFetch!: (value: Response) => void;
+    jest.spyOn(global, "fetch").mockReturnValue(
+      new Promise<Response>((resolve) => {
+        resolveFetch = resolve;
+      }),
+    );
     render(<MapPage />);
     expect(screen.getByText(/Loading map/i)).toBeInTheDocument();
+    // Resolve fetch to allow React to settle before the test ends
+    resolveFetch({ ok: true, json: async () => [] } as Response);
   });
 
   it("shows placeholder text when no stores are found", async () => {
@@ -162,6 +169,11 @@ describe("MapPage", () => {
     render(<MapPage />);
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith("/api/stores");
+    });
+    // Restore the default geolocation mock so subsequent tests are unaffected
+    Object.defineProperty(navigator, "geolocation", {
+      configurable: true,
+      value: undefined,
     });
   });
 });
