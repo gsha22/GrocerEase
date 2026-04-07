@@ -23,16 +23,19 @@ type NotificationRow = {
   store: { id: string; name: string };
 };
 
-const KIND_LABELS: Record<string, string> = {
+export const INBOX_KIND_LABELS: Record<string, string> = {
   store_fresh_update: "Fresh update",
   store_new_deal: "New deal",
 };
 
-function kindLabel(kind: string): string {
-  return KIND_LABELS[kind] ?? kind;
+export function inboxKindLabel(kind: string): string {
+  return INBOX_KIND_LABELS[kind] ?? kind;
 }
 
-function byCreatedDesc(a: NotificationRow, b: NotificationRow): number {
+export function notificationsByCreatedDesc(
+  a: NotificationRow,
+  b: NotificationRow,
+): number {
   return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 }
 
@@ -56,7 +59,7 @@ function InboxNotificationRow({
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] font-bold uppercase tracking-wide text-green-800 bg-green-100/80 px-2 py-0.5 rounded-full">
-              {kindLabel(n.kind)}
+              {inboxKindLabel(n.kind)}
             </span>
             {!unread ? (
               <span className="text-[11px] text-gray-400">Read</span>
@@ -237,8 +240,12 @@ export default function MyAlertsClient() {
   }
 
   const { inboxUnread, inboxRead } = useMemo(() => {
-    const unread = notifications.filter((n) => !n.readAt).sort(byCreatedDesc);
-    const read = notifications.filter((n) => n.readAt).sort(byCreatedDesc);
+    const unread = notifications
+      .filter((n) => !n.readAt)
+      .sort(notificationsByCreatedDesc);
+    const read = notifications
+      .filter((n) => n.readAt)
+      .sort(notificationsByCreatedDesc);
     return { inboxUnread: unread, inboxRead: read };
   }, [notifications]);
 
