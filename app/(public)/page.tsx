@@ -12,6 +12,23 @@ import {
 import StoreFilterBar, { type FilterKey } from "@/components/StoreFilterBar";
 import StoreCard, { type StoreData } from "@/components/StoreCard";
 
+/** Query string for `GET /api/stores` from the home directory (geo + category filters). */
+export function buildHomeStoresSearchParams(
+  filters: Set<FilterKey>,
+  loc: { lat: number; lng: number } | null,
+): URLSearchParams {
+  const params = new URLSearchParams();
+  if (loc) {
+    params.set("lat", loc.lat.toString());
+    params.set("lng", loc.lng.toString());
+    params.set("radius", "10");
+  }
+  if (filters.size > 0) {
+    params.set("category", Array.from(filters).join(","));
+  }
+  return params;
+}
+
 export default function HomePage() {
   const [stores, setStores] = useState<StoreData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,15 +42,7 @@ export default function HomePage() {
   const fetchStores = useCallback(
     async (filters: Set<FilterKey>, loc: { lat: number; lng: number } | null) => {
       setLoading(true);
-      const params = new URLSearchParams();
-      if (loc) {
-        params.set("lat", loc.lat.toString());
-        params.set("lng", loc.lng.toString());
-        params.set("radius", "10");
-      }
-      if (filters.size > 0) {
-        params.set("category", Array.from(filters).join(","));
-      }
+      const params = buildHomeStoresSearchParams(filters, loc);
       try {
         const res = await fetch(`/api/stores?${params.toString()}`);
         if (!res.ok) throw new Error("fetch failed");
