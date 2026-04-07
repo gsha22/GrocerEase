@@ -21,6 +21,19 @@ type Store = {
 
 const PITTSBURGH_CENTER: [number, number] = [40.4406, -79.9959];
 
+export function buildMapStoresApiUrl(
+  lat: number | null,
+  lng: number | null,
+): string {
+  const params = new URLSearchParams();
+  if (lat !== null && lng !== null) {
+    params.set("lat", lat.toString());
+    params.set("lng", lng.toString());
+    params.set("radius", "10");
+  }
+  return `/api/stores${params.toString() ? `?${params}` : ""}`;
+}
+
 export default function MapPage() {
   const [stores, setStores] = useState<Store[]>([]);
   const [center, setCenter] = useState<[number, number]>(PITTSBURGH_CENTER);
@@ -28,13 +41,7 @@ export default function MapPage() {
 
   useEffect(() => {
     async function loadStores(lat: number | null, lng: number | null) {
-      const params = new URLSearchParams();
-      if (lat !== null && lng !== null) {
-        params.set("lat", lat.toString());
-        params.set("lng", lng.toString());
-        params.set("radius", "10");
-      }
-      const res = await fetch(`/api/stores?${params.toString()}`);
+      const res = await fetch(buildMapStoresApiUrl(lat, lng));
       const data = await res.json();
       setStores(data);
       setLoading(false);
