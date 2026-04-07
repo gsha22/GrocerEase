@@ -15,13 +15,51 @@ type StoreProfileInitial = {
 
 type FieldErrors = Record<string, string>;
 
-const CATEGORY_OPTIONS = [
+export const STORE_PROFILE_CATEGORY_OPTIONS = [
   { key: "asian", label: "Asian groceries" },
   { key: "halal", label: "Halal" },
   { key: "organic", label: "Organic" },
   { key: "produce", label: "Produce" },
   { key: "ebt", label: "EBT Accepted" },
 ];
+
+export function toggleCategoryKey(prev: string[], category: string): string[] {
+  return prev.includes(category)
+    ? prev.filter((c) => c !== category)
+    : [...prev, category];
+}
+
+export function buildStoreProfilePayload(
+  name: string,
+  address: string,
+  open: string,
+  close: string,
+  categories: string[],
+  isExisting: boolean,
+  publish: boolean,
+) {
+  return {
+    name,
+    address,
+    hours: { open, close },
+    categories,
+    ...(isExisting ? { isPublished: publish } : {}),
+  };
+}
+
+export function storeProfileSaveTarget(
+  isExisting: boolean,
+  storeId: string | undefined,
+): { endpoint: string; method: "PATCH" | "POST" } {
+  if (isExisting && storeId) {
+    return { endpoint: `/api/stores/${storeId}`, method: "PATCH" };
+  }
+  return { endpoint: "/api/stores", method: "POST" };
+}
+
+export function storeProfileActionLabel(isExisting: boolean): string {
+  return isExisting ? "Update store profile" : "Publish store profile";
+}
 
 export default function StoreProfileForm({ initial }: { initial: StoreProfileInitial }) {
   const router = useRouter();
@@ -36,15 +74,10 @@ export default function StoreProfileForm({ initial }: { initial: StoreProfileIni
   const [loading, setLoading] = useState(false);
 
   const isExisting = Boolean(initial?.id);
-  const actionLabel = useMemo(
-    () => (isExisting ? "Update store profile" : "Publish store profile"),
-    [isExisting]
-  );
+  const actionLabel = useMemo(() => storeProfileActionLabel(isExisting), [isExisting]);
 
   function toggleCategory(category: string) {
-    setCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
-    );
+    setCategories((prev) => toggleCategoryKey(prev, category));
   }
 
   async function submit(publish: boolean) {
@@ -53,16 +86,17 @@ export default function StoreProfileForm({ initial }: { initial: StoreProfileIni
     setSavedMessage("");
     setFieldErrors({});
 
-    const payload = {
+    const payload = buildStoreProfilePayload(
       name,
       address,
-      hours: { open, close },
+      open,
+      close,
       categories,
-      ...(isExisting ? { isPublished: publish } : {}),
-    };
+      isExisting,
+      publish,
+    );
 
-    const endpoint = isExisting ? `/api/stores/${initial!.id}` : "/api/stores";
-    const method = isExisting ? "PATCH" : "POST";
+    const { endpoint, method } = storeProfileSaveTarget(isExisting, initial?.id);
 
     try {
       const res = await fetch(endpoint, {
@@ -148,7 +182,7 @@ export default function StoreProfileForm({ initial }: { initial: StoreProfileIni
         <h2 className="text-[17px] font-semibold text-gray-800 mb-2">Specialty categories</h2>
         <p className="text-[14px] text-gray-400 mb-3.5">Select all that apply - shoppers filter by these</p>
         <div className="flex flex-wrap gap-2">
-          {CATEGORY_OPTIONS.map((option) => {
+          {STORE_PROFILE_CATEGORY_OPTIONS.map((option) => {
             const active = categories.includes(option.key);
             return (
               <button
