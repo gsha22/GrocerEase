@@ -20,7 +20,7 @@
     "test:fresh-updates": "node --import tsx --test lib/fresh-updates.test.ts",
     "test:fresh-updates-machine": "tsx scripts/fresh-updates-machine-tests.ts",
     "test:alerts-machine": "tsx scripts/alerts-machine-tests.ts",
-    "test": "jest"
+    "test:jest": "jest"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.5.0",
@@ -41,6 +41,7 @@
     "@babel/preset-react": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
