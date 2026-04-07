@@ -5,6 +5,38 @@ import type { ViewerRole } from "@/lib/viewer-role";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+export function storeAlertCallbackPath(storeId: string): string {
+  return `/stores/${storeId}`;
+}
+
+export function storeAlertLoginHref(storeId: string): string {
+  return `/login?callbackUrl=${encodeURIComponent(storeAlertCallbackPath(storeId))}`;
+}
+
+export function storeAlertShopperSignupHref(storeId: string): string {
+  return `/signup/shopper?callbackUrl=${encodeURIComponent(storeAlertCallbackPath(storeId))}`;
+}
+
+export function pickSubscribeAlertId(payload: { id?: string }): string | null {
+  return typeof payload.id === "string" && payload.id ? payload.id : null;
+}
+
+export function describeSubscribeFailure(
+  status: number,
+  payload: { error?: string },
+): string {
+  if (typeof payload.error === "string" && payload.error) {
+    return payload.error;
+  }
+  if (status === 403) {
+    return "This account can’t subscribe (try a shopper login).";
+  }
+  if (status === 401) {
+    return "Sign in again, then retry.";
+  }
+  return "Could not subscribe.";
+}
+
 type Props = {
   storeId: string;
   storeName: string;
@@ -37,9 +69,8 @@ export default function StoreAlertSubscribe({
     setFollowAlertId(initialStoreFollowAlertId);
   }, [initialSubscribed, initialStoreFollowAlertId, storeId]);
 
-  const callbackPath = `/stores/${storeId}`;
-  const loginHref = `/login?callbackUrl=${encodeURIComponent(callbackPath)}`;
-  const signupHref = `/signup/shopper?callbackUrl=${encodeURIComponent(callbackPath)}`;
+  const loginHref = storeAlertLoginHref(storeId);
+  const signupHref = storeAlertShopperSignupHref(storeId);
 
   async function toggle() {
     setError(null);
@@ -66,22 +97,12 @@ export default function StoreAlertSubscribe({
         if (!res.ok) {
           setSubscribed(false);
           setFollowAlertId(null);
-          setError(
-            typeof payload.error === "string"
-              ? payload.error
-              : res.status === 403
-                ? "This account can’t subscribe (try a shopper login)."
-                : res.status === 401
-                  ? "Sign in again, then retry."
-                  : "Could not subscribe.",
-          );
+          setError(describeSubscribeFailure(res.status, payload));
           return;
         }
 
         setSubscribed(true);
-        setFollowAlertId(
-          typeof payload.id === "string" && payload.id ? payload.id : null,
-        );
+        setFollowAlertId(pickSubscribeAlertId(payload));
       } catch {
         setSubscribed(false);
         setFollowAlertId(null);
