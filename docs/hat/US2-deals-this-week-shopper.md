@@ -36,9 +36,9 @@ Rationale (from test design): (1) **Scan speed** measures efficient use (The Mom
 
 | # | Metric | Result | Observation |
 |---|--------|--------|-------------|
-| 1 | **Scan speed** (time to review all deals and identify if any are relevant) | ⚠️ Not recorded | Timed step 7 was not measured during this session; schedule a follow-up timed run. |
-| 2 | **Deal clarity** (can the shopper explain what each deal offers without re-reading?) | ✅ Pass | Tester recalled deal type (halal lamb) and approximate expiry ("some tuesday") without re-reading, indicating adequate clarity. |
-| 3 | **Purchase influence** (would any deal change where the shopper shops this week?) | ✅ Pass | Tester stated she would "shift gears and go there" if the lamb was on sale and the store had sufficient selection — positive signal. |
+| 1 | **Scan speed** (time to review all deals and identify if any are relevant) | _TBD_ | _Fill after timed step 7._ |
+| 2 | **Deal clarity** (can the shopper explain what each deal offers without re-reading?) | _TBD_ | |
+| 3 | **Purchase influence** (would any deal change where the shopper shops this week?) | _TBD_ | |
 
 ## Survey
 
