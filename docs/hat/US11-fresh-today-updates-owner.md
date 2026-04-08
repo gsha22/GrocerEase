@@ -1,7 +1,7 @@
 # HAT: User Story 11 — Fresh Today updates (owner)
 
 **Related issue:** [#65 — HAT: Discover nearby stores (shopper)](https://github.com/gsha22/GrocerEase/issues/65)  
-**Implementing PR:** _Add PR link when tracked with the HAT issue._  
+**Implementing PR:** https://github.com/gsha22/GrocerEase/pull/106
 **Tester:** Christine Tran
 
 ## User story
@@ -31,9 +31,9 @@ Rationale (from test design): (1) **Posting speed** reflects on-the-floor feasib
 
 | # | Metric | Result | Observation |
 |---|--------|--------|-------------|
-| 1 | **Posting speed** (can the owner post an update in under 30 seconds?) | _TBD_ | _Use step 5 timing._ |
-| 2 | **Publish confirmation** (does the owner see clear evidence that their update is live?) | _TBD_ | |
-| 3 | **Consistency intent** (would the owner post updates like this daily as part of their routine?) | _TBD_ | |
+| 1 | **Posting speed** (can the owner post an update in under 30 seconds?) | Partial (qualitative) | < 10 secs for sure (if description short), Q1: flow felt quicker than a Facebook post or printed flyer. Role-play: would delegate posting to employees. |
+| 2 | **Publish confirmation** (does the owner see clear evidence that their update is live?) | Pass | Q2: confident shoppers who subscribed see the update quickly—“really cool” visibility story. |
+| 3 | **Consistency intent** (would the owner post updates like this daily as part of their routine?) | Pass | Q3: yes on a busy morning; again expects staff to execute. (Tester noted student role-play vs real owner.) |
 
 ## Survey
 

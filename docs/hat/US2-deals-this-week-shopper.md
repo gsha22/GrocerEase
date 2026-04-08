@@ -36,9 +36,9 @@ Rationale (from test design): (1) **Scan speed** measures efficient use (The Mom
 
 | # | Metric | Result | Observation |
 |---|--------|--------|-------------|
-| 1 | **Scan speed** (time to review all deals and identify if any are relevant) | _TBD_ | _Fill after timed step 7._ |
-| 2 | **Deal clarity** (can the shopper explain what each deal offers without re-reading?) | _TBD_ | |
-| 3 | **Purchase influence** (would any deal change where the shopper shops this week?) | _TBD_ | |
+| 1 | **Scan speed** (time to review all deals and identify if any are relevant) | Pass |  Definitely sub-30 seconds, according to tester. |
+| 2 | **Deal clarity** (can the shopper explain what each deal offers without re-reading?) | Partial | Q1: she recalled the product context (lamb, halal store) but not the end date (“some Tuesday”)—expiry clarity is weak. |
+| 3 | **Purchase influence** (would any deal change where the shopper shops this week?) | Pass | Q2: deal could shift her trip—“probably shift my gears and go there” if the store has what she wants. |
 
 ## Survey
 
