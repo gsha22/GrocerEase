@@ -14,10 +14,6 @@ As a shopper deciding whether a local store is worth visiting, I want to see a s
 - At least one store profile has an update older than 48 hours.
 - At least one store profile has no updates in the last 7 days.
 
-## Outcome
-
-_Pending._ After Scarlett Huang completes the human acceptance test per issue [#62](https://github.com/gsha22/GrocerEase/issues/62), update this section with whether all steps completed successfully and any blockers.
-
 ## Steps executed
 
 Protocol from issue #62 (record results after the session):

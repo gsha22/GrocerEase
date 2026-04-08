@@ -14,10 +14,6 @@ As a cost-conscious grocery shopper, I want to see any active deals or discounts
 - One deal is set to expire within the next hour.
 - One deal has already expired (to verify it does not appear).
 
-## Outcome
-
-_Pending._ After Scarlett Huang completes the human acceptance test per issue [#63](https://github.com/gsha22/GrocerEase/issues/63), update this section with whether all steps completed successfully and any blockers.
-
 ## Steps executed
 
 Protocol from issue #63 (record results after the session):

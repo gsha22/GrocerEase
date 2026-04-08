@@ -14,10 +14,6 @@ As a shopper, I want to see a list/map of nearby local grocery stores so that I 
 - The tester has location services enabled, or a default location is set.
 - Stores span a range of distances (some within 1 mile, some within 5 miles).
 
-## Outcome
-
-_Pending._ After Scarlett Huang completes the human acceptance test per issue [#66](https://github.com/gsha22/GrocerEase/issues/66), update this section with whether all steps completed successfully and any blockers.
-
 ## Steps executed
 
 Protocol from issue #66 (record results after the session):
