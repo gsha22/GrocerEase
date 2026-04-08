@@ -1,11 +1,40 @@
 # HAT: User Story 7 — Store owner profile (create / manage store)
 
-**Related:** GitHub issue [#73](https://github.com/gsha22/GrocerEase/issues/73)  
+**Related issue:** [#73 — HAT: US 7](https://github.com/gsha22/GrocerEase/issues/73)  
+**Implementing PR:** [#50 — US 7 wireframe: Create a Store Profile](https://github.com/gsha22/GrocerEase/pull/50)  
 **Tester:** Clarence Choy
+
+## Prerequisites
+
+- A test store owner account exists with known valid credentials (email + password).
+- The owner can create or update a store profile (per the HAT issue — e.g. seed “no store” owner or an owner without a published profile yet).
+- The store profile URL (`/dashboard/profile`) and public directory (`/`) are known for verification.
 
 ## Outcome
 
-After following the human acceptance test instructions for US 7, the tester **successfully completed** the flow, including **creating a new store profile**.
+After following the human acceptance test instructions in issue [#73](https://github.com/gsha22/GrocerEase/issues/73), the tester **successfully completed** the flow, including **creating a new store profile**.
+
+Traceability note: this document references issue **#73** as the source-of-truth HAT ticket.
+
+## Steps Executed
+
+All 7 steps from issue #73 were executed in order:
+
+1. Logged in as the prepared store owner account.
+2. Navigated to the owner store profile page (`/dashboard/profile`).
+3. Entered store details (name, address, hours, specialty categories) and submitted/published the profile.
+4. Confirmed the app indicated success (e.g. confirmation or published state) without blocking errors.
+5. Opened the public store directory and located the new store listing.
+6. Returned to the profile editor and corrected a mistake in store hours.
+7. Saved changes and confirmed the updated hours were reflected on the public store profile.
+
+## Metrics Evaluation
+
+| # | Metric | Result | Observation |
+|---|--------|--------|-------------|
+| 1 | **Profile setup clarity** | ✅ Pass | Tester completed create/publish quickly; noted desire for more optional fields (e.g. brief description) — see Q1. |
+| 2 | **Public directory accuracy** | ✅ Pass | Store appeared in the directory after publish; tester had a positive reaction — see Q2. |
+| 3 | **Edit / correction workflow** | ✅ Pass | Correcting store hours was straightforward — see Q3. |
 
 ## Survey
 
@@ -20,3 +49,7 @@ After following the human acceptance test instructions for US 7, the tester **su
 ### Q3. If you made a mistake in your store hours, how easy was it to go back and fix it?
 
 **Answer:** Super easy
+
+## Iteration
+
+No issues were encountered during the test session. No iteration was required.
