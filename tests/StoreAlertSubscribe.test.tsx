@@ -139,14 +139,17 @@ describe("Authenticated render", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows 'Inactive · not following this store' status when not subscribed", () => {
+  it("shows inactive status line and unsubscribed description in one render", () => {
     render(<StoreAlertSubscribe {...BASE_PROPS} initialSubscribed={false} />);
     expect(
       screen.getByText(/inactive · not following this store/i),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(/get notified about new deals and restocks at Fresh Mart/i),
+    ).toBeInTheDocument();
   });
 
-  it("shows 'Active · store alerts on' status when subscribed", () => {
+  it("shows active status line and subscribed description in one render", () => {
     render(
       <StoreAlertSubscribe
         {...BASE_PROPS}
@@ -157,23 +160,6 @@ describe("Authenticated render", () => {
     expect(
       screen.getByText(/active · store alerts on/i),
     ).toBeInTheDocument();
-  });
-
-  it("shows description text tailored to subscription state (not subscribed)", () => {
-    render(<StoreAlertSubscribe {...BASE_PROPS} initialSubscribed={false} />);
-    expect(
-      screen.getByText(/get notified about new deals and restocks at Fresh Mart/i),
-    ).toBeInTheDocument();
-  });
-
-  it("shows description text tailored to subscription state (subscribed)", () => {
-    render(
-      <StoreAlertSubscribe
-        {...BASE_PROPS}
-        initialSubscribed={true}
-        initialStoreFollowAlertId="alert-1"
-      />,
-    );
     expect(
       screen.getByText(/highlight activity for Fresh Mart/i),
     ).toBeInTheDocument();
