@@ -1,7 +1,7 @@
 # HAT: User Story 9 — Reuse past deals
 
 **Related issue:** [#69 — HAT: US 9 — Reuse past deals](https://github.com/gsha22/GrocerEase/issues/69)  
-**Implementing PR:** [#40 — Story 9: Reuse past deals](https://github.com/gsha22/GrocerEase/pull/40)  
+**Implementing PR:** [#40 — feat: added button to reuse old coupon with new expiration date](https://github.com/gsha22/GrocerEase/pull/40)  
 **Tester:** Clarence Choy
 
 ## Prerequisites
