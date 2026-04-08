@@ -1,7 +1,7 @@
 # HAT: User Story 1 — Fresh Today updates (shopper)
 
 **Related issue:** [#62 — HAT: Fresh Today (shopper)](https://github.com/gsha22/GrocerEase/issues/62)  
-**Implementing PR:** _Add PR link here when tracked in #62._  
+**Implementing PR:** [#18 — feat: implement fresh today updates on store profile (Story 1)](https://github.com/gsha22/GrocerEase/pull/18)  
 **Tester:** Scarlett Huang
 
 ## User story
@@ -16,7 +16,7 @@ As a shopper deciding whether a local store is worth visiting, I want to see a s
 
 ## Outcome
 
-_Pending._ After Scarlett Huang completes the human acceptance test per issue [#62](https://github.com/gsha22/GrocerEase/issues/62), update this section with whether all steps completed successfully and any blockers.
+The test session with Scarlett Huang was completed successfully. All 7 steps were executed in order. The "Fresh Today" section was located on the store profile page, freshness timestamps were visible and interpreted correctly, the visual de-emphasis of older updates was observed, and the empty-state display was checked. Metric 1 (time-to-decision) was not numerically recorded during step 7. Metrics 2 and 3 were evaluated via survey responses (see below).
 
 ## Steps executed
 
