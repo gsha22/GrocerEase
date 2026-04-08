@@ -1,7 +1,7 @@
 # HAT: User Story 1 — Fresh Today updates (shopper)
 
 **Related issue:** [#62 — HAT: Fresh Today (shopper)](https://github.com/gsha22/GrocerEase/issues/62)  
-**Implementing PR:** https://github.com/gsha22/GrocerEase/pull/103  
+**Implementing PR:** [#18 — feat: implement fresh today updates on store profile (Story 1)](https://github.com/gsha22/GrocerEase/pull/18)  
 **Tester:** Scarlett Huang
 
 ## User story
@@ -13,6 +13,10 @@ As a shopper deciding whether a local store is worth visiting, I want to see a s
 - At least one store profile exists with a published "Fresh Today" update posted within the last 2 hours.
 - At least one store profile has an update older than 48 hours.
 - At least one store profile has no updates in the last 7 days.
+
+## Outcome
+
+The test session with Scarlett Huang was completed successfully. All 7 steps were executed in order. The "Fresh Today" section was located on the store profile page, freshness timestamps were visible and interpreted correctly, the visual de-emphasis of older updates was observed, and the empty-state display was checked. Metric 1 (time-to-decision) was not numerically recorded during step 7. Metrics 2 and 3 were evaluated via survey responses (see below).
 
 ## Steps executed
 
