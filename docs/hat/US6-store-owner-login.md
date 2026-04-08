@@ -14,6 +14,8 @@
 
 After following the human acceptance test instructions in issue [#72](https://github.com/gsha22/GrocerEase/issues/72), the tester **successfully completed** all steps and navigated the scenario without problems.
 
+Traceability note: this document now references issue **#72** as the source-of-truth HAT ticket.
+
 ## Steps Executed
 
 All 7 steps from issue #72 were executed in order:
