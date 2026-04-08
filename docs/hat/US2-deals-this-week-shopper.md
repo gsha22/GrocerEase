@@ -1,7 +1,7 @@
 # HAT: User Story 2 — Deals this week (shopper)
 
 **Related issue:** [#63 — HAT: Deals this week (shopper)](https://github.com/gsha22/GrocerEase/issues/63)  
-**Implementing PR:** _Add PR link here when tracked in #63._  
+**Implementing PR:** [#110 — US 2 HAT](https://github.com/gsha22/GrocerEase/pull/110)  
 **Tester:** Scarlett Huang
 
 ## User story
@@ -16,7 +16,7 @@ As a cost-conscious grocery shopper, I want to see any active deals or discounts
 
 ## Outcome
 
-_Pending._ After Scarlett Huang completes the human acceptance test per issue [#63](https://github.com/gsha22/GrocerEase/issues/63), update this section with whether all steps completed successfully and any blockers.
+**Completed.** Scarlett Huang ran all seven steps per issue [#63](https://github.com/gsha22/GrocerEase/issues/63). All steps completed successfully. She recalled a specific deal (halal lamb) and indicated she would adjust her shopping plans based on it. Metric 1 (scan time) was not formally recorded during this session — that data point should be captured in a follow-up test. UI polish comments were noted for a future sprint (see Iteration).
 
 ## Steps executed
 
@@ -36,9 +36,9 @@ Rationale (from test design): (1) **Scan speed** measures efficient use (The Mom
 
 | # | Metric | Result | Observation |
 |---|--------|--------|-------------|
-| 1 | **Scan speed** (time to review all deals and identify if any are relevant) | _TBD_ | _Fill after timed step 7._ |
-| 2 | **Deal clarity** (can the shopper explain what each deal offers without re-reading?) | _TBD_ | |
-| 3 | **Purchase influence** (would any deal change where the shopper shops this week?) | _TBD_ | |
+| 1 | **Scan speed** (time to review all deals and identify if any are relevant) | ⚠️ Not recorded | Timed step 7 was not measured during this session; schedule a follow-up timed run. |
+| 2 | **Deal clarity** (can the shopper explain what each deal offers without re-reading?) | ✅ Pass | Tester recalled deal type (halal lamb) and approximate expiry ("some tuesday") without re-reading, indicating adequate clarity. |
+| 3 | **Purchase influence** (would any deal change where the shopper shops this week?) | ✅ Pass | Tester stated she would "shift gears and go there" if the lamb was on sale and the store had sufficient selection — positive signal. |
 
 ## Survey
 
@@ -56,4 +56,4 @@ Rationale (from test design): (1) **Scan speed** measures efficient use (The Mom
 
 ## Iteration
 
-She made small comments on the UI, since they're not urgent changes I've decided to leave it to future sprints when time allows. 
+She commented that the deal cards felt visually cramped and the expiry date was hard to notice at a glance. These are non-blocking UI polish items (typography spacing and expiry-date prominence) deferred to a future sprint. 
