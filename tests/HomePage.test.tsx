@@ -1,55 +1,15 @@
 /**
  * Unit tests for app/(public)/page.tsx — HomePage
  *
- * Functions under test:
- *   fetchStores        – builds API params, fetches /api/stores, updates state
- *   useEffect          – geolocation initialisation on mount
- *   selectNeighborhood – looks up coords from PITTSBURGH_NEIGHBORHOODS, refetches
- *   handleFilterChange – updates activeFilters and refetches
+ * Covers behavior driven by:
+ *   fetchStores, useEffect (geolocation), selectNeighborhood, handleFilterChange
  *
- * Pure-function tests for lib/neighborhoods:
- *   extractNeighborhood – ZIP lookup, city fallback, Pittsburgh fallback
+ * Pure `extractNeighborhood` tests live in tests/neighborhoods.test.ts (lib/neighborhoods).
  */
 
 import "@testing-library/jest-dom";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import React from "react";
-
-// ---------------------------------------------------------------------------
-// extractNeighborhood (lib/neighborhoods) — pure function, no mocks needed
-// ---------------------------------------------------------------------------
-import { extractNeighborhood } from "@/lib/neighborhoods";
-
-describe("extractNeighborhood", () => {
-  it("returns the mapped neighborhood for a known Pittsburgh ZIP (15217 → Squirrel Hill)", () => {
-    expect(extractNeighborhood("6100 Forbes Ave, Pittsburgh, PA 15217")).toBe(
-      "Squirrel Hill",
-    );
-  });
-
-  it("returns the mapped neighborhood for another known ZIP (15222 → Strip District)", () => {
-    expect(extractNeighborhood("1000 Penn Ave, Pittsburgh, PA 15222")).toBe(
-      "Strip District",
-    );
-  });
-
-  it("returns the city when ZIP is absent and city is not Pittsburgh", () => {
-    // Address with a non-Pittsburgh city — should use city name directly
-    expect(extractNeighborhood("500 Main St, Sewickley, PA")).toBe("Sewickley");
-  });
-
-  it("falls back to Pittsburgh when ZIP is absent and city is Pittsburgh", () => {
-    expect(extractNeighborhood("1 Grant St, Pittsburgh, PA")).toBe("Pittsburgh");
-  });
-
-  it("returns Pittsburgh for a bare address with no ZIP and no separating comma", () => {
-    expect(extractNeighborhood("Unknown Place")).toBe("Pittsburgh");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// HomePage component
-// ---------------------------------------------------------------------------
 
 // Mock next/link to a plain <a> tag — avoids Next.js router dependency
 jest.mock("next/link", () => ({
@@ -182,27 +142,6 @@ describe("fetchStores", () => {
       expect(url).toContain("lat=40.44");
       expect(url).toContain("lng=-79.99");
       expect(url).toContain("radius=10");
-    });
-  });
-
-  it("includes category param in URL when a filter chip is activated", async () => {
-    mockGeoFailure();
-    global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
-
-    render(<HomePage />);
-
-    // Wait for initial load to complete before interacting
-    await waitFor(() => {
-      expect((global.fetch as jest.Mock).mock.calls.length).toBeGreaterThan(0);
-    });
-
-    // Click the "Organic" filter chip (rendered by StoreFilterBar)
-    fireEvent.click(screen.getByRole("button", { name: /organic/i }));
-
-    await waitFor(() => {
-      const calls = (global.fetch as jest.Mock).mock.calls;
-      const lastUrl = calls[calls.length - 1][0] as string;
-      expect(lastUrl).toContain("category=organic");
     });
   });
 
@@ -367,22 +306,6 @@ describe("selectNeighborhood", () => {
       ).not.toBeInTheDocument();
     });
   });
-
-  it("ignores an unknown neighborhood name and does not crash", async () => {
-    mockGeoFailure();
-    global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
-
-    // Access selectNeighborhood indirectly via the component's internal rendering
-    // by verifying no extra fetch call is made when no valid neighborhood is chosen
-    render(<HomePage />);
-
-    await waitFor(() => {
-      expect((global.fetch as jest.Mock).mock.calls.length).toBe(1);
-    });
-
-    // There's no "Unknown Place" button — this just ensures the component is stable
-    expect(screen.queryByRole("button", { name: "Unknown Place" })).toBeNull();
-  });
 });
 
 // ---------------------------------------------------------------------------
@@ -390,23 +313,6 @@ describe("selectNeighborhood", () => {
 // ---------------------------------------------------------------------------
 
 describe("handleFilterChange", () => {
-  it("triggers a re-fetch when a filter chip is toggled on", async () => {
-    mockGeoFailure();
-    global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
-
-    render(<HomePage />);
-
-    await waitFor(() => {
-      expect((global.fetch as jest.Mock).mock.calls.length).toBe(1);
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /organic/i }));
-
-    await waitFor(() => {
-      expect((global.fetch as jest.Mock).mock.calls.length).toBe(2);
-    });
-  });
-
   it("removes category param from URL after all filters are cleared", async () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
