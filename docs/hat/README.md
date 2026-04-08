@@ -5,8 +5,8 @@ Manual QA outcomes and survey responses for user stories. Each file maps to one 
 | User story | Document |
 |------------|----------|
 | US 1 — Fresh Today updates (shopper) | [US1-fresh-today-updates-shopper.md](./US1-fresh-today-updates-shopper.md) |
-| US 4 — Filter stores by specialty | [US4-filter-stores-by-specialty.md](./US4-filter-stores-by-specialty.md) |
 | US 2 — Deals this week (shopper) | [US2-deals-this-week-shopper.md](./US2-deals-this-week-shopper.md) |
+| US 4 — Filter stores by specialty | [US4-filter-stores-by-specialty.md](./US4-filter-stores-by-specialty.md) |
 | US 6 — Secure store owner login | [US6-store-owner-login.md](./US6-store-owner-login.md) |
 
 _Add additional rows and files (e.g. `US7-….md`) as other HATs are run._

@@ -15,13 +15,13 @@ As a shopper, I want to filter stores by specialty category (e.g., Asian groceri
 
 ## Outcome
 
-After following the human acceptance test instructions in issue [#68](https://github.com/gsha22/GrocerEase/issues/68), the tester **successfully completed** the filter workflow on the store directory, including single-filter, combined (**AND**) filters, clearing filters, and confirming the full list restored.
+**Completed.** Clarence Choy followed the human acceptance test instructions in issue [#68](https://github.com/gsha22/GrocerEase/issues/68) and **successfully completed** the filter workflow on the store directory, including single-filter, combined (**AND**) filters, clearing filters, and confirming the full list restored.
 
 Traceability note: this document references issue **#68** as the source-of-truth HAT ticket.
 
 ## Steps executed
 
-All 7 steps from issue #68 were executed in order:
+Protocol from issue #68 (record results after the session):
 
 1. Navigated to the **store directory** page (`/`).
 2. Located the **filter** options (e.g. Asian groceries, halal, organic, produce, EBT accepted).
