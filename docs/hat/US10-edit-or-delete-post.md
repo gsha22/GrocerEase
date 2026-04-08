@@ -4,6 +4,10 @@
 **Implementing PR:** [#42 — Story 10: Edit or delete a post](https://github.com/gsha22/GrocerEase/pull/42)  
 **Tester:** Clarence Choy
 
+## User story
+
+As a store owner, I want to edit or delete a post I made so that I can correct mistakes or remove an item that sold out faster than expected.
+
 ## Prerequisites
 
 - The tester is logged in as a store owner with **at least two** existing posts (fresh-today updates or deals).
