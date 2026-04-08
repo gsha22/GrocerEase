@@ -22,7 +22,7 @@ type AlertRow = {
   type: string;
 };
 
-function normalizeAlertsPayload(payload: unknown): AlertRow[] {
+export function normalizeAlertsPayload(payload: unknown): AlertRow[] {
   if (Array.isArray(payload)) return payload as AlertRow[];
   if (
     payload &&
@@ -41,7 +41,7 @@ type Props = {
   viewerRole?: ViewerRole;
 };
 
-function toRelativeTime(isoDate: string): string {
+export function toRelativeTime(isoDate: string): string {
   const timestamp = new Date(isoDate).getTime();
   if (Number.isNaN(timestamp)) return "updated recently";
 

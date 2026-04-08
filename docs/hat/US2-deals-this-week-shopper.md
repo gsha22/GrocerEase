@@ -1,7 +1,7 @@
 # HAT: User Story 2 — Deals this week (shopper)
 
 **Related issue:** [#63 — HAT: Deals this week (shopper)](https://github.com/gsha22/GrocerEase/issues/63)  
-**Implementing PR:** [#110 — US 2 HAT](https://github.com/gsha22/GrocerEase/pull/110)  
+**Implementing PR:** [#19 — feat: implement deals this week for shoppers (Story 2)](https://github.com/gsha22/GrocerEase/pull/19)  
 **Tester:** Scarlett Huang
 
 ## User story
@@ -36,9 +36,9 @@ Rationale (from test design): (1) **Scan speed** measures efficient use (The Mom
 
 | # | Metric | Result | Observation |
 |---|--------|--------|-------------|
-| 1 | **Scan speed** (time to review all deals and identify if any are relevant) | ⚠️ Not recorded | Timed step 7 was not measured during this session; schedule a follow-up timed run. |
-| 2 | **Deal clarity** (can the shopper explain what each deal offers without re-reading?) | ✅ Pass | Tester recalled deal type (halal lamb) and approximate expiry ("some tuesday") without re-reading, indicating adequate clarity. |
-| 3 | **Purchase influence** (would any deal change where the shopper shops this week?) | ✅ Pass | Tester stated she would "shift gears and go there" if the lamb was on sale and the store had sufficient selection — positive signal. |
+| 1 | **Scan speed** (time to review all deals and identify if any are relevant) | Pass |  Definitely sub-30 seconds, according to tester. |
+| 2 | **Deal clarity** (can the shopper explain what each deal offers without re-reading?) | Partial | Q1: she recalled the product context (lamb, halal store) but not the end date (“some Tuesday”)—expiry clarity is weak. |
+| 3 | **Purchase influence** (would any deal change where the shopper shops this week?) | Pass | Q2: deal could shift her trip—“probably shift my gears and go there” if the store has what she wants. |
 
 ## Survey
 
