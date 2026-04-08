@@ -1,7 +1,14 @@
 # HAT: User Story 6 — Secure store owner login
 
-**Related:** GitHub issue [#72](https://github.com/gsha22/GrocerEase/issues/72)  
+**Related issue:** [#72 — HAT: US 6](https://github.com/gsha22/GrocerEase/issues/72)  
+**Implementing PR:** [#24 — Feature/secure authentication](https://github.com/gsha22/GrocerEase/pull/24)  
 **Tester:** Clarence Choy
+
+## Prerequisites
+
+- A test store owner account exists with known valid credentials (email + password).
+- An invalid credential set is prepared for negative-path testing.
+- The dashboard URL (`/dashboard`) is known for direct-access testing.
 
 ## Outcome
 
