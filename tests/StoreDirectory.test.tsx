@@ -11,6 +11,12 @@ describe("buildStoreDirectoryFetchUrl", () => {
     expect(buildStoreDirectoryFetchUrl(new Set())).toBe("/api/stores");
   });
 
+  it("includes a single category param when one filter is active", () => {
+    expect(buildStoreDirectoryFetchUrl(new Set(["halal"]))).toBe(
+      "/api/stores?category=halal",
+    );
+  });
+
   it("joins category keys with comma for AND semantics", () => {
     const url = buildStoreDirectoryFetchUrl(new Set(["halal", "organic"]));
     expect(url).toBe("/api/stores?category=halal%2Corganic");
@@ -40,6 +46,16 @@ describe("StoreDirectory", () => {
             hours: {},
             distanceMiles: 1.2,
           },
+          {
+            id: "2",
+            name: "Second Store",
+            address: "2 Elm St",
+            lat: 40,
+            lng: -80,
+            categories: ["produce"],
+            hours: {},
+            distanceMiles: 2.0,
+          },
         ],
       } as Response;
     });
@@ -54,7 +70,13 @@ describe("StoreDirectory", () => {
     await waitFor(() => {
       expect(screen.getByText("Test Mart")).toBeInTheDocument();
     });
-    expect(screen.getByText(/1 store found/i)).toBeInTheDocument();
+  });
+
+  it("shows plural store count text when multiple stores are returned", async () => {
+    render(<StoreDirectory />);
+    await waitFor(() => {
+      expect(screen.getByText(/2 stores found/i)).toBeInTheDocument();
+    });
   });
 
   it("shows empty copy when API returns no rows with active filters", async () => {
@@ -66,6 +88,36 @@ describe("StoreDirectory", () => {
       expect(
         screen.getByText(/No stores match the selected filters/i),
       ).toBeInTheDocument();
+    });
+  });
+
+  it("shows generic empty copy when no stores exist and no filters are active", async () => {
+    jest.restoreAllMocks();
+    jest.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => [],
+    } as Response);
+    render(<StoreDirectory />);
+    await waitFor(() => {
+      expect(screen.getByText(/No stores found/i)).toBeInTheDocument();
+    });
+  });
+
+  it("clears filters when 'Clear all' button is clicked", async () => {
+    const user = userEvent.setup();
+    render(<StoreDirectory />);
+    await waitFor(() => screen.getByText("Test Mart"));
+
+    // Activate a filter to trigger the empty-state view
+    await user.click(screen.getByRole("button", { name: /halal/i }));
+    await waitFor(() =>
+      screen.getByText(/No stores match the selected filters/i),
+    );
+
+    // "Clear all" should restore the store listing
+    await user.click(screen.getByRole("button", { name: "Clear all" }));
+    await waitFor(() => {
+      expect(screen.getByText("Test Mart")).toBeInTheDocument();
     });
   });
 });
