@@ -1,8 +1,12 @@
 # HAT: User Story 4 — Filter stores by specialty
 
 **Related issue:** [#68 — HAT: US 4 — Filter stores by specialty](https://github.com/gsha22/GrocerEase/issues/68)  
-**Implementing change:** [Commit c669730 — Story 4: filter stores by specialty](https://github.com/gsha22/GrocerEase/commit/c669730)  
+**Implementing PR:** [#15 — feat: implement store filtering by specialty category (Story 4)](https://github.com/gsha22/GrocerEase/pull/15)  
 **Tester:** Clarence Choy
+
+## User story
+
+As a shopper, I want to filter stores by specialty category (e.g., Asian groceries, halal, organic, EBT accepted) so that I can find stores relevant to my specific needs.
 
 ## Prerequisites
 
@@ -15,7 +19,7 @@ After following the human acceptance test instructions in issue [#68](https://gi
 
 Traceability note: this document references issue **#68** as the source-of-truth HAT ticket.
 
-## Steps Executed
+## Steps executed
 
 All 7 steps from issue #68 were executed in order:
 
@@ -27,7 +31,9 @@ All 7 steps from issue #68 were executed in order:
 6. **Cleared all** filters and confirmed the **full list** was restored.
 7. Observed **visual treatment** of active filters (highlighting) and whether filters could be **removed individually**.
 
-## Metrics Evaluation
+## Metrics evaluation
+
+Rationale (from test design): (1) **Task success rate** is a binary pass/fail usability metric — if users can't operate the filters correctly, the feature has zero value regardless of design polish. (2) **Response latency perception**: per lecture on engagement metrics, perceived performance directly affects whether users trust and reuse a feature; sub-second is the bar. (3) **Relevance satisfaction** is a precision metric — the Lean Startup build-measure-learn loop requires that what we deliver matches what the user asked for; wrong results are worse than no results.
 
 | # | Metric | Result | Observation |
 |---|--------|--------|-------------|
