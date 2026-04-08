@@ -68,6 +68,73 @@ describe("StoreFreshUpdatesFeed", () => {
     expect(row).toBeTruthy();
   });
 
+  it("does not render a note element when note is null", () => {
+    const { container } = render(
+      <StoreFreshUpdatesFeed
+        storeId="s1"
+        initialUpdates={[
+          {
+            id: "1",
+            itemName: "Spinach",
+            note: null,
+            createdAt: new Date().toISOString(),
+            isStale: false,
+          },
+        ]}
+      />,
+    );
+    // The note sub-div is only rendered when note is truthy
+    const noteEl = container.querySelector(".text-gray-400.mt-0\\.5");
+    expect(noteEl).toBeNull();
+  });
+
+  it("does not clear existing updates when fetch returns an error response", async () => {
+    const fetchMock = global.fetch as jest.Mock;
+    fetchMock.mockResolvedValueOnce({ ok: false } as Response);
+
+    const esInstances: Array<{
+      url: string;
+      listeners: Record<string, () => void>;
+    }> = [];
+    const orig = global.EventSource;
+    global.EventSource = class MockES {
+      listeners: Record<string, () => void> = {};
+      constructor(public url: string) {
+        esInstances.push(this);
+      }
+      addEventListener(type: string, fn: () => void) {
+        this.listeners[type] = fn;
+      }
+      removeEventListener() {}
+      close() {}
+    } as unknown as typeof EventSource;
+
+    render(
+      <StoreFreshUpdatesFeed
+        storeId="s2"
+        initialUpdates={[
+          {
+            id: "1",
+            itemName: "Existing item",
+            note: null,
+            createdAt: new Date().toISOString(),
+            isStale: false,
+          },
+        ]}
+      />,
+    );
+
+    // Fire the SSE event — the fetch will return ok:false
+    esInstances[0].listeners["post-event"]();
+
+    // Existing updates must still be visible
+    await waitFor(() => {
+      expect(screen.getByText("Existing item")).toBeInTheDocument();
+    });
+
+    global.EventSource = orig;
+  });
+
   it("reloads updates when fetch returns new data", async () => {
     const fetchMock = global.fetch as jest.Mock;
     fetchMock.mockResolvedValueOnce({

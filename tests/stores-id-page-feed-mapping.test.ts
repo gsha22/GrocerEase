@@ -26,6 +26,10 @@ describe("mapEnrichedFreshUpdatesToFeedItems (store page → StoreFreshUpdatesFe
     ]);
   });
 
+  it("returns an empty array when given an empty input", () => {
+    expect(mapEnrichedFreshUpdatesToFeedItems([])).toEqual([]);
+  });
+
   it("preserves null notes and true stale flag", () => {
     const feed = mapEnrichedFreshUpdatesToFeedItems([
       {
