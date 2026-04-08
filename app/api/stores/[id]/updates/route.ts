@@ -68,9 +68,32 @@ export async function POST(
     return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
 
+  const existingItem = await prisma.item.findFirst({
+    where: {
+      storeId,
+      name: { equals: parsed.itemName, mode: "insensitive" },
+    },
+    select: { id: true },
+  });
+
+  let itemId: string;
+  if (existingItem) {
+    await prisma.item.update({
+      where: { id: existingItem.id },
+      data: { name: parsed.itemName },
+    });
+    itemId = existingItem.id;
+  } else {
+    const newItem = await prisma.item.create({
+      data: { storeId, name: parsed.itemName },
+    });
+    itemId = newItem.id;
+  }
+
   const update = await prisma.freshUpdate.create({
     data: {
       storeId,
+      itemId,
       itemName: parsed.itemName,
       note: parsed.note,
     },

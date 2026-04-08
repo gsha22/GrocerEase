@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { FRESH_UPDATE_PUBLIC_WINDOW_MS } from "@/lib/fresh-updates";
 
 const MAX_RESULTS = 50;
 const MAX_CANDIDATES = 250;
@@ -55,6 +56,17 @@ export async function GET(
       return NextResponse.json([]);
     }
 
+    const windowStart = new Date(Date.now() - FRESH_UPDATE_PUBLIC_WINDOW_MS);
+    const hasActiveFreshUpdate = {
+      some: { deletedAt: null, createdAt: { gte: windowStart } },
+    };
+    const freshUpdateSelect = {
+      where: { deletedAt: null, createdAt: { gte: windowStart } },
+      orderBy: { createdAt: "desc" as const },
+      take: 1,
+      select: { createdAt: true },
+    };
+
     const [store, directMatches, broadMatches] = await Promise.all([
       prisma.store.findUnique({
         where: { id: storeId },
@@ -63,6 +75,7 @@ export async function GET(
       prisma.item.findMany({
         where: {
           storeId,
+          freshUpdates: hasActiveFreshUpdate,
           OR: [
             { name: { contains: q, mode: "insensitive" } },
             { name: { contains: query, mode: "insensitive" } },
@@ -73,17 +86,19 @@ export async function GET(
           name: true,
           inStock: true,
           lastUpdated: true,
+          freshUpdates: freshUpdateSelect,
           store: { select: { id: true, name: true, address: true } },
         },
         take: MAX_CANDIDATES,
       }),
       prisma.item.findMany({
-        where: { storeId },
+        where: { storeId, freshUpdates: hasActiveFreshUpdate },
         select: {
           id: true,
           name: true,
           inStock: true,
           lastUpdated: true,
+          freshUpdates: freshUpdateSelect,
           store: { select: { id: true, name: true, address: true } },
         },
         take: MAX_CANDIDATES,
@@ -139,7 +154,7 @@ export async function GET(
         store_id: item.store.id,
         store_name: item.store.name,
         store_location: item.store.address,
-        last_updated: item.lastUpdated.toISOString(),
+        last_updated: (item.freshUpdates[0]?.createdAt ?? item.lastUpdated).toISOString(),
       }));
 
     return NextResponse.json(scored);
