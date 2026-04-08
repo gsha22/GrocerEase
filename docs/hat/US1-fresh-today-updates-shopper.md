@@ -36,9 +36,9 @@ Rationale (from test design): (1) **Time-to-decision** mirrors The Mom Test—be
 
 | # | Metric | Result | Observation |
 |---|--------|--------|-------------|
-| 1 | **Time-to-decision** (seconds from page load to "I'd go / I wouldn't go") | ⚠️ Not recorded | Exact timing was not captured during step 7 of the session. |
-| 2 | **Perceived freshness trust** (does the shopper believe the information is current?) | ✅ Pass | Tester noted that visible dates on deals/fresh updates were helpful in judging how current the information was (see Q3). |
-| 3 | **Return intent** (would the shopper check this page again before their next grocery trip?) | ✅ Pass | Tester said she would check quickly before leaving if she knew the site existed (see Q2). |
+| 1 | **Time-to-decision** (seconds from page load to "I'd go / I wouldn't go") | _TBD_ | _Fill after timed step 7._ |
+| 2 | **Perceived freshness trust** (does the shopper believe the information is current?) | _TBD_ | |
+| 3 | **Return intent** (would the shopper check this page again before their next grocery trip?) | _TBD_ | |
 
 ## Survey
 
