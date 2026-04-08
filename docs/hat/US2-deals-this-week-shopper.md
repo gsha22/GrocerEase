@@ -1,7 +1,7 @@
 # HAT: User Story 2 — Deals this week (shopper)
 
 **Related issue:** [#63 — HAT: Deals this week (shopper)](https://github.com/gsha22/GrocerEase/issues/63)  
-**Implementing PR:** [#110 — US 2 HAT](https://github.com/gsha22/GrocerEase/pull/110)  
+**Implementing PR:** [#19 — feat: implement deals this week for shoppers (Story 2)](https://github.com/gsha22/GrocerEase/pull/19)  
 **Tester:** Scarlett Huang
 
 ## User story

@@ -1,7 +1,7 @@
 # HAT: User Story 11 — Fresh Today updates (owner)
 
 **Related issue:** [#65 — HAT: Discover nearby stores (shopper)](https://github.com/gsha22/GrocerEase/issues/65)  
-**Implementing PR:** https://github.com/gsha22/GrocerEase/pull/106
+**Implementing PR:** [#35 — feat: add fresh updates functionality and enhance store profile page ](https://github.com/gsha22/GrocerEase/pull/35)
 **Tester:** Christine Tran
 
 ## User story

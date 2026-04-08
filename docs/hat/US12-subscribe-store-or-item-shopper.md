@@ -1,7 +1,7 @@
 # HAT: User Story 12 — Subscribe to a store or item (shopper)
 
 **Related issue:** [#64 — HAT: Subscribe to a store or item (shopper)](https://github.com/gsha22/GrocerEase/issues/64)  
-**Implementing PR:** https://github.com/gsha22/GrocerEase/pull/108
+**Implementing PR:** [#42 — Feature/shopper activity inbox](https://github.com/gsha22/GrocerEase/pull/43)
 **Tester:** Scarlett Huang
 
 ## User story

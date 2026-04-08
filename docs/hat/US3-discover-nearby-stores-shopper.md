@@ -1,7 +1,7 @@
 # HAT: User Story 3 — Discover nearby stores (shopper)
 
 **Related issue:** [#66 — HAT: Discover nearby stores (shopper)](https://github.com/gsha22/GrocerEase/issues/66)  
-**Implementing PR:** _Add PR link here when tracked in #66._  
+**Implementing PR:** [#14 — feat: implement Story 3 (Discover Nearby Stores)](https://github.com/gsha22/GrocerEase/pull/14)  
 **Tester:** Christine Tran
 
 ## User story
