@@ -1,7 +1,7 @@
 # HAT: User Story 7 — Store owner profile (create / manage store)
 
 **Related issue:** [#73 — HAT: US 7](https://github.com/gsha22/GrocerEase/issues/73)  
-**Implementing PR:** [#50 — US 7 wireframe: Create a Store Profile](https://github.com/gsha22/GrocerEase/pull/50)  
+**Implementing PR:** [#50 — US 7: Create a Store Profile](https://github.com/gsha22/GrocerEase/pull/50)  
 **Tester:** Clarence Choy
 
 ## Prerequisites
@@ -20,21 +20,21 @@ Traceability note: this document references issue **#73** as the source-of-truth
 
 All 7 steps from issue #73 were executed in order:
 
-1. Logged in as the prepared store owner account.
-2. Navigated to the owner store profile page (`/dashboard/profile`).
-3. Entered store details (name, address, hours, specialty categories) and submitted/published the profile.
-4. Confirmed the app indicated success (e.g. confirmation or published state) without blocking errors.
-5. Opened the public store directory and located the new store listing.
-6. Returned to the profile editor and corrected a mistake in store hours.
-7. Saved changes and confirmed the updated hours were reflected on the public store profile.
+1. Logged in to the owner dashboard as the prepared store owner account.
+2. Located the option to create a new store profile and navigated to the profile page (`/dashboard/profile`).
+3. Filled in all required fields: store name, address, hours of operation, and at least one specialty category.
+4. Submitted the profile and confirmed the app indicated success (confirmation / published state) without blocking errors.
+5. Opened the public store directory in a separate tab and confirmed the new store appeared in the list and on the map.
+6. Returned to the profile editor, edited the store hours, saved the change, and verified it reflected on the public store profile.
+7. Attempted to submit a profile with a required field missing; confirmed an error message was displayed without clearing other entered data.
 
 ## Metrics Evaluation
 
 | # | Metric | Result | Observation |
 |---|--------|--------|-------------|
-| 1 | **Profile setup clarity** | ✅ Pass | Tester completed create/publish quickly; noted desire for more optional fields (e.g. brief description) — see Q1. |
-| 2 | **Public directory accuracy** | ✅ Pass | Store appeared in the directory after publish; tester had a positive reaction — see Q2. |
-| 3 | **Edit / correction workflow** | ✅ Pass | Correcting store hours was straightforward — see Q3. |
+| 1 | **Profile creation completion rate** | ✅ Pass | Tester completed create/publish quickly; noted desire for more optional fields (e.g. brief description) — see Q1. |
+| 2 | **Time from submission to public visibility** | ✅ Pass | Store appeared in the directory after publish; tester had a positive reaction — see Q2. |
+| 3 | **Error recovery ease** | ✅ Pass | Correcting store hours was straightforward — see Q3. |
 
 ## Survey
 
