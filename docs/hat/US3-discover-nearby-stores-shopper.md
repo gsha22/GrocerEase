@@ -1,7 +1,7 @@
 # HAT: User Story 3 — Discover nearby stores (shopper)
 
 **Related issue:** [#66 — HAT: Discover nearby stores (shopper)](https://github.com/gsha22/GrocerEase/issues/66)  
-**Implementing PR:** _Add PR link here when tracked in #66._  
+**Implementing PR:** https://github.com/gsha22/GrocerEase/pull/105 
 **Tester:** Christine Tran
 
 ## User story
@@ -32,9 +32,9 @@ Rationale (from test design): (1) **Discovery rate** validates the core “leap 
 
 | # | Metric | Result | Observation |
 |---|--------|--------|-------------|
-| 1 | **Discovery rate** (did the tester find at least one store they didn't previously know about?) | _TBD_ | _Yes/No + notes._ |
-| 2 | **Time-to-interest** (seconds until the tester clicks into a store profile) | _TBD_ | _Fill after timed step 7 / first profile click._ |
-| 3 | **Navigation confidence** (can the tester use the page without any guidance?) | _TBD_ | |
+| 1 | **Discovery rate** (did the tester find at least one store they didn't previously know about?) | Pass | Q1: many stores were new to her, especially outside her culture—core discovery value landed. |
+| 2 | **Time-to-interest** (seconds until the tester clicks into a store profile) | Inconclusive | Difficult to measure time from map loading to store profile since the API had inconsistent loading times |
+| 3 | **Navigation confidence** (can the tester use the page without any guidance?) | Partial | Q3: uncertain moment on map—tapping a store opened the profile instead of keeping focus on the map location (mental-model mismatch). |
 
 ## Survey
 

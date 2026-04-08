@@ -1,7 +1,7 @@
 # HAT: User Story 1 — Fresh Today updates (shopper)
 
 **Related issue:** [#62 — HAT: Fresh Today (shopper)](https://github.com/gsha22/GrocerEase/issues/62)  
-**Implementing PR:** _Add PR link here when tracked in #62._  
+**Implementing PR:** https://github.com/gsha22/GrocerEase/pull/103  
 **Tester:** Scarlett Huang
 
 ## User story
@@ -32,9 +32,9 @@ Rationale (from test design): (1) **Time-to-decision** mirrors The Mom Test—be
 
 | # | Metric | Result | Observation |
 |---|--------|--------|-------------|
-| 1 | **Time-to-decision** (seconds from page load to "I'd go / I wouldn't go") | _TBD_ | _Fill after timed step 7._ |
-| 2 | **Perceived freshness trust** (does the shopper believe the information is current?) | _TBD_ | |
-| 3 | **Return intent** (would the shopper check this page again before their next grocery trip?) | _TBD_ | |
+| 1 | **Time-to-decision** (seconds from page load to "I'd go / I wouldn't go") | Partial | For each store, the time-to-decision can vary/range from instantaneous (irrelevant stores) to a few seconds (does the store I want to go to have XXX?) |
+| 2 | **Perceived freshness trust** (does the shopper believe the information is current?) | Pass | Q3: dates on deals and fresh updates helped her judge whether information felt up to date. |
+| 3 | **Return intent** (would the shopper check this page again before their next grocery trip?) | Pass | Q2: would open the page for a quick check before a grocery run if she knew the site existed. |
 
 ## Survey
 
