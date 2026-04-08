@@ -1,6 +1,6 @@
 # HAT: User Story 9 — Reuse past deals
 
-**Related issue:** [#NN — HAT: US 9 — Reuse past deals](https://github.com/gsha22/GrocerEase/issues/NN)  
+**Related issue:** [#69 — HAT: US 9 — Reuse past deals](https://github.com/gsha22/GrocerEase/issues/69)  
 **Implementing PR:** [#40 — Story 9: Reuse past deals](https://github.com/gsha22/GrocerEase/pull/40)  
 **Tester:** Clarence Choy
 
@@ -12,13 +12,13 @@
 
 ## Outcome
 
-After following the human acceptance test instructions in issue [#NN](https://github.com/gsha22/GrocerEase/issues/NN), the tester **successfully completed** the reuse flow: duplicated a past deal, edited fields, published a **new** active deal, and confirmed the **original** past deal remained unchanged in history.
+After following the human acceptance test instructions in issue [#69](https://github.com/gsha22/GrocerEase/issues/69), the tester **successfully completed** the reuse flow: duplicated a past deal, edited fields, published a **new** active deal, and confirmed the **original** past deal remained unchanged in history.
 
-Traceability note: this document references issue **#NN** as the source-of-truth HAT ticket — replace **`NN`** in the links above with the real GitHub issue number when the HAT ticket is filed.
+Traceability note: this document references issue **#69** as the source-of-truth HAT ticket.
 
 ## Steps Executed
 
-All 7 steps from issue #NN were executed in order:
+All 7 steps from issue #69 were executed in order:
 
 1. From the owner dashboard, navigated to the **deals** section.
 2. Located the list of **past deals** (expired deals).
