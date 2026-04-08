@@ -22,24 +22,14 @@ describe("normalizeAlertsPayload", () => {
     expect(normalizeAlertsPayload({ alerts: inner })).toEqual(inner);
   });
 
-  it("returns an empty array when payload is null", () => {
-    expect(normalizeAlertsPayload(null)).toEqual([]);
-  });
-
-  it("returns an empty array when payload is undefined", () => {
-    expect(normalizeAlertsPayload(undefined)).toEqual([]);
-  });
-
-  it("returns an empty array when payload is an object without an alerts array", () => {
-    expect(normalizeAlertsPayload({ other: "data" })).toEqual([]);
-  });
-
-  it("returns an empty array when payload.alerts is not an array", () => {
-    expect(normalizeAlertsPayload({ alerts: "not-an-array" })).toEqual([]);
-  });
-
-  it("returns an empty array for an empty array input", () => {
-    expect(normalizeAlertsPayload([])).toEqual([]);
+  it.each([
+    ["null", null],
+    ["undefined", undefined],
+    ["object without alerts", { other: "data" }],
+    ["non-array alerts property", { alerts: "not-an-array" }],
+    ["empty array", []],
+  ])("returns [] for %s", (_, payload) => {
+    expect(normalizeAlertsPayload(payload as unknown)).toEqual([]);
   });
 });
 
