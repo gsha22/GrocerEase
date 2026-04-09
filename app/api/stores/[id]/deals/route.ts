@@ -102,8 +102,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
   return NextResponse.json({
     deals: deals.map((row) => {
       const { store, ...deal } = row;
+      const isActive = !deal.isExpired && deal.expiresAt > now;
       return {
         ...dealJson(deal),
+        isActive,
         store,
       };
     }),

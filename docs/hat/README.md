@@ -10,6 +10,7 @@ Manual QA outcomes and survey responses for user stories. Each file maps to one 
 | US 4 — Filter stores by specialty | [US4-filter-stores-by-specialty.md](./US4-filter-stores-by-specialty.md) |
 | US 6 — Secure store owner login | [US6-store-owner-login.md](./US6-store-owner-login.md) |
 | US 7 — Store owner profile | [US7-store-owner-profile.md](./US7-store-owner-profile.md) |
+| US 8 — Post a deal with expiry | [US8-post-deal-expiry.md](./US8-post-deal-expiry.md) |
 | US 9 — Reuse past deals | [US9-reuse-past-deals.md](./US9-reuse-past-deals.md) |
 | US 10 — Edit or delete a post | [US10-edit-or-delete-post.md](./US10-edit-or-delete-post.md) |
 | US 11 — Fresh Today updates (owner) | [US11-fresh-today-updates-owner.md](./US11-fresh-today-updates-owner.md) |

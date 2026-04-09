@@ -17,9 +17,20 @@ export default async function DashboardPage() {
   const store = ownerId
     ? await prisma.store.findUnique({
         where: { ownerId },
-        select: { name: true, address: true },
+        select: { id: true, name: true, address: true },
       })
     : null;
+
+  const activeDealsCount = store
+    ? await prisma.deal.count({
+        where: {
+          storeId: store.id,
+          deletedAt: null,
+          isExpired: false,
+          expiresAt: { gt: new Date() },
+        },
+      })
+    : 0;
 
   const subtitle = store
     ? addressShortLine(store.address)
@@ -67,7 +78,14 @@ export default async function DashboardPage() {
         {[
           { label: "Profile views", value: "—", change: "No data yet" },
           { label: "Active posts", value: "0", change: "Post to get started" },
-          { label: "Active deals", value: "0", change: "Create a deal" },
+          {
+            label: "Active deals",
+            value: String(activeDealsCount),
+            change:
+              activeDealsCount > 0
+                ? "Shown on your store & deals feed"
+                : "Create a deal",
+          },
           { label: "Item searches", value: "—", change: "No data yet" },
         ].map((stat) => (
           <div
