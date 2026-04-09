@@ -239,10 +239,16 @@ async function main() {
   // 3) GET /stores/:id/deals returns only expires_at > now (active public list)
   const storeDealsRes = await fetch(`${BASE}/api/stores/${STORE_ID}/deals`);
   assert.equal(storeDealsRes.status, 200, "GET store deals should succeed");
-  const storeDeals = (await storeDealsRes.json()) as { deals: Array<{ expiresAt: string }> };
+  const storeDeals = (await storeDealsRes.json()) as {
+    deals: Array<{ expiresAt: string; isActive: boolean }>;
+  };
   assert.ok(
     storeDeals.deals.every((d) => new Date(d.expiresAt).getTime() > Date.now()),
     "Public store deals endpoint must exclude expired deals",
+  );
+  assert.ok(
+    storeDeals.deals.every((d) => d.isActive === true),
+    "Public store deals must include isActive true for each row",
   );
 
   // Prepare one expired + one expiring-soon test deal

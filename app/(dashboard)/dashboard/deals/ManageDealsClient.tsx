@@ -12,6 +12,8 @@ export type ApiDeal = {
   price: string | null;
   expiresAt: string;
   isExpired: boolean;
+  /** Server-computed; matches public visibility (avoids client clock skew vs shopper view). */
+  isActive?: boolean;
   createdAt: string;
 };
 
@@ -25,6 +27,9 @@ export function isoToDateInput(iso: string): string {
 }
 
 export function dealIsActive(d: ApiDeal): boolean {
+  if (typeof d.isActive === "boolean") {
+    return d.isActive;
+  }
   return !d.isExpired && new Date(d.expiresAt).getTime() > Date.now();
 }
 
@@ -255,15 +260,6 @@ export default function ManageDealsClient({ storeId }: { storeId: string }) {
 
   return (
     <>
-      <div className="mb-7">
-        <h1 className="font-display text-[28px] font-medium text-gray-800 tracking-tight">
-          Deals
-        </h1>
-        <p className="text-[15px] text-gray-600 mt-1.5">
-          Create and manage your store&apos;s promotions
-        </p>
-      </div>
-
       <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
         <h2 className="text-[17px] font-semibold text-gray-800 mb-4">Post a deal</h2>
         <form onSubmit={onSubmit} className="space-y-4">

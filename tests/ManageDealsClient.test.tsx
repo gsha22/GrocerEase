@@ -96,6 +96,23 @@ describe("dealIsActive", () => {
     });
     expect(dealIsActive(deal)).toBe(false);
   });
+
+  it("prefers server isActive when present (over local clock / expiresAt)", () => {
+    const deal = makeDeal({
+      expiresAt: new Date(Date.now() - 86_400_000).toISOString(),
+      isExpired: false,
+      isActive: true,
+    });
+    expect(dealIsActive(deal)).toBe(true);
+  });
+
+  it("treats server isActive false as inactive even if expiresAt looks future locally", () => {
+    const deal = makeDeal({
+      isExpired: false,
+      isActive: false,
+    });
+    expect(dealIsActive(deal)).toBe(false);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -155,6 +172,7 @@ const mockDeals: ApiDeal[] = [
     price: "0.00",
     expiresAt: new Date(Date.now() + 86_400_000 * 3).toISOString(),
     isExpired: false,
+    isActive: true,
     createdAt: new Date().toISOString(),
   },
   {
@@ -164,6 +182,7 @@ const mockDeals: ApiDeal[] = [
     price: "2.50",
     expiresAt: new Date(Date.now() - 86_400_000).toISOString(),
     isExpired: true,
+    isActive: false,
     createdAt: new Date().toISOString(),
   },
 ];
