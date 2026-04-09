@@ -4,6 +4,15 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import StoreFilterBar, { type FilterKey } from "./StoreFilterBar";
 import StoreCard, { type StoreData } from "./StoreCard";
 
+/** Builds the `/api/stores` URL including optional `category` (AND filters as CSV). */
+export function buildStoreDirectoryFetchUrl(activeFilters: Set<FilterKey>): string {
+  const params = new URLSearchParams();
+  if (activeFilters.size > 0) {
+    params.set("category", Array.from(activeFilters).join(","));
+  }
+  return `/api/stores${params.toString() ? `?${params}` : ""}`;
+}
+
 export default function StoreDirectory() {
   const [filters, setFilters] = useState<Set<FilterKey>>(new Set());
   const [stores, setStores] = useState<StoreData[]>([]);
@@ -11,11 +20,7 @@ export default function StoreDirectory() {
   const [initialLoad, setInitialLoad] = useState(true);
 
   const fetchStores = useCallback((activeFilters: Set<FilterKey>) => {
-    const params = new URLSearchParams();
-    if (activeFilters.size > 0) {
-      params.set("category", Array.from(activeFilters).join(","));
-    }
-    const url = `/api/stores${params.toString() ? `?${params}` : ""}`;
+    const url = buildStoreDirectoryFetchUrl(activeFilters);
 
     startTransition(async () => {
       try {
