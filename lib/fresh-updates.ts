@@ -136,3 +136,34 @@ export function enrichFreshUpdatesWithStale<T extends { createdAt: Date }>(
     isStale: nowMs - u.createdAt.getTime() > staleThresholdMs,
   }));
 }
+
+/** Props shape for `StoreFreshUpdatesFeed` — built on the server in `stores/[id]/page.tsx`. */
+export type StoreFreshFeedItem = {
+  id: string;
+  itemName: string;
+  note: string | null;
+  createdAt: string;
+  isStale: boolean;
+};
+
+/**
+ * Maps enriched DB rows to JSON-serializable feed items for the public store page.
+ * Keeps serialization logic testable without importing the server page into Jest.
+ */
+export function mapEnrichedFreshUpdatesToFeedItems<
+  T extends {
+    id: string;
+    itemName: string;
+    note: string | null;
+    createdAt: Date;
+    isStale: boolean;
+  },
+>(rows: T[]): StoreFreshFeedItem[] {
+  return rows.map((update) => ({
+    id: update.id,
+    itemName: update.itemName,
+    note: update.note,
+    createdAt: update.createdAt.toISOString(),
+    isStale: update.isStale,
+  }));
+}
