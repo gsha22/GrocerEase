@@ -11,8 +11,10 @@ import {
   FRESH_UPDATE_PUBLIC_LIST_LIMIT,
   FRESH_UPDATE_PUBLIC_WINDOW_MS,
 } from "@/lib/fresh-updates";
+import { demoStoreImageSrc } from "@/lib/demo-store-image";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
 import StoreAlertSubscribe from "@/components/StoreAlertSubscribe";
@@ -88,6 +90,7 @@ export default async function StoreProfilePage({
   }));
 
   const hours = store.hours as { open?: string; close?: string } | null;
+  const demoPhoto = demoStoreImageSrc(store.id);
 
   return (
     <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -102,9 +105,21 @@ export default async function StoreProfilePage({
 
       {/* Profile hero */}
       <div className="bg-gradient-to-br from-green-50 to-white rounded-3xl border border-gray-200 p-8 flex flex-col sm:flex-row items-start gap-6 mb-6">
-        <div className="text-[56px] w-20 h-20 rounded-2xl bg-green-50 flex items-center justify-center shrink-0 border-2 border-green-100">
-          🏪
-        </div>
+        {demoPhoto ? (
+          <div className="relative w-20 h-20 rounded-2xl shrink-0 overflow-hidden border-2 border-green-100 bg-green-50">
+            <Image
+              src={demoPhoto}
+              alt={store.name}
+              width={80}
+              height={80}
+              className="object-cover w-full h-full"
+            />
+          </div>
+        ) : (
+          <div className="text-[56px] w-20 h-20 rounded-2xl bg-green-50 flex items-center justify-center shrink-0 border-2 border-green-100">
+            🏪
+          </div>
+        )}
         <div>
           <h1 className="font-display text-[26px] font-semibold text-gray-800">
             {store.name}
