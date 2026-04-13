@@ -1,7 +1,14 @@
 import bcrypt from "bcryptjs";
 import { Prisma } from "../app/generated/prisma/client";
 
-const BASE_TIME = new Date("2026-03-20T16:00:00.000Z");
+// const BASE_TIME = new Date("2026-03-20T16:00:00.000Z");
+const DEFAULT_BASE_TIME = new Date("2026-03-20T16:00:00.000Z");
+const BASE_TIME =
+  process.env.SEED_CLOCK === "now"
+    ? new Date()
+    : process.env.SEED_BASE_TIME
+      ? new Date(process.env.SEED_BASE_TIME)
+      : DEFAULT_BASE_TIME;
 const BCRYPT_SALT = "$2b$10$CwTycUXWue0Thq9StjUM0u";
 
 const atHours = (deltaHours: number) =>
