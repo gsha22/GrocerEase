@@ -13,7 +13,9 @@ import {
   mapEnrichedFreshUpdatesToFeedItems,
 } from "@/lib/fresh-updates";
 import { prisma } from "@/lib/prisma";
+import { storeHeroImageSrc } from "@/lib/store-images";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
 import StoreAlertSubscribe from "@/components/StoreAlertSubscribe";
@@ -84,6 +86,7 @@ export default async function StoreProfilePage({
     mapEnrichedFreshUpdatesToFeedItems(freshUpdatesDisplay);
 
   const hours = store.hours as { open?: string; close?: string } | null;
+  const heroSrc = storeHeroImageSrc(store.id);
 
   return (
     <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -98,9 +101,22 @@ export default async function StoreProfilePage({
 
       {/* Profile hero */}
       <div className="bg-gradient-to-br from-green-50 to-white rounded-3xl border border-gray-200 p-8 flex flex-col sm:flex-row items-start gap-6 mb-6">
-        <div className="text-[56px] w-20 h-20 rounded-2xl bg-green-50 flex items-center justify-center shrink-0 border-2 border-green-100">
-          🏪
-        </div>
+        {heroSrc ? (
+          <div className="relative w-20 h-20 shrink-0 rounded-2xl overflow-hidden border-2 border-green-100 bg-green-50">
+            <Image
+              src={heroSrc}
+              alt={`${store.name} storefront`}
+              fill
+              className="object-cover"
+              sizes="80px"
+              priority
+            />
+          </div>
+        ) : (
+          <div className="text-[56px] w-20 h-20 rounded-2xl bg-green-50 flex items-center justify-center shrink-0 border-2 border-green-100">
+            🏪
+          </div>
+        )}
         <div>
           <h1 className="font-display text-[26px] font-semibold text-gray-800">
             {store.name}

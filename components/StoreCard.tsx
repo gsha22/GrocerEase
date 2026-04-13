@@ -1,4 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
+
+import { storeHeroImageSrc } from "@/lib/store-images";
 
 export interface StoreData {
   id: string;
@@ -33,13 +36,27 @@ interface StoreCardProps {
 }
 
 export default function StoreCard({ store, neighborhood }: StoreCardProps) {
+  const heroSrc = storeHeroImageSrc(store.id);
+
   return (
     <Link
       href={`/stores/${store.id}`}
       className="block bg-white rounded-2xl border border-gray-200 overflow-hidden hover:-translate-y-0.5 hover:shadow-md hover:border-gray-400 transition-all"
     >
-      <div className="h-[140px] w-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center text-5xl">
-        {heroEmoji(store.categories)}
+      <div className="relative h-[140px] w-full bg-gradient-to-br from-green-50 to-green-100">
+        {heroSrc ? (
+          <Image
+            src={heroSrc}
+            alt=""
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1100px) 50vw, 360px"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-5xl">
+            {heroEmoji(store.categories)}
+          </div>
+        )}
       </div>
       <div className="p-3.5">
         <div className="font-semibold text-[16px] text-gray-800 mb-1">

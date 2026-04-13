@@ -4,7 +4,10 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
+
+import { storeHeroImageSrc } from "@/lib/store-images";
 
 // Leaflet requires window — load only on client
 const StoreMap = dynamic(() => import("@/components/StoreMap"), { ssr: false });
@@ -107,14 +110,28 @@ export default function MapPage() {
       {/* Store list below map */}
       {stores.length > 0 && (
         <div className="space-y-2">
-          {stores.map((store) => (
+          {stores.map((store) => {
+            const thumbSrc = storeHeroImageSrc(store.id);
+            return (
             <Link
               key={store.id}
               href={`/stores/${store.id}`}
               className="flex items-center gap-4 p-3.5 bg-white border border-gray-200 rounded-xl hover:border-gray-400 transition-colors"
             >
-              <div className="text-2xl w-11 h-11 rounded-md bg-green-50 flex items-center justify-center shrink-0">
-                🏪
+              <div className="relative w-11 h-11 rounded-md bg-green-50 overflow-hidden shrink-0 border border-green-100">
+                {thumbSrc ? (
+                  <Image
+                    src={thumbSrc}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="44px"
+                  />
+                ) : (
+                  <span className="absolute inset-0 flex items-center justify-center text-2xl">
+                    🏪
+                  </span>
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-[15px]">{store.name}</div>
@@ -128,7 +145,8 @@ export default function MapPage() {
                 </span>
               )}
             </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
