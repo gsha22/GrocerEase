@@ -3,7 +3,7 @@
 // Story 12: Browse Without Account — no auth required
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
   PITTSBURGH_NEIGHBORHOODS,
@@ -15,6 +15,7 @@ import StoreCard, { type StoreData } from "@/components/StoreCard";
 export default function HomePage() {
   const [stores, setStores] = useState<StoreData[]>([]);
   const [loading, setLoading] = useState(true);
+  const storesFetchGeneration = useRef(0);
   const [activeFilters, setActiveFilters] = useState<Set<FilterKey>>(new Set());
   const [locationLabel, setLocationLabel] = useState("Pittsburgh");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
@@ -23,8 +24,15 @@ export default function HomePage() {
   const [geoFailed, setGeoFailed] = useState(false);
 
   const fetchStores = useCallback(
-    async (filters: Set<FilterKey>, loc: { lat: number; lng: number } | null) => {
-      setLoading(true);
+    async (
+      filters: Set<FilterKey>,
+      loc: { lat: number; lng: number } | null,
+      opts?: { showSkeleton?: boolean }
+    ) => {
+      const showSkeleton = opts?.showSkeleton ?? true;
+      const generation = ++storesFetchGeneration.current;
+      if (showSkeleton) setLoading(true);
+      else setLoading(false);
       const params = new URLSearchParams();
       if (loc) {
         params.set("lat", loc.lat.toString());
@@ -36,36 +44,51 @@ export default function HomePage() {
       }
       try {
         const res = await fetch(`/api/stores?${params.toString()}`);
-        if (!res.ok) throw new Error("fetch failed");
+        if (!res.ok) {
+          const detail = await res.text().catch(() => "");
+          console.error(
+            "Failed to load stores:",
+            res.status,
+            detail || res.statusText
+          );
+          return;
+        }
         const data = await res.json();
+        if (generation !== storesFetchGeneration.current) return;
         setStores(data);
       } catch (err) {
         console.error("Failed to load stores:", err);
       } finally {
-        setLoading(false);
+        if (generation === storesFetchGeneration.current && showSkeleton) {
+          setLoading(false);
+        }
       }
     },
     []
   );
 
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          setCoords(loc);
-          setLocationLabel("your location");
-          fetchStores(activeFilters, loc);
-        },
-        () => {
-          setGeoFailed(true);
-          fetchStores(activeFilters, null);
-        }
-      );
-    } else {
+    if (!("geolocation" in navigator)) {
       setGeoFailed(true);
       fetchStores(activeFilters, null);
+      return;
     }
+
+    // Load directory immediately (fast DB path). Geolocation often takes seconds.
+    fetchStores(activeFilters, null);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setCoords(loc);
+        setLocationLabel("your location");
+        fetchStores(activeFilters, loc, { showSkeleton: false });
+      },
+      () => {
+        setGeoFailed(true);
+      },
+      { maximumAge: 300_000, timeout: 12_000 }
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -131,9 +154,15 @@ export default function HomePage() {
         </h1>
         <p className="text-[15px] text-gray-600 mt-1.5">
           {stores.length > 0
-            ? `Showing ${stores.length} store${stores.length !== 1 ? "s" : ""} within 10 miles of ${locationLabel}`
+            ? `Showing ${stores.length} store${stores.length !== 1 ? "s" : ""}${
+                coords
+                  ? ` within 10 miles of ${locationLabel}`
+                  : geoFailed
+                    ? " — pick a neighborhood below for distances"
+                    : " — distances appear once your location is ready"
+              }`
             : loading
-              ? `Searching near ${locationLabel}…`
+              ? `Loading stores…`
               : "No stores found nearby"}
         </p>
       </div>

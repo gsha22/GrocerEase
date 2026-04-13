@@ -2,7 +2,9 @@
 // Story 12: No auth required
 "use client";
 
-import { useEffect, useState } from "react";
+import { demoStoreImageSrc } from "@/lib/demo-store-image";
+import Image from "next/image";
+import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
@@ -25,36 +27,52 @@ export default function MapPage() {
   const [stores, setStores] = useState<Store[]>([]);
   const [center, setCenter] = useState<[number, number]>(PITTSBURGH_CENTER);
   const [loading, setLoading] = useState(true);
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
-    async function loadStores(lat: number | null, lng: number | null) {
-      const params = new URLSearchParams();
-      if (lat !== null && lng !== null) {
-        params.set("lat", lat.toString());
-        params.set("lng", lng.toString());
-        params.set("radius", "10");
+    cancelledRef.current = false;
+
+    async function loadDirectoryFirst() {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/stores");
+        if (!res.ok || cancelledRef.current) return;
+        const data = await res.json();
+        setStores(data);
+      } finally {
+        if (!cancelledRef.current) setLoading(false);
       }
-      const res = await fetch(`/api/stores?${params.toString()}`);
-      const data = await res.json();
-      setStores(data);
-      setLoading(false);
     }
 
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const loc: [number, number] = [
-            pos.coords.latitude,
-            pos.coords.longitude,
-          ];
-          setCenter(loc);
-          loadStores(loc[0], loc[1]);
-        },
-        () => loadStores(null, null)
-      );
-    } else {
-      loadStores(null, null);
-    }
+    void loadDirectoryFirst();
+
+    if (!("geolocation" in navigator)) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (cancelledRef.current) return;
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setCenter([lat, lng]);
+        const params = new URLSearchParams({
+          lat: String(lat),
+          lng: String(lng),
+          radius: "10",
+        });
+        void fetch(`/api/stores?${params.toString()}`)
+          .then((res) => (res.ok ? res.json() : Promise.reject()))
+          .then((data: Store[]) => {
+            if (!cancelledRef.current) setStores(data);
+          })
+          .catch(() => {});
+      },
+      undefined,
+      { maximumAge: 300_000, timeout: 12_000 }
+    );
+
+    return () => {
+      cancelledRef.current = true;
+    };
   }, []);
 
   return (
@@ -65,8 +83,14 @@ export default function MapPage() {
         </h1>
         <p className="text-[15px] text-gray-600 mt-1.5">
           {stores.length > 0
-            ? `${stores.length} stores within 10 miles`
-            : "Finding stores near you…"}
+            ? `${stores.length} stores${
+                stores.some((s) => s.distanceMiles != null)
+                  ? " within 10 miles"
+                  : ""
+              }`
+            : loading
+              ? "Loading stores…"
+              : "No stores to show"}
         </p>
       </div>
 
@@ -100,15 +124,29 @@ export default function MapPage() {
       {/* Store list below map */}
       {stores.length > 0 && (
         <div className="space-y-2">
-          {stores.map((store) => (
+          {stores.map((store) => {
+            const thumbSrc = demoStoreImageSrc(store.id);
+            return (
             <Link
               key={store.id}
               href={`/stores/${store.id}`}
               className="flex items-center gap-4 p-3.5 bg-white border border-gray-200 rounded-xl hover:border-gray-400 transition-colors"
             >
-              <div className="text-2xl w-11 h-11 rounded-md bg-green-50 flex items-center justify-center shrink-0">
-                🏪
-              </div>
+              {thumbSrc ? (
+                <div className="relative w-11 h-11 rounded-md overflow-hidden bg-green-50 shrink-0 border border-green-100">
+                  <Image
+                    src={thumbSrc}
+                    alt={store.name}
+                    fill
+                    className="object-cover"
+                    sizes="44px"
+                  />
+                </div>
+              ) : (
+                <div className="text-2xl w-11 h-11 rounded-md bg-green-50 flex items-center justify-center shrink-0">
+                  🏪
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-[15px]">{store.name}</div>
                 <div className="text-[12px] text-gray-400 mt-0.5 truncate">
@@ -121,7 +159,8 @@ export default function MapPage() {
                 </span>
               )}
             </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
