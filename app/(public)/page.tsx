@@ -49,23 +49,26 @@ export default function HomePage() {
   );
 
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          setCoords(loc);
-          setLocationLabel("your location");
-          fetchStores(activeFilters, loc);
-        },
-        () => {
-          setGeoFailed(true);
-          fetchStores(activeFilters, null);
-        }
-      );
-    } else {
+    // Load list immediately (no coords); refine by distance when geolocation returns.
+    void fetchStores(activeFilters, null);
+
+    if (!("geolocation" in navigator)) {
       setGeoFailed(true);
-      fetchStores(activeFilters, null);
+      return;
     }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setCoords(loc);
+        setLocationLabel("your location");
+        void fetchStores(activeFilters, loc);
+      },
+      () => {
+        setGeoFailed(true);
+      },
+      { maximumAge: 120_000, timeout: 10_000, enableHighAccuracy: false }
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
