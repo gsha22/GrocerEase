@@ -10,7 +10,7 @@ export const FRESH_UPDATE_STALE_THRESHOLD_MS = 48 * HOUR_MS;
  * Max rows returned for public Fresh Today (store page + public GET updates).
  * Owner `?all=true` lists are uncapped.
  */
-export const FRESH_UPDATE_PUBLIC_LIST_LIMIT = 10;
+export const FRESH_UPDATE_PUBLIC_LIST_LIMIT = 60;
 
 export const MAX_ITEM_NAME_LEN = 200;
 export const MAX_NOTE_LEN = 500;

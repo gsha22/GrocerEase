@@ -1,6 +1,7 @@
 import "dotenv/config";
 
 import { PrismaPg } from "@prisma/adapter-pg";
+import { createPgPoolConfig } from "../lib/pg-pool-config";
 import { PrismaClient } from "../app/generated/prisma/client";
 import {
   alerts,
@@ -18,7 +19,7 @@ if (!process.env.DATABASE_URL) {
 }
 
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+  adapter: new PrismaPg(createPgPoolConfig()),
 });
 
 async function resetAndSeed() {

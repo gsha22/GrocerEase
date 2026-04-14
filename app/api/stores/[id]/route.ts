@@ -1,6 +1,7 @@
 import type { Prisma } from "@/app/generated/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { geocodeAddress } from "@/lib/geocode-address";
+import { FRESH_UPDATE_PUBLIC_LIST_LIMIT } from "@/lib/fresh-updates";
 import { prisma } from "@/lib/prisma";
 import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
 import { validateStoreProfilePatch } from "@/lib/store-profile";
@@ -19,7 +20,7 @@ export async function GET(
       freshUpdates: {
         where: { deletedAt: null },
         orderBy: { createdAt: "desc" },
-        take: 10,
+        take: FRESH_UPDATE_PUBLIC_LIST_LIMIT,
       },
       deals: {
         where: {

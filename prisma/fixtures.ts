@@ -1,7 +1,17 @@
 import bcrypt from "bcryptjs";
 import { Prisma } from "../app/generated/prisma/client";
 
-const BASE_TIME = new Date("2026-03-20T16:00:00.000Z");
+/**
+ * All seeded `createdAt` / `expiresAt` / `lastUpdated` values are offsets from this instant.
+ * Using wall-clock time keeps rows inside the public Fresh Today window (7 days) and
+ * active-deal filters (`expiresAt > now`) after `db:seed` / `db:reset`.
+ *
+ * For deterministic timestamps (e.g. screenshots), set `PRISMA_SEED_CLOCK` to an ISO string.
+ */
+const BASE_TIME = process.env.PRISMA_SEED_CLOCK
+  ? new Date(process.env.PRISMA_SEED_CLOCK)
+  : new Date();
+
 const BCRYPT_SALT = "$2b$10$CwTycUXWue0Thq9StjUM0u";
 
 const atHours = (deltaHours: number) =>
@@ -11,7 +21,7 @@ const atDays = (deltaDays: number) => atHours(deltaDays * 24);
 
 export const fixtureMeta = {
   baseTime: BASE_TIME,
-  publicNowHint: "2026-03-20T16:00:00.000Z",
+  publicNowHint: BASE_TIME.toISOString(),
   ownerPlaintextPassword: "OwnerPass123!",
   shopperPlaintextPassword: "ShopperPass123!",
 };
@@ -317,7 +327,7 @@ export const shoppers = [
   },
 ];
 
-export const items = [
+const coreItems = [
   {
     id: ids.items.bokChoy,
     storeId: ids.stores.lotus,
@@ -432,7 +442,203 @@ export const items = [
   },
 ];
 
-export const freshUpdates = [
+const BULK_STORE_ROTATION = [
+  ids.stores.lotus,
+  ids.stores.crescent,
+  ids.stores.threeRivers,
+  ids.stores.tokyoMart,
+  ids.stores.riverHalalHub,
+  ids.stores.eastEndOrganic,
+] as const;
+
+const BULK_PRODUCT_NAMES = [
+  "Ataulfo Mangoes",
+  "Fuji Apples",
+  "Cara Cara Oranges",
+  "Thai Basil Bunch",
+  "Persian Cucumbers",
+  "Enoki Mushrooms",
+  "Panko Breadcrumbs",
+  "Jasmine Rice 10lb",
+  "Extra Firm Tofu",
+  "Kimchi Jar",
+  "Miso White",
+  "Sesame Oil Toasted",
+  "Yuzu Juice",
+  "Pomegranate Arils",
+  "Green Lentils Dry",
+  "Chickpeas Dry",
+  "Quinoa Tri-color",
+  "Avocado Hass",
+  "Limes Key West",
+  "Mint Bunch",
+  "Italian Parsley",
+  "Thyme Fresh Pack",
+  "Rosemary Sprigs",
+  "Serrano Peppers",
+  "Shishito Peppers",
+  "Cremini Mushrooms",
+  "Portobello Caps",
+  "Zucchini Medley",
+  "Rainbow Carrots",
+  "Golden Beets",
+] as const;
+
+function bulkItemUuid(index: number): string {
+  return `f1000000-0004-4000-8000-${(index + 1).toString(16).padStart(12, "0")}`;
+}
+
+function bulkFreshUpdateUuid(index: number): string {
+  return `f2000000-0004-4000-8000-${(index + 1).toString(16).padStart(12, "0")}`;
+}
+
+function bulkDealUuid(index: number): string {
+  return `f3000000-0004-4000-8000-${(index + 1).toString(16).padStart(12, "0")}`;
+}
+
+function buildBulkExtraItems() {
+  const count = 90;
+  const notes = [
+    "New shipment.",
+    "Peak season quality.",
+    "Limited run today.",
+    "Staff favorite this week.",
+    "Restocked this morning.",
+  ];
+  return Array.from({ length: count }, (_, i) => {
+    const storeId = BULK_STORE_ROTATION[i % BULK_STORE_ROTATION.length]!;
+    const base = BULK_PRODUCT_NAMES[i % BULK_PRODUCT_NAMES.length]!;
+    const suffix = Math.floor(i / BULK_PRODUCT_NAMES.length);
+    const name = suffix > 0 ? `${base} (${suffix + 1})` : base;
+    return {
+      id: bulkItemUuid(i),
+      storeId,
+      name,
+      description: notes[i % notes.length]!,
+      inStock: i % 7 !== 0,
+      lastUpdated: atHours(-(i % 52) - 1),
+    };
+  });
+}
+
+const bulkExtraItems = buildBulkExtraItems();
+
+function buildBulkExtraFreshUpdates() {
+  const out: {
+    id: string;
+    storeId: string;
+    itemId: string | null;
+    itemName: string;
+    note: string | null;
+    createdAt: Date;
+    deletedAt: Date | null;
+  }[] = [];
+  let idx = 0;
+
+  for (let i = 0; i < bulkExtraItems.length; i++) {
+    const item = bulkExtraItems[i]!;
+    const updatesForRow = i % 4 === 0 ? 2 : 1;
+    for (let j = 0; j < updatesForRow; j++) {
+      const notes = [
+        "Fresh delivery — check produce aisle.",
+        "Back on shelf after restock.",
+        "Small batch from local supplier.",
+        "Quality spot-check passed.",
+      ];
+      out.push({
+        id: bulkFreshUpdateUuid(idx),
+        storeId: item.storeId,
+        itemId: item.id,
+        itemName: item.name,
+        note: notes[(i + j) % notes.length]!,
+        createdAt: atHours(-((idx % 80) + 1)),
+        deletedAt: null,
+      });
+      idx += 1;
+    }
+  }
+
+  for (let k = 0; k < 25; k++) {
+    out.push({
+      id: bulkFreshUpdateUuid(idx),
+      storeId: BULK_STORE_ROTATION[k % BULK_STORE_ROTATION.length]!,
+      itemId: null,
+      itemName: "Seasonal tasting board",
+      note: "Bulk fixture — soft-deleted sample.",
+      createdAt: atHours(-(120 + k)),
+      deletedAt: atHours(-(20 + k)),
+    });
+    idx += 1;
+  }
+
+  return out;
+}
+
+const bulkExtraFreshUpdates = buildBulkExtraFreshUpdates();
+
+function buildBulkExtraDeals() {
+  const out: {
+    id: string;
+    storeId: string;
+    itemId: string | null;
+    sourceDealId: string | null;
+    title: string;
+    description: string | null;
+    price: Prisma.Decimal;
+    discountPct: number | null;
+    expiresAt: Date;
+    isExpired: boolean;
+    createdAt: Date;
+    deletedAt: Date | null;
+  }[] = [];
+
+  for (let i = 0; i < bulkExtraItems.length; i++) {
+    const item = bulkExtraItems[i]!;
+    const active = i % 9 !== 0;
+    const pct = 8 + (i % 22);
+    const shortName = item.name.replace(/\s*\(\d+\)\s*$/, "");
+    out.push({
+      id: bulkDealUuid(i),
+      storeId: item.storeId,
+      itemId: item.id,
+      sourceDealId: null,
+      title: `${pct}% off ${shortName}`,
+      description: "Bulk-seeded deal for demos and UI stress.",
+      price: new Prisma.Decimal((1.99 + (i % 40) * 0.17).toFixed(2)),
+      discountPct: pct,
+      expiresAt: active ? atDays(1 + (i % 18)) : atHours(-(12 + (i % 30))),
+      isExpired: !active,
+      createdAt: atHours(-(i % 55) - 2),
+      deletedAt: null,
+    });
+  }
+
+  for (let k = 0; k < 15; k++) {
+    const item = bulkExtraItems[k * 5]!;
+    out.push({
+      id: bulkDealUuid(bulkExtraItems.length + k),
+      storeId: item.storeId,
+      itemId: item.id,
+      sourceDealId: null,
+      title: `Flash markdown #${k + 1}`,
+      description: "Bulk soft-deleted deal row.",
+      price: new Prisma.Decimal((3.49 + k * 0.21).toFixed(2)),
+      discountPct: 10 + k,
+      expiresAt: atDays(3),
+      isExpired: false,
+      createdAt: atHours(-(8 + k)),
+      deletedAt: atHours(-(1 + k)),
+    });
+  }
+
+  return out;
+}
+
+const bulkExtraDeals = buildBulkExtraDeals();
+
+export const items = [...coreItems, ...bulkExtraItems];
+
+const coreFreshUpdates = [
   {
     id: ids.freshUpdates.lotusRecent,
     storeId: ids.stores.lotus,
@@ -507,7 +713,9 @@ export const freshUpdates = [
   },
 ];
 
-export const deals = [
+export const freshUpdates = [...coreFreshUpdates, ...bulkExtraFreshUpdates];
+
+const coreDeals = [
   {
     id: ids.deals.lotusActive,
     storeId: ids.stores.lotus,
@@ -677,6 +885,8 @@ export const deals = [
     deletedAt: atHours(-6),
   },
 ];
+
+export const deals = [...coreDeals, ...bulkExtraDeals];
 
 export const alerts = [
   {
