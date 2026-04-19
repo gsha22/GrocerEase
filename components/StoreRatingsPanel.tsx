@@ -98,17 +98,22 @@ export default function StoreRatingsPanel({
       const res = await fetch(`/api/stores/${storeId}/ratings`, {
         cache: "no-store",
       });
-      if (res.ok) {
-        const data = await res.json();
-        setSummary({
-          average: data.average,
-          total: data.total,
-          ratings: data.ratings,
-          hasMore: data.hasMore,
-        });
+      if (!res.ok) {
+        throw new Error("Could not refresh ratings.");
       }
-    } catch {
-      /* ignore */
+      const data = await res.json();
+      setSummary({
+        average: data.average,
+        total: data.total,
+        ratings: data.ratings,
+        hasMore: data.hasMore,
+      });
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? `${e.message} You may need to reload the page.`
+          : "Could not refresh ratings. You may need to reload the page.",
+      );
     }
   }
 

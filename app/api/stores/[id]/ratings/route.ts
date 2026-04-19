@@ -30,19 +30,31 @@ export async function GET(
     _count: { _all: true },
   });
 
-  const ratings = await prisma.storeRating.findMany({
-    where: { storeId },
-    orderBy: { createdAt: "desc" },
-    skip: (page - 1) * PAGE_SIZE,
-    take: PAGE_SIZE,
-    select: {
-      id: true,
-      score: true,
-      note: true,
-      createdAt: true,
-      shopper: { select: { name: true } },
-    },
-  });
+  // The paginated feed is "recent notes" — only ratings that carried a
+  // written note. `total` still reflects all ratings (used for the "X
+  // ratings" header count), but pagination/hasMore tracks notes only.
+  const noteWhere = {
+    storeId,
+    note: { not: null },
+    NOT: { note: "" },
+  } as const;
+
+  const [notesCount, ratings] = await Promise.all([
+    prisma.storeRating.count({ where: noteWhere }),
+    prisma.storeRating.findMany({
+      where: noteWhere,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+      select: {
+        id: true,
+        score: true,
+        note: true,
+        createdAt: true,
+        shopper: { select: { name: true } },
+      },
+    }),
+  ]);
 
   const total = agg._count._all;
   const average =
@@ -53,7 +65,7 @@ export async function GET(
     total,
     page,
     pageSize: PAGE_SIZE,
-    hasMore: page * PAGE_SIZE < total,
+    hasMore: page * PAGE_SIZE < notesCount,
     ratings: ratings.map((r) => ({
       id: r.id,
       score: r.score,
