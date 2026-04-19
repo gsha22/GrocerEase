@@ -18,6 +18,7 @@ import Link from "next/link";
 import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
 import StoreAlertSubscribe from "@/components/StoreAlertSubscribe";
 import StoreFreshUpdatesFeed from "@/components/StoreFreshUpdatesFeed";
+import StoreRatingsPanel from "@/components/StoreRatingsPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +83,58 @@ export default async function StoreProfilePage({
     });
     initialStoreFollow = Boolean(follow);
     storeFollowAlertId = follow?.id ?? null;
+  }
+
+  const RATINGS_PAGE_SIZE = 10;
+  const [ratingAgg, recentRatings] = await Promise.all([
+    prisma.storeRating.aggregate({
+      where: { storeId: id },
+      _avg: { score: true },
+      _count: { _all: true },
+    }),
+    prisma.storeRating.findMany({
+      where: { storeId: id },
+      orderBy: { createdAt: "desc" },
+      take: RATINGS_PAGE_SIZE,
+      select: {
+        id: true,
+        score: true,
+        note: true,
+        createdAt: true,
+        shopper: { select: { name: true } },
+      },
+    }),
+  ]);
+
+  const ratingsSummary = {
+    average:
+      ratingAgg._avg.score != null
+        ? Math.round(ratingAgg._avg.score * 10) / 10
+        : null,
+    total: ratingAgg._count._all,
+    ratings: recentRatings.map((r) => ({
+      id: r.id,
+      score: r.score,
+      note: r.note,
+      createdAt: r.createdAt.toISOString(),
+      authorName: r.shopper.name,
+    })),
+    hasMore: ratingAgg._count._all > RATINGS_PAGE_SIZE,
+  };
+
+  let initialOwnRating: {
+    id: string;
+    score: number;
+    note: string | null;
+  } | null = null;
+  if (session?.role === "shopper") {
+    const own = await prisma.storeRating.findUnique({
+      where: {
+        storeId_shopperId: { storeId: id, shopperId: session.user.id },
+      },
+      select: { id: true, score: true, note: true },
+    });
+    if (own) initialOwnRating = own;
   }
 
   const freshUpdatesDisplay = enrichFreshUpdatesWithStale(
@@ -193,6 +246,14 @@ export default async function StoreProfilePage({
         storeName={store.name}
         storeAddress={store.address}
         viewerRole={viewerRole}
+      />
+
+      {/* Shopper ratings — Story 15 */}
+      <StoreRatingsPanel
+        storeId={store.id}
+        viewerRole={viewerRole}
+        initialSummary={ratingsSummary}
+        initialOwnRating={initialOwnRating}
       />
 
       {/* Fresh Today — Story 1 */}

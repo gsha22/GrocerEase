@@ -64,6 +64,7 @@ model Store {
   shopperNotifications ShopperNotification[]
   profileViews StoreProfileView[]
   itemSearches StoreItemSearch[]
+  ratings      StoreRating[]
 
   @@map("stores")
 }
@@ -173,6 +174,7 @@ model Shopper {
 
   alerts Alert[]
   shopperNotifications ShopperNotification[]
+  ratings StoreRating[]
 
   @@map("shoppers")
 }
@@ -210,6 +212,25 @@ model AuthAuditLog {
   @@index([ownerId, createdAt])
   @@index([emailHash, createdAt])
   @@map("auth_audit_logs")
+}
+
+/// Story 15: lightweight shopper rating (1–5) + optional tip per store.
+/// Unique per (store, shopper) so a shopper can hold at most one active rating.
+model StoreRating {
+  id        String   @id @default(uuid())
+  storeId   String   @map("store_id")
+  shopperId String   @map("shopper_id")
+  score     Int
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  shopper Shopper @relation(fields: [shopperId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, shopperId])
+  @@index([storeId, createdAt(sort: Desc)])
+  @@map("store_ratings")
 }
 
 model Alert {
