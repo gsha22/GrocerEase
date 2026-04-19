@@ -160,7 +160,7 @@ describe("fetchStores", () => {
 
     render(<HomePage />);
 
-    await screen.findByText("No stores found");
+    await screen.findByText("No stores here yet");
   });
 
   it("recovers gracefully (no crash) when the fetch request rejects", async () => {
@@ -170,7 +170,7 @@ describe("fetchStores", () => {
     render(<HomePage />);
 
     await waitFor(() => {
-      expect(screen.getByText("No stores found")).toBeInTheDocument();
+      expect(screen.getByText("No stores here yet")).toBeInTheDocument();
     });
     expect(console.error).toHaveBeenCalled();
   });
@@ -186,7 +186,7 @@ describe("fetchStores", () => {
 
     render(<HomePage />);
 
-    await screen.findByText(/showing 2 stores/i);
+    await screen.findByText(/2 stores within 10 miles/i);
   });
 
   it("shows singular 'store' in the subtitle when exactly one store is returned", async () => {
@@ -195,7 +195,7 @@ describe("fetchStores", () => {
 
     render(<HomePage />);
 
-    await screen.findByText(/showing 1 store\b/i);
+    await screen.findByText(/1 store within 10 miles/i);
   });
 });
 
@@ -371,38 +371,36 @@ describe("handleFilterChange", () => {
 // ---------------------------------------------------------------------------
 
 describe("static content", () => {
-  it("renders the 'Sign up for alerts' link pointing to /login", async () => {
+  it("renders a Sign in link pointing to /sign-in", async () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
     render(<HomePage />);
 
-    const link = await screen.findByRole("link", { name: /sign up for alerts/i });
-    expect(link).toHaveAttribute("href", "/login");
+    const link = await screen.findByRole("link", { name: /^sign in$/i });
+    expect(link).toHaveAttribute("href", "/sign-in");
   });
 
-  it("renders a List link pointing to / and a Map link pointing to /map", async () => {
+  it("renders List as the active tab label and a Map link pointing to /map", async () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
     render(<HomePage />);
 
-    const listLink = await screen.findByRole("link", { name: /^list$/i });
+    expect(await screen.findByText(/^List$/i)).toBeInTheDocument();
     const mapLink = screen.getByRole("link", { name: /^map$/i });
-
-    expect(listLink).toHaveAttribute("href", "/");
     expect(mapLink).toHaveAttribute("href", "/map");
   });
 
-  it("renders the guest banner with discovery copy", async () => {
+  it("renders the guest hero with discovery copy", async () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
     render(<HomePage />);
 
-    await screen.findByText(/discover your neighborhood/i);
+    await screen.findByText(/Discover what'?s fresh nearby/i);
     expect(
-      screen.getByText(/browse stores and deals without signing up/i),
+      screen.getByText(/Browse real neighborhood grocers/i),
     ).toBeInTheDocument();
   });
 });

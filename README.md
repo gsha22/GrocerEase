@@ -14,6 +14,10 @@ A lightweight discovery platform that helps Pittsburgh shoppers find out what ne
 | Hosting | Vercel |
 | Geocoding | Google Maps Geocoding API |
 
+### Deploy to Vercel
+
+This app is a standard Next.js project. **You** connect the Git repo in the [Vercel dashboard](https://vercel.com) and set environment variables there. Step-by-step instructions (Postgres, `NEXTAUTH_URL`, migrations, cron) are in **[docs/deploy-vercel.md](docs/deploy-vercel.md)**.
+
 ## Getting Started
 
 ### Prerequisites
@@ -78,7 +82,7 @@ app/
     login/page.tsx       — owner login
     signup/page.tsx      — owner registration
     shopper/login/page.tsx — shopper login
-    shopper/signup/page.tsx — shopper registration
+    shopper/signup/page.tsx — shopper registration (canonical; `/signup/shopper` redirects here)
     shopper/account/page.tsx — shopper account (auth-protected)
   (dashboard)/           — owner routes (auth-protected)
     dashboard/page.tsx
@@ -122,6 +126,17 @@ middleware.ts            — protects /dashboard/* routes
 | `npm run test:signup` | HTTP integration tests for `POST /auth/signup` (needs running app + DB) |
 | `npm run test:store-profile` | HTTP integration tests for store profile create/edit (needs running app + DB) |
 | `npm run test:geocode` | Geocoding branch tests (mocked; optional real Google API check) |
+
+### Shopper signup URLs
+
+Use **`/shopper/signup`** as the canonical shopper registration page. The legacy path **`/signup/shopper`** (and query params such as `callbackUrl`) **redirects** to the same place so old bookmarks and links keep working.
+
+### Owner password reset
+
+1. Request a reset from **`/login/forgot`** → `POST /auth/forgot-password` (creates a one-time token in the database; response message is always the same to avoid email enumeration).
+2. **Email delivery:** set **`RESEND_API_KEY`** and **`EMAIL_FROM`** (see `.env.example`), or **`SENDGRID_API_KEY`** with **`SENDGRID_FROM_EMAIL`** / **`EMAIL_FROM`**. Resend is preferred if both keys are present.
+3. Complete the reset at **`/login/reset`** using the link from the email. If no provider is configured, the reset URL is only logged in **development** (see server terminal).
+4. See **`docs/security-audit.md`** for `npm audit` policy and **`docs/database-rls.md`** for Postgres/Supabase RLS checks on staging.
 
 ### Running `test:geocode`
 

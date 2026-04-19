@@ -12,7 +12,7 @@ Expected runtime is typically under 1 minute after dependencies/migrations are r
 ## Determinism Strategy
 
 - Fixed IDs for all records (UUID constants).
-- Fixed seed clock: `2026-03-20T16:00:00.000Z`.
+- Fixed seed clock: `2026-04-14T12:00:00.000Z`.
 - Derived timestamps are deterministic offsets from that clock.
 - Deterministic password hashing with a fixed bcrypt salt.
 

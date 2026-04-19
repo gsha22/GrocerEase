@@ -38,13 +38,14 @@ export default function StoreAlertSubscribe({
   }, [initialSubscribed, initialStoreFollowAlertId, storeId]);
 
   const callbackPath = `/stores/${storeId}`;
-  const loginHref = `/login?callbackUrl=${encodeURIComponent(callbackPath)}`;
+  const shopperLoginHref = `/shopper/login?callbackUrl=${encodeURIComponent(callbackPath)}`;
   const signupHref = `/signup/shopper?callbackUrl=${encodeURIComponent(callbackPath)}`;
+  const pickAccountHref = `/sign-in?next=${encodeURIComponent(callbackPath)}`;
 
   async function toggle() {
     setError(null);
     if (viewerRole !== "shopper") {
-      router.push(loginHref);
+      router.push(viewerRole === "owner" ? pickAccountHref : shopperLoginHref);
       return;
     }
 
@@ -70,7 +71,7 @@ export default function StoreAlertSubscribe({
             typeof payload.error === "string"
               ? payload.error
               : res.status === 403
-                ? "This account can’t subscribe (try a shopper login)."
+                ? "This account can’t save shops — use a neighbor sign-in."
                 : res.status === 401
                   ? "Sign in again, then retry."
                   : "Could not subscribe.",
@@ -139,24 +140,24 @@ export default function StoreAlertSubscribe({
     return (
       <div className="rounded-xl border border-amber-100 bg-amber-50/80 px-4 py-3">
         <p className="text-[14px] text-amber-950 font-medium">
-          Get deals &amp; restocks from {storeName}
+          Save {storeName} to your list
         </p>
         <p className="text-[13px] text-amber-900/80 mt-1">
-          Use a free shopper account so this store can land in{" "}
-          <strong className="text-amber-950">My alerts</strong>.
+          Create a free <strong className="text-amber-950">neighbor</strong> account to pin this
+          market and get light alerts — still no cart or checkout.
         </p>
         <div className="mt-3 flex flex-col sm:flex-row flex-wrap gap-2">
           <Link
-            href={loginHref}
+            href={shopperLoginHref}
             className="inline-flex justify-center items-center px-4 py-2 rounded-lg text-[13px] font-semibold bg-green-600 text-white hover:bg-green-800 transition-colors text-center"
           >
-            Subscribe — log in
+            Sign in to save shops
           </Link>
           <Link
             href={signupHref}
             className="inline-flex justify-center items-center px-4 py-2 rounded-lg text-[13px] font-semibold border border-amber-200/80 text-amber-950 bg-white/70 hover:bg-white transition-colors text-center"
           >
-            Subscribe — sign up free
+            Create neighbor account
           </Link>
         </div>
       </div>
@@ -169,8 +170,8 @@ export default function StoreAlertSubscribe({
         <div>
           <p className="text-[13px] text-gray-600 leading-snug">
             {subscribed
-              ? `We’ll highlight activity for ${storeName}.`
-              : `Get notified about new deals and restocks at ${storeName}.`}
+              ? `${storeName} is pinned to your saved shops.`
+              : `Pin ${storeName} to your saved shops for deals and restocks.`}
           </p>
         </div>
         <button
@@ -183,14 +184,14 @@ export default function StoreAlertSubscribe({
               : "bg-green-600 text-white hover:bg-green-800"
           }`}
         >
-          {pending ? "…" : subscribed ? "Unsubscribe" : "Subscribe"}
+          {pending ? "…" : subscribed ? "Remove from saved" : "Save shop"}
         </button>
       </div>
       {subscribed && (
-        <p className="text-[11px] text-green-700 font-medium mt-2">Active · store alerts on</p>
+        <p className="text-[11px] text-green-700 font-medium mt-2">Saved · you&apos;ll see updates</p>
       )}
       {!subscribed && (
-        <p className="text-[11px] text-gray-400 mt-2">Inactive · not following this store</p>
+        <p className="text-[11px] text-gray-400 mt-2">Not saved yet</p>
       )}
       {error && (
         <p className="text-[12px] text-red-700 mt-2" role="alert">

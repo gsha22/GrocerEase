@@ -17,10 +17,19 @@ const playfair = Playfair_Display({
   weight: ["500", "600"],
 });
 
+const appOrigin =
+  process.env.NEXTAUTH_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
 export const metadata: Metadata = {
-  title: "PGH Local Grocers",
+  metadataBase: new URL(appOrigin),
+  title: {
+    default: "GrocerEase — Local grocery discovery",
+    template: "%s · GrocerEase",
+  },
   description:
-    "Discover what nearby Pittsburgh grocery stores have in stock before you leave home.",
+    "GrocerEase connects shoppers with neighborhood grocers: fresh posts, specials, and store discovery. No cart, no checkout — visit in person.",
+  applicationName: "GrocerEase",
 };
 
 export default async function RootLayout({

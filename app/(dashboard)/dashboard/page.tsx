@@ -1,5 +1,10 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import {
+  DASHBOARD_METRICS_WINDOW_MS,
+  freshPostsWindowStart,
+  metricsWindowStart,
+} from "@/lib/dashboard-metrics";
 import { prisma } from "@/lib/prisma";
 
 function addressShortLine(address: string) {
@@ -8,6 +13,15 @@ function addressShortLine(address: string) {
     return `${parts[parts.length - 2]}, ${parts[parts.length - 1]}`;
   }
   return address;
+}
+
+function formatPostTime(d: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(d);
 }
 
 export default async function DashboardPage() {
@@ -21,20 +35,82 @@ export default async function DashboardPage() {
       })
     : null;
 
-  const activeDealsCount = store
-    ? await prisma.deal.count({
-        where: {
-          storeId: store.id,
-          deletedAt: null,
-          isExpired: false,
-          expiresAt: { gt: new Date() },
-        },
-      })
-    : 0;
+  const metricsSince = metricsWindowStart();
+  const freshSince = freshPostsWindowStart();
+
+  const [profileViewsCount, itemSearchesCount, activePostsCount, activeDealsCount, recentPosts] =
+    store
+      ? await Promise.all([
+          prisma.storeProfileView.count({
+            where: { storeId: store.id, createdAt: { gte: metricsSince } },
+          }),
+          prisma.storeItemSearch.count({
+            where: { storeId: store.id, createdAt: { gte: metricsSince } },
+          }),
+          prisma.freshUpdate.count({
+            where: {
+              storeId: store.id,
+              deletedAt: null,
+              createdAt: { gte: freshSince },
+            },
+          }),
+          prisma.deal.count({
+            where: {
+              storeId: store.id,
+              deletedAt: null,
+              isExpired: false,
+              expiresAt: { gt: new Date() },
+            },
+          }),
+          prisma.freshUpdate.findMany({
+            where: { storeId: store.id, deletedAt: null },
+            orderBy: { createdAt: "desc" },
+            take: 5,
+            select: {
+              id: true,
+              itemName: true,
+              note: true,
+              createdAt: true,
+            },
+          }),
+        ])
+      : [0, 0, 0, 0, [] as { id: string; itemName: string; note: string | null; createdAt: Date }[]];
+
+  const windowDays = Math.round(DASHBOARD_METRICS_WINDOW_MS / (24 * 60 * 60 * 1000));
 
   const subtitle = store
     ? addressShortLine(store.address)
     : "Add your store profile to reach shoppers";
+
+  const stats = [
+    {
+      label: "Profile views",
+      value: store ? String(profileViewsCount) : "—",
+      change: store ? `Last ${windowDays} days` : "No data yet",
+    },
+    {
+      label: "Active posts",
+      value: store ? String(activePostsCount) : "0",
+      change: store
+        ? activePostsCount > 0
+          ? "In Fresh Today window"
+          : "Post to get started"
+        : "Post to get started",
+    },
+    {
+      label: "Active deals",
+      value: store ? String(activeDealsCount) : "0",
+      change:
+        store && activeDealsCount > 0
+          ? "Shown on your store & deals feed"
+          : "Create a deal",
+    },
+    {
+      label: "Item searches",
+      value: store ? String(itemSearchesCount) : "—",
+      change: store ? `Last ${windowDays} days` : "No data yet",
+    },
+  ];
 
   return (
     <div className="max-w-[1100px]">
@@ -75,19 +151,7 @@ export default async function DashboardPage() {
       )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        {[
-          { label: "Profile views", value: "—", change: "No data yet" },
-          { label: "Active posts", value: "0", change: "Post to get started" },
-          {
-            label: "Active deals",
-            value: String(activeDealsCount),
-            change:
-              activeDealsCount > 0
-                ? "Shown on your store & deals feed"
-                : "Create a deal",
-          },
-          { label: "Item searches", value: "—", change: "No data yet" },
-        ].map((stat) => (
+        {stats.map((stat) => (
           <div
             key={stat.label}
             className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm"
@@ -105,9 +169,7 @@ export default async function DashboardPage() {
 
       <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-[18px] font-semibold text-gray-800">
-            Recent updates
-          </h2>
+          <h2 className="text-[18px] font-semibold text-gray-800">Recent updates</h2>
           <Link
             href="/dashboard/posts"
             className="text-[13px] text-green-600 font-medium hover:text-green-800"
@@ -116,21 +178,42 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        <div className="text-center py-12">
-          <div className="text-[52px] mb-4">📝</div>
-          <h3 className="text-[18px] font-semibold text-gray-800 mb-2">
-            No posts yet
-          </h3>
-          <p className="text-[14px] text-gray-400 max-w-[300px] mx-auto mb-4">
-            Share what&apos;s fresh today so nearby shoppers choose your store.
-          </p>
-          <Link
-            href="/dashboard/posts"
-            className="inline-flex px-5 py-2.5 rounded-md text-sm font-semibold text-white bg-green-600 hover:bg-green-800 transition-colors"
-          >
-            Post an update
-          </Link>
-        </div>
+        {!store || recentPosts.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-[52px] mb-4">📝</div>
+            <h3 className="text-[18px] font-semibold text-gray-800 mb-2">No posts yet</h3>
+            <p className="text-[14px] text-gray-400 max-w-[300px] mx-auto mb-4">
+              Share what&apos;s fresh today so nearby shoppers choose your store.
+            </p>
+            <Link
+              href="/dashboard/posts"
+              className="inline-flex px-5 py-2.5 rounded-md text-sm font-semibold text-white bg-green-600 hover:bg-green-800 transition-colors"
+            >
+              Post an update
+            </Link>
+          </div>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {recentPosts.map((post) => (
+              <li key={post.id} className="py-4 first:pt-0">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                  <div>
+                    <p className="text-[15px] font-semibold text-gray-900">{post.itemName}</p>
+                    {post.note ? (
+                      <p className="text-[14px] text-gray-600 mt-1 leading-relaxed">{post.note}</p>
+                    ) : null}
+                  </div>
+                  <time
+                    className="text-[12px] text-gray-400 shrink-0 tabular-nums"
+                    dateTime={post.createdAt.toISOString()}
+                  >
+                    {formatPostTime(post.createdAt)}
+                  </time>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

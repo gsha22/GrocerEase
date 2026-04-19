@@ -13,7 +13,7 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const path = req.nextUrl.pathname;
 
-  if (path.startsWith("/dashboard")) {
+  if (path.startsWith("/dashboard") || path.startsWith("/vendor")) {
     if (!token) {
       const loginUrl = new URL("/login", req.url);
       loginUrl.searchParams.set("callbackUrl", path);
@@ -52,6 +52,8 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/vendor",
+    "/vendor/:path*",
     "/shopper/account",
     "/shopper/account/:path*",
   ],

@@ -223,6 +223,20 @@ async function main() {
     );
   }
 
+  // --- /vendor as shopper → same protection as owner dashboard (local feed vendor tools)
+  {
+    const res = await fetch(`${BASE}/vendor`, {
+      redirect: "manual",
+      headers: { Cookie: shopperCookie },
+    });
+    assert.ok(res.status === 302 || res.status === 307, "vendor should redirect shopper");
+    const loc = res.headers.get("location") ?? "";
+    assert.ok(
+      loc.includes("/shopper/account"),
+      `expected redirect toward shopper account, got: ${loc}`
+    );
+  }
+
   // --- POST /auth/shopper/signup valid → 201 + password hashed in DB
   const suffix = randomUUID().slice(0, 8);
   const newEmail = `shopper-machine-${suffix}@example.test`;

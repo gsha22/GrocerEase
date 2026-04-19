@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import {
   STORE_PROFILE_CATEGORY_OPTIONS,
   buildStoreProfilePayload,
@@ -10,6 +10,30 @@ import StoreProfileForm from "@/app/(dashboard)/dashboard/profile/StoreProfileFo
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: jest.fn() }),
+}));
+
+jest.mock("../components/address/AddressAutocompleteWithMap", () => ({
+  __esModule: true,
+  default: function MockAddressInput(props: {
+    value: string;
+    onChange: (v: string) => void;
+    fieldError?: string;
+  }) {
+    return (
+      <div>
+        <label htmlFor="mock-address">Address *</label>
+        <input
+          id="mock-address"
+          value={props.value}
+          onChange={(e) => props.onChange(e.target.value)}
+          placeholder="142 Beaver St, Sewickley, PA 15143"
+        />
+        {props.fieldError ? (
+          <p className="text-[12px] text-red-700 mt-1.5">{props.fieldError}</p>
+        ) : null}
+      </div>
+    );
+  },
 }));
 
 describe("toggleCategoryKey", () => {
@@ -103,6 +127,7 @@ describe("STORE_PROFILE_CATEGORY_OPTIONS", () => {
 
 describe("StoreProfileForm component", () => {
   afterEach(() => {
+    cleanup();
     jest.restoreAllMocks();
   });
 
@@ -148,11 +173,36 @@ describe("StoreProfileForm component", () => {
     } as Response);
 
     render(<StoreProfileForm initial={null} />);
+    fireEvent.change(screen.getByPlaceholderText(/Sultan Bey/i), {
+      target: { value: "Ryan's Apple Juice" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Beaver St/i), {
+      target: { value: "5883 Wilkins Ave, Pittsburgh, PA 15217" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Organic/i }));
     fireEvent.click(screen.getByRole("button", { name: /Publish store profile/i }));
 
     await waitFor(() =>
-      expect(screen.getByText(/Store profile published/i)).toBeInTheDocument(),
+      expect(screen.getByText(/Your store profile is live/i)).toBeInTheDocument(),
     );
+    expect(screen.getByRole("link", { name: /owner dashboard/i })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
+  });
+
+  it("blocks publish when required fields are missing (client validation)", async () => {
+    render(<StoreProfileForm initial={null} />);
+    fireEvent.click(screen.getByRole("button", { name: /Publish store profile/i }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Complete the required fields below before your store can go live/i),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.getByText(/Store name is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/Address is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/Select at least one specialty category/i)).toBeInTheDocument();
   });
 
   it("shows a success message when saving as draft for an existing store", async () => {
@@ -176,9 +226,8 @@ describe("StoreProfileForm component", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /Save as draft/i }));
 
-    await waitFor(() =>
-      expect(screen.getByText(/saved as draft/i)).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(/Draft saved/i)).toBeInTheDocument());
+    expect(screen.getByRole("link", { name: /^dashboard$/i })).toHaveAttribute("href", "/dashboard");
   });
 
   it("displays a form-level error and field errors on failed submit", async () => {
@@ -191,6 +240,13 @@ describe("StoreProfileForm component", () => {
     } as Response);
 
     render(<StoreProfileForm initial={null} />);
+    fireEvent.change(screen.getByPlaceholderText(/Sultan Bey/i), {
+      target: { value: "Test Market" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Beaver St/i), {
+      target: { value: "123 Main St, Sewickley, PA 15143" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Halal/i }));
     fireEvent.click(screen.getByRole("button", { name: /Publish store profile/i }));
 
     await waitFor(() =>

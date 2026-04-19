@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { Prisma } from "../app/generated/prisma/client";
 
-const BASE_TIME = new Date("2026-03-20T16:00:00.000Z");
+const BASE_TIME = new Date("2026-04-14T12:00:00.000Z");
 const BCRYPT_SALT = "$2b$10$CwTycUXWue0Thq9StjUM0u";
 
 const atHours = (deltaHours: number) =>
@@ -11,7 +11,7 @@ const atDays = (deltaDays: number) => atHours(deltaDays * 24);
 
 export const fixtureMeta = {
   baseTime: BASE_TIME,
-  publicNowHint: "2026-03-20T16:00:00.000Z",
+  publicNowHint: "2026-04-14T12:00:00.000Z",
   ownerPlaintextPassword: "OwnerPass123!",
   shopperPlaintextPassword: "ShopperPass123!",
 };
@@ -26,6 +26,8 @@ export const ids = {
     omar: "66666666-6666-6666-6666-666666666662",
     evelyn: "66666666-6666-6666-6666-666666666663",
     noStoreOwnerTwo: "66666666-6666-6666-6666-666666666664",
+    /** Demo account: matches common local-dev login for dashboard screenshots */
+    ryanAppleJuice: "77777777-7777-7777-7777-777777777777",
   },
   stores: {
     lotus: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
@@ -34,6 +36,7 @@ export const ids = {
     tokyoMart: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4",
     riverHalalHub: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5",
     eastEndOrganic: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6",
+    ryanAppleJuice: "88888888-8888-8888-8888-888888888888",
   },
   shoppers: {
     nina: "55555555-5555-5555-5555-555555555555",
@@ -64,6 +67,8 @@ export const ids = {
     kale: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb12",
     sourdough: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb13",
     tomatoeSauceTypo: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb14",
+    ryanJuice64oz: "99999999-9999-9999-9999-999999999991",
+    ryanHoneycrispCider: "99999999-9999-9999-9999-999999999992",
   },
   freshUpdates: {
     lotusRecent: "cccccccc-cccc-cccc-cccc-ccccccccccc1",
@@ -74,6 +79,9 @@ export const ids = {
     riverHalalRecent: "cccccccc-cccc-cccc-cccc-ccccccccccc6",
     eastEndStale: "cccccccc-cccc-cccc-cccc-ccccccccccc7",
     tokyoSoftDeleted: "cccccccc-cccc-cccc-cccc-ccccccccccc8",
+    ryanRecentJuice: "cccccccc-cccc-cccc-cccc-cccccccccc01",
+    ryanRecentCider: "cccccccc-cccc-cccc-cccc-cccccccccc02",
+    ryanOrganicNote: "cccccccc-cccc-cccc-cccc-cccccccccc03",
   },
   deals: {
     lotusActive: "dddddddd-dddd-dddd-dddd-ddddddddddd1",
@@ -88,6 +96,8 @@ export const ids = {
     eastEndHistorical: "dddddddd-dddd-dddd-dddd-dddddddddd10",
     eastEndReusedActive: "dddddddd-dddd-dddd-dddd-dddddddddd11",
     riverHalalSoftDeleted: "dddddddd-dddd-dddd-dddd-dddddddddd12",
+    ryanWeekendGallon: "dddddddd-dddd-dddd-dddd-dddddddddd13",
+    ryanCider2for1: "dddddddd-dddd-dddd-dddd-dddddddddd14",
   },
   alerts: {
     ninaStoreFollowLotus: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee1",
@@ -153,6 +163,13 @@ export const owners = [
     name: "Robin Draft",
     passwordHash: bcrypt.hashSync(fixtureMeta.ownerPlaintextPassword, BCRYPT_SALT),
     createdAt: atDays(-2),
+  },
+  {
+    id: ids.owners.ryanAppleJuice,
+    email: "ryanw3@andrew.cmu.edu",
+    name: "Ryan",
+    passwordHash: bcrypt.hashSync(fixtureMeta.ownerPlaintextPassword, BCRYPT_SALT),
+    createdAt: atDays(-14),
   },
 ];
 
@@ -222,6 +239,18 @@ export const stores = [
     categories: ["organic", "produce", "ebt"],
     isPublished: true,
     createdAt: atDays(-12),
+  },
+  {
+    id: ids.stores.ryanAppleJuice,
+    ownerId: ids.owners.ryanAppleJuice,
+    name: "Ryan's Apple Juice",
+    address: "5883 Wilkins Ave, Pittsburgh, PA 15217",
+    lat: 40.4372,
+    lng: -79.9148,
+    categories: ["organic", "produce"],
+    isPublished: true,
+    createdAt: atDays(-12),
+    hours: { open: "08:00", close: "20:00" },
   },
 ];
 
@@ -430,6 +459,22 @@ export const items = [
     inStock: false,
     lastUpdated: atDays(-3),
   },
+  {
+    id: ids.items.ryanJuice64oz,
+    storeId: ids.stores.ryanAppleJuice,
+    name: "Fresh Pressed Apple Juice 64oz",
+    description: "Cold-pressed local apples, no added sugar",
+    inStock: true,
+    lastUpdated: atHours(-5),
+  },
+  {
+    id: ids.items.ryanHoneycrispCider,
+    storeId: ids.stores.ryanAppleJuice,
+    name: "Honeycrisp Apple Cider",
+    description: "Small-batch seasonal cider",
+    inStock: true,
+    lastUpdated: atHours(-8),
+  },
 ];
 
 export const freshUpdates = [
@@ -504,6 +549,33 @@ export const freshUpdates = [
     note: "Deleted after owner corrected inventory status.",
     createdAt: atHours(-25),
     deletedAt: atHours(-4),
+  },
+  {
+    id: ids.freshUpdates.ryanRecentJuice,
+    storeId: ids.stores.ryanAppleJuice,
+    itemId: ids.items.ryanJuice64oz,
+    itemName: "Fresh Pressed Apple Juice 64oz",
+    note: "New pressing — crisp and sweet today.",
+    createdAt: atHours(-6),
+    deletedAt: null,
+  },
+  {
+    id: ids.freshUpdates.ryanRecentCider,
+    storeId: ids.stores.ryanAppleJuice,
+    itemId: ids.items.ryanHoneycrispCider,
+    itemName: "Honeycrisp Apple Cider",
+    note: "Back in stock for the weekend.",
+    createdAt: atHours(-18),
+    deletedAt: null,
+  },
+  {
+    id: ids.freshUpdates.ryanOrganicNote,
+    storeId: ids.stores.ryanAppleJuice,
+    itemId: ids.items.ryanJuice64oz,
+    itemName: "Fresh Pressed Apple Juice 64oz",
+    note: "Organic certified apples — limited run.",
+    createdAt: atHours(-42),
+    deletedAt: null,
   },
 ];
 
@@ -676,6 +748,34 @@ export const deals = [
     createdAt: atHours(-16),
     deletedAt: atHours(-6),
   },
+  {
+    id: ids.deals.ryanWeekendGallon,
+    storeId: ids.stores.ryanAppleJuice,
+    itemId: ids.items.ryanJuice64oz,
+    sourceDealId: null,
+    title: "$1 off gallon jugs this weekend",
+    description: "64oz fresh pressed — ends Sunday night.",
+    price: new Prisma.Decimal("7.99"),
+    discountPct: 11,
+    expiresAt: atDays(4),
+    isExpired: false,
+    createdAt: atHours(-20),
+    deletedAt: null,
+  },
+  {
+    id: ids.deals.ryanCider2for1,
+    storeId: ids.stores.ryanAppleJuice,
+    itemId: ids.items.ryanHoneycrispCider,
+    sourceDealId: null,
+    title: "Honeycrisp cider 2 for 1",
+    description: "Mix and match with any 32oz bottle.",
+    price: new Prisma.Decimal("5.49"),
+    discountPct: 50,
+    expiresAt: atHours(36),
+    isExpired: false,
+    createdAt: atHours(-8),
+    deletedAt: null,
+  },
 ];
 
 export const alerts = [
@@ -716,3 +816,27 @@ export const alerts = [
     createdAt: atHours(-4),
   },
 ];
+
+const RYAN_SEARCH_QUERIES = [
+  "apple",
+  "apple juice",
+  "juice",
+  "cider",
+  "gallon",
+  "organic",
+  "honeycrisp",
+  "press",
+];
+
+/** Deterministic profile view events for Ryan's Apple Juice (rolling ~30 days) */
+export const storeProfileViewsSeed = Array.from({ length: 38 }, (_, i) => ({
+  storeId: ids.stores.ryanAppleJuice,
+  createdAt: atHours(-i * 19 - 1),
+}));
+
+/** Deterministic item search events for Ryan's Apple Juice */
+export const storeItemSearchesSeed = Array.from({ length: 22 }, (_, i) => ({
+  storeId: ids.stores.ryanAppleJuice,
+  query: RYAN_SEARCH_QUERIES[i % RYAN_SEARCH_QUERIES.length],
+  createdAt: atHours(-i * 31 - 4),
+}));

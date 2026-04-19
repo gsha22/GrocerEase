@@ -62,8 +62,35 @@ model Store {
   deals        Deal[]
   alerts       Alert[]
   shopperNotifications ShopperNotification[]
+  profileViews StoreProfileView[]
+  itemSearches StoreItemSearch[]
 
   @@map("stores")
+}
+
+/// Shoppers/guests viewing a published store profile (excludes the store owner viewing their own page).
+model StoreProfileView {
+  id        String   @id @default(uuid())
+  storeId   String   @map("store_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, createdAt])
+  @@map("store_profile_views")
+}
+
+/// Item availability searches on the store page / items API (non-empty query).
+model StoreItemSearch {
+  id        String   @id @default(uuid())
+  storeId   String   @map("store_id")
+  query     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, createdAt])
+  @@map("store_item_searches")
 }
 
 model Item {

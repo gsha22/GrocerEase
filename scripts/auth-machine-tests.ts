@@ -294,17 +294,18 @@ async function main() {
     assert.equal(res.status, 401, "POST deal without session should be 401");
   }
 
-  // --- Password reset (stubbed until implemented)
+  // --- Password reset request (token persisted; generic message)
   {
     const { res, json } = await postJson("/auth/forgot-password", {
       email: OWNER_EMAIL_LINH,
     });
-    assert.equal(res.status, 501, "forgot-password should return 501 Not Implemented");
+    assert.equal(res.status, 200, "forgot-password should return 200");
     assert.ok(
       typeof json === "object" &&
         json !== null &&
-        (json as { code?: string }).code === "NOT_IMPLEMENTED",
-      "forgot-password should include NOT_IMPLEMENTED code"
+        (json as { ok?: boolean }).ok === true &&
+        typeof (json as { message?: string }).message === "string",
+      "forgot-password should return ok + message"
     );
     const body = JSON.stringify(json);
     assert.ok(

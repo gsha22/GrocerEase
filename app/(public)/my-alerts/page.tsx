@@ -6,7 +6,7 @@ import MyAlertsClient from "./MyAlertsClient";
 export default async function MyAlertsPage() {
   const session = await auth();
   if (!session?.user) {
-    redirect(`/login?callbackUrl=${encodeURIComponent("/my-alerts")}`);
+    redirect(`/sign-in?next=${encodeURIComponent("/my-alerts")}`);
   }
   if (session.role !== "shopper") {
     redirect("/dashboard");
@@ -23,10 +23,11 @@ export default async function MyAlertsPage() {
         </Link>
       </div>
       <h1 className="font-display text-[26px] font-semibold text-gray-800 mb-1">
-        My alerts
+        Saved shops
       </h1>
       <p className="text-[14px] text-gray-500 mb-8">
-        See what stores you follow have posted, and manage your subscriptions.
+        Markets you&apos;ve pinned, plus alerts for restocks and new deals — discovery only, no
+        checkout.
       </p>
       <MyAlertsClient />
     </div>

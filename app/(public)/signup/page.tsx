@@ -14,7 +14,7 @@ export default async function SignupPage() {
     <div className="flex-1 flex items-center justify-center px-4 py-12">
       <div className="bg-white rounded-3xl border border-gray-200 p-10 max-w-[420px] w-full shadow-md">
         <div className="font-display text-2xl font-semibold text-green-600 mb-1.5">
-          LocalGrocer
+          GrocerEase
         </div>
         <p className="text-[14px] text-gray-400 mb-7">
           Create your store owner account

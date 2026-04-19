@@ -56,6 +56,14 @@ export default async function StoreProfilePage({
   if (!store || !store.isPublished) notFound();
 
   const session = await auth();
+  const viewingOwnStoreAsOwner =
+    session?.role === "owner" && session.user.id === store.ownerId;
+  if (!viewingOwnStoreAsOwner) {
+    void prisma.storeProfileView
+      .create({ data: { storeId: store.id } })
+      .catch(() => undefined);
+  }
+
   const rawRole = session?.user ? session.role : null;
   const viewerRole =
     rawRole === "shopper" || rawRole === "owner" ? rawRole : null;
@@ -134,23 +142,23 @@ export default async function StoreProfilePage({
       {viewerRole === "owner" ? (
         <div className="mb-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-[13px] text-gray-600 leading-relaxed">
           <p>
-            You&apos;re signed in as a <strong className="text-gray-800">store owner</strong>.
-            Following a store (subscribe / <strong className="text-gray-800">My alerts</strong>)
-            needs a <strong className="text-gray-800">shopper</strong> login — owners can&apos;t
-            create shopper alerts from this dashboard account.
+            You&apos;re signed in as a <strong className="text-gray-800">store team</strong>.
+            Saving a market to <strong className="text-gray-800">Saved shops</strong> uses a
+            separate <strong className="text-gray-800">neighbor</strong> account — use another
+            browser profile or a private window if you want both.
           </p>
           <div className="mt-3 flex flex-col sm:flex-row flex-wrap gap-2">
             <Link
-              href={`/login?callbackUrl=${encodeURIComponent(`/stores/${store.id}`)}`}
+              href={`/shopper/login?callbackUrl=${encodeURIComponent(`/stores/${store.id}`)}`}
               className="inline-flex justify-center items-center px-4 py-2 rounded-lg text-[13px] font-semibold bg-green-600 text-white hover:bg-green-800 transition-colors text-center"
             >
-              Subscribe as shopper — log in
+              Neighbor sign-in (save shops)
             </Link>
             <Link
               href={`/signup/shopper?callbackUrl=${encodeURIComponent(`/stores/${store.id}`)}`}
               className="inline-flex justify-center items-center px-4 py-2 rounded-lg text-[13px] font-semibold border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 transition-colors text-center"
             >
-              Subscribe as shopper — sign up
+              Create neighbor account
             </Link>
           </div>
           <p className="mt-2 text-[12px] text-gray-500">
@@ -166,8 +174,8 @@ export default async function StoreProfilePage({
           >
             <span aria-hidden>🔔</span>
             {viewerRole === "shopper" && initialStoreFollow
-              ? "You’re following this store"
-              : "Follow this store"}
+              ? "Saved to your shops"
+              : "Save this shop"}
           </h2>
           <StoreAlertSubscribe
             key={store.id}

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const baseItems = [
   { href: "/", label: "Discover", icon: "🗺" },
+  { href: "/browse", label: "Feed", icon: "🥬" },
   { href: "/map", label: "Map", icon: "📍" },
   { href: "/deals", label: "Deals", icon: "🏷" },
 ] as const;
@@ -21,18 +22,20 @@ export default function MobileNavClient({
       ? "/my-alerts"
       : accountKind === "owner"
         ? "/dashboard"
-        : "/shopper/login";
+        : "/sign-in";
   const accountLabel =
     accountKind === "shopper"
-      ? "Alerts"
+      ? "Saved"
       : accountKind === "owner"
         ? "Owner"
-        : "Account";
+        : "Sign in";
   const accountActive =
     (accountKind === "owner" &&
       (pathname === "/dashboard" || pathname.startsWith("/dashboard/"))) ||
     (accountKind === "shopper" &&
-      (pathname === "/my-alerts" || pathname.startsWith("/my-alerts/")));
+      (pathname === "/my-alerts" || pathname.startsWith("/my-alerts/"))) ||
+    (accountKind === "guest" &&
+      (pathname === "/sign-in" || pathname.startsWith("/sign-in")));
 
   const items = [
     ...baseItems.map((item) => ({
@@ -52,17 +55,18 @@ export default function MobileNavClient({
             pathname.startsWith("/shopper/signup") ||
             pathname === "/login" ||
             pathname.startsWith("/login/") ||
-            pathname === "/signup")),
+            pathname === "/signup" ||
+            pathname.startsWith("/signup/"))),
     },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around border-t border-gray-200 bg-white py-2 sm:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around border-t border-gray-200 bg-white py-1.5 sm:hidden">
       {items.map(({ href, label, icon, active }) => (
         <Link
-          key={href + label}
+          key={`${href}-${label}`}
           href={href}
-          className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-md text-[10px] ${
+          className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-1 rounded-md text-[9px] font-medium ${
             active ? "text-green-600" : "text-gray-400"
           }`}
         >

@@ -16,6 +16,8 @@ export default async function StoreProfileEditPage() {
           categories: true,
           hours: true,
           isPublished: true,
+          lat: true,
+          lng: true,
         },
       })
     : null;
@@ -33,11 +35,13 @@ export default async function StoreProfileEditPage() {
         open: typeof rawHours.open === "string" ? rawHours.open : "08:00",
         close: typeof rawHours.close === "string" ? rawHours.close : "20:00",
         isPublished: existingStore.isPublished,
+        lat: existingStore.lat,
+        lng: existingStore.lng,
       }
     : null;
 
   return (
-    <div className="max-w-[600px]">
+    <div className="max-w-[600px] overflow-visible">
       <div className="mb-7">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
           Owner portal

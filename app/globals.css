@@ -29,8 +29,27 @@
   --font-display: 'Playfair Display', Georgia, serif;
 }
 
+html {
+  -webkit-tap-highlight-color: color-mix(in oklab, var(--color-green-600) 14%, transparent);
+}
+
 body {
-  background: var(--color-gray-50);
+  background: linear-gradient(
+    180deg,
+    #fbfbf9 0%,
+    var(--color-gray-50) 35%,
+    #f0f4eb 100%
+  );
   color: var(--color-gray-800);
   font-family: var(--font-sans);
+}
+
+/* Subtle noise overlay optional — keep perf-friendly: single pseudo on main sections instead */
+
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
 }

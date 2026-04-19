@@ -34,50 +34,48 @@ export default function StoreFilterBar({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-6">
-      <span className="text-[13px] text-gray-400 flex items-center pr-1">
-        Filter:
-      </span>
-
-      {FILTER_OPTIONS.map(({ key, label, icon }) => {
-        const isActive = active.has(key);
-        return (
+    <div className="mb-8">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-stone-400">
+          Specialties
+        </span>
+        {active.size > 0 && (
           <button
-            key={key}
-            onClick={() => toggle(key)}
-            aria-pressed={isActive}
-            className={`
-              inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px]
-              border-[1.5px] transition-colors cursor-pointer select-none
-              ${
-                isActive
-                  ? "border-green-400 bg-green-50 text-green-800 font-medium"
-                  : "border-gray-200 bg-white text-gray-600 hover:border-green-400 hover:text-green-600"
-              }
-            `}
+            type="button"
+            onClick={clearAll}
+            className="text-[12px] font-semibold text-emerald-800/80 transition hover:text-emerald-950"
           >
-            <span aria-hidden="true">{icon}</span>
-            {label}
-            {isActive && (
-              <span
-                aria-label={`Remove ${label} filter`}
-                className="ml-0.5 text-green-600 hover:text-green-800"
-              >
-                &times;
-              </span>
-            )}
+            Clear all
           </button>
-        );
-      })}
-
-      {active.size > 0 && (
-        <button
-          onClick={clearAll}
-          className="text-[12px] text-gray-400 hover:text-gray-600 underline underline-offset-2 transition-colors cursor-pointer ml-1"
-        >
-          Clear all
-        </button>
-      )}
+        )}
+      </div>
+      <div className="-mx-1 flex gap-2 overflow-x-auto pb-1 pt-0.5 sm:flex-wrap sm:overflow-visible">
+        {FILTER_OPTIONS.map(({ key, label, icon }) => {
+          const isActive = active.has(key);
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => toggle(key)}
+              aria-pressed={isActive}
+              className={`
+                inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-semibold
+                transition-all duration-200 active:scale-[0.98]
+                ${
+                  isActive
+                    ? "bg-emerald-800 text-white shadow-md shadow-emerald-900/25 ring-2 ring-emerald-700/30"
+                    : "border border-stone-200/90 bg-white text-stone-600 shadow-sm hover:border-emerald-300 hover:bg-emerald-50/50 hover:text-emerald-900"
+                }
+              `}
+            >
+              <span aria-hidden className="text-[15px] leading-none">
+                {icon}
+              </span>
+              {label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

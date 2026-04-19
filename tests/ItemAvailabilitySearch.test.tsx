@@ -278,7 +278,7 @@ describe("ItemAvailabilitySearch — toggleNotify", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /^notify me$/i }));
 
-    await screen.findByText(/log in as a shopper/i);
+    await screen.findByText(/sign in as a neighbor/i);
   });
 
   it("deletes an alert when Notify me: On is clicked", async () => {

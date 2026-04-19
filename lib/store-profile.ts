@@ -75,6 +75,29 @@ export function validateStoreProfileCreate(body: unknown): ValidationResult<Stor
   };
 }
 
+/**
+ * Same rules as {@link validateStoreProfileCreate} — use before publishing so the
+ * profile can go live on the directory without a round trip.
+ */
+export function validateStoreProfileReadyToPublish(input: {
+  name: string;
+  address: string;
+  open: string;
+  close: string;
+  categories: string[];
+}): { ok: true } | { ok: false; fieldErrors: Record<string, string> } {
+  const validated = validateStoreProfileCreate({
+    name: input.name,
+    address: input.address,
+    hours: { open: input.open, close: input.close },
+    categories: input.categories,
+  });
+  if (!validated.ok) {
+    return { ok: false, fieldErrors: validated.errors };
+  }
+  return { ok: true };
+}
+
 /** Fields allowed on PATCH; only keys present on the request body are validated and returned. */
 export type StoreProfileValidatedPatch = {
   name?: string;

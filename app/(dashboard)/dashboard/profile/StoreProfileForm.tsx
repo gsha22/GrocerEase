@@ -1,7 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import AddressAutocompleteWithMap from "@/components/address/AddressAutocompleteWithMap";
+import { validateStoreProfileReadyToPublish } from "@/lib/store-profile";
 
 type StoreProfileInitial = {
   id: string;
@@ -11,6 +14,8 @@ type StoreProfileInitial = {
   open: string;
   close: string;
   isPublished: boolean;
+  lat?: number | null;
+  lng?: number | null;
 } | null;
 
 type FieldErrors = Record<string, string>;
@@ -70,7 +75,7 @@ export default function StoreProfileForm({ initial }: { initial: StoreProfileIni
   const [categories, setCategories] = useState<string[]>(initial?.categories ?? []);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string>("");
-  const [savedMessage, setSavedMessage] = useState<string>("");
+  const [saveSuccess, setSaveSuccess] = useState<"publish" | "draft" | null>(null);
   const [loading, setLoading] = useState(false);
 
   const isExisting = Boolean(initial?.id);
@@ -83,8 +88,26 @@ export default function StoreProfileForm({ initial }: { initial: StoreProfileIni
   async function submit(publish: boolean) {
     setLoading(true);
     setFormError("");
-    setSavedMessage("");
+    setSaveSuccess(null);
     setFieldErrors({});
+
+    if (publish) {
+      const preflight = validateStoreProfileReadyToPublish({
+        name,
+        address,
+        open,
+        close,
+        categories,
+      });
+      if (!preflight.ok) {
+        setFieldErrors(preflight.fieldErrors);
+        setFormError(
+          "Complete the required fields below before your store can go live on the directory.",
+        );
+        setLoading(false);
+        return;
+      }
+    }
 
     const payload = buildStoreProfilePayload(
       name,
@@ -119,7 +142,7 @@ export default function StoreProfileForm({ initial }: { initial: StoreProfileIni
         return;
       }
 
-      setSavedMessage(publish ? "Store profile published." : "Store profile saved as draft.");
+      setSaveSuccess(publish ? "publish" : "draft");
       router.refresh();
     } finally {
       setLoading(false);
@@ -142,18 +165,13 @@ export default function StoreProfileForm({ initial }: { initial: StoreProfileIni
           {fieldErrors.name && <p className="text-[12px] text-red-700 mt-1.5">{fieldErrors.name}</p>}
         </div>
 
-        <div className="mb-4">
-          <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Address *</label>
-          <input
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-md border-[1.5px] border-gray-200 text-[15px] text-gray-800 bg-white outline-none focus:border-green-400 transition-colors"
-            placeholder="142 Beaver St, Sewickley, PA 15143"
-          />
-          {fieldErrors.address && (
-            <p className="text-[12px] text-red-700 mt-1.5">{fieldErrors.address}</p>
-          )}
-        </div>
+        <AddressAutocompleteWithMap
+          value={address}
+          onChange={setAddress}
+          initialLat={initial?.lat}
+          initialLng={initial?.lng}
+          fieldError={fieldErrors.address}
+        />
 
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div>
@@ -210,11 +228,45 @@ export default function StoreProfileForm({ initial }: { initial: StoreProfileIni
           {formError}
         </div>
       )}
-      {savedMessage && (
-        <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-[13px] text-green-800">
-          {savedMessage}
+      {saveSuccess === "publish" ? (
+        <div
+          className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-900"
+          role="status"
+        >
+          <p className="text-[14px] font-semibold">Your store profile is live</p>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-green-800/95">
+            Your store profile is saved in the database. Shoppers can discover you on the public
+            directory. Your listing also appears on your{" "}
+            <Link
+              href="/dashboard"
+              className="font-semibold text-green-800 underline decoration-green-600/50 underline-offset-2 hover:text-green-950"
+            >
+              owner dashboard
+            </Link>
+            . You can return here anytime to update hours, categories, or address.
+          </p>
         </div>
-      )}
+      ) : null}
+      {saveSuccess === "draft" ? (
+        <div
+          className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-[13px] text-green-900"
+          role="status"
+        >
+          <p className="font-semibold">Draft saved</p>
+          <p className="mt-1.5 leading-relaxed text-green-800/95">
+            Your draft is saved in the database. Your store stays unpublished until you choose{" "}
+            <span className="font-medium text-green-900">Update store profile</span>. When you
+            publish, it will appear on the directory and your{" "}
+            <Link
+              href="/dashboard"
+              className="font-semibold text-green-800 underline decoration-green-600/50 underline-offset-2 hover:text-green-950"
+            >
+              dashboard
+            </Link>
+            .
+          </p>
+        </div>
+      ) : null}
 
       <div className="flex gap-2.5">
         <button

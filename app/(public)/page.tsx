@@ -84,38 +84,75 @@ export default function HomePage() {
   }
 
   return (
-    <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Guest banner — Story 12 */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl border border-green-100 bg-gradient-to-r from-green-50 to-white p-5 mb-6">
-        <div>
-          <h3 className="text-[15px] font-semibold text-gray-800">
-            Discover your neighborhood&apos;s best grocers
-          </h3>
-          <p className="text-[13px] text-gray-600 mt-1">
-            Browse stores and deals without signing up. Create an account to set
-            stock alerts.
-          </p>
+    <div className="relative mx-auto max-w-[1100px] px-4 pb-6 pt-6 sm:px-6 sm:pb-10 sm:pt-8 lg:px-8">
+      {/* Ambient decoration */}
+      <div
+        className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-emerald-700/[0.03] blur-3xl sm:-left-32"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -right-16 top-40 h-64 w-64 rounded-full bg-lime-300/[0.06] blur-3xl"
+        aria-hidden
+      />
+
+      {/* Hero — single primary CTA; sign-in lives in nav */}
+      <div className="relative mb-8 overflow-hidden rounded-3xl border border-emerald-100/80 bg-white p-6 shadow-[0_18px_50px_-12px_rgba(15,23,42,0.12)] ring-1 ring-stone-900/[0.04] sm:p-8">
+        <div className="absolute -right-8 -top-10 h-40 w-40 rounded-full bg-emerald-700/10 blur-2xl" aria-hidden />
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-xl">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-800/80">
+              Pittsburgh · Local first
+            </p>
+            <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-stone-900 sm:text-[1.75rem]">
+              Discover what&apos;s fresh nearby
+            </h2>
+            <p className="mt-3 text-[14px] leading-relaxed text-stone-600 sm:text-[15px]">
+              Browse real neighborhood grocers, see deals, and check the{" "}
+              <Link
+                href="/browse"
+                className="font-semibold text-emerald-800 underline decoration-emerald-800/30 underline-offset-2 transition hover:decoration-emerald-800"
+              >
+                live feed
+              </Link>{" "}
+              — discovery only, no checkout. Want alerts?{" "}
+              <Link
+                href="/sign-in"
+                className="font-semibold text-emerald-800 underline decoration-emerald-800/30 underline-offset-2 transition hover:decoration-emerald-800"
+              >
+                Sign in
+              </Link>{" "}
+              from the header.
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center lg:flex-col">
+            <Link
+              href="/browse"
+              className="inline-flex min-h-[48px] items-center justify-center rounded-2xl bg-emerald-800 px-8 text-[15px] font-semibold text-white shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-900 hover:shadow-xl active:scale-[0.98]"
+            >
+              Open local feed
+            </Link>
+            <Link
+              href="/map"
+              className="inline-flex min-h-[48px] items-center justify-center rounded-2xl border border-stone-200 bg-white px-6 text-[14px] font-semibold text-stone-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50/60 active:scale-[0.98]"
+            >
+              Open map view
+            </Link>
+          </div>
         </div>
-        <Link
-          href="/login"
-          className="shrink-0 px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors"
-        >
-          Sign up for alerts &rarr;
-        </Link>
       </div>
 
-      {/* Manual neighborhood fallback — Story 3 */}
       {geoFailed && (
-        <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-6">
-          <p className="text-[13px] text-amber-800 font-medium mb-2">
-            📍 We couldn&apos;t detect your location. Select your neighborhood:
+        <div className="mb-8 rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50 to-white p-4 shadow-sm">
+          <p className="text-[13px] font-semibold text-amber-950">
+            We couldn&apos;t detect your location. Pick a neighborhood:
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             {Object.keys(PITTSBURGH_NEIGHBORHOODS).map((name) => (
               <button
                 key={name}
+                type="button"
                 onClick={() => selectNeighborhood(name)}
-                className="px-3 py-1.5 rounded-full text-[12px] font-medium border border-amber-200 bg-white text-gray-700 hover:bg-amber-100 hover:border-amber-400 transition-colors cursor-pointer"
+                className="rounded-full border border-amber-200/90 bg-white px-3.5 py-2 text-[12px] font-semibold text-emerald-950 shadow-sm transition hover:border-amber-400 hover:bg-amber-50 active:scale-[0.98]"
               >
                 {name}
               </button>
@@ -124,70 +161,71 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Page header */}
-      <div className="mb-7">
-        <h1 className="font-display text-[28px] font-medium text-gray-800 tracking-tight">
-          Stores near you
-        </h1>
-        <p className="text-[15px] text-gray-600 mt-1.5">
-          {stores.length > 0
-            ? `Showing ${stores.length} store${stores.length !== 1 ? "s" : ""} within 10 miles of ${locationLabel}`
-            : loading
-              ? `Searching near ${locationLabel}…`
-              : "No stores found nearby"}
-        </p>
+      <div className="mb-6 flex flex-col gap-2 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-stone-400">
+            Explore
+          </p>
+          <h1 className="font-display text-[1.75rem] font-semibold tracking-tight text-stone-900 sm:text-[2rem]">
+            Stores near you
+          </h1>
+          <p className="mt-1 text-[14px] text-stone-500 sm:text-[15px]">
+            {stores.length > 0
+              ? `${stores.length} store${stores.length !== 1 ? "s" : ""} within 10 miles of ${locationLabel}`
+              : loading
+                ? `Searching near ${locationLabel}…`
+                : "No stores match your filters"}
+          </p>
+        </div>
+
+        <div className="inline-flex rounded-2xl border border-stone-200/90 bg-stone-100/80 p-1 shadow-inner">
+          <span className="rounded-xl bg-white px-5 py-2.5 text-[13px] font-semibold text-emerald-900 shadow-sm">
+            List
+          </span>
+          <Link
+            href="/map"
+            className="rounded-xl px-5 py-2.5 text-[13px] font-semibold text-stone-600 transition hover:bg-white/80 hover:text-stone-900"
+          >
+            Map
+          </Link>
+        </div>
       </div>
 
-      {/* View toggle — Story 3 */}
-      <div className="flex border border-gray-200 rounded-md overflow-hidden w-fit mb-5">
-        <Link
-          href="/"
-          className="px-4 py-1.5 text-[13px] font-medium bg-green-600 text-white"
-        >
-          List
-        </Link>
-        <Link
-          href="/map"
-          className="px-4 py-1.5 text-[13px] font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-        >
-          Map
-        </Link>
-      </div>
-
-      {/* Filter chips — Story 4 */}
       <StoreFilterBar active={activeFilters} onChange={handleFilterChange} />
 
-      {/* Store grid */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
+              className="overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-sm"
             >
-              <div className="h-[140px] w-full bg-gray-100 animate-pulse" />
-              <div className="p-4">
-                <div className="h-5 w-3/5 bg-gray-100 rounded animate-pulse mb-2" />
-                <div className="h-3 w-2/5 bg-gray-100 rounded animate-pulse mb-3" />
-                <div className="h-3 w-4/5 bg-gray-100 rounded animate-pulse" />
+              <div className="h-[152px] w-full animate-pulse bg-gradient-to-br from-stone-100 to-stone-200/80" />
+              <div className="space-y-3 p-4">
+                <div className="h-5 w-2/3 rounded-md bg-stone-100" />
+                <div className="h-3 w-1/2 rounded bg-stone-100" />
+                <div className="flex gap-2">
+                  <div className="h-5 w-14 rounded-full bg-stone-100" />
+                  <div className="h-5 w-14 rounded-full bg-stone-100" />
+                </div>
               </div>
             </div>
           ))}
         </div>
       ) : stores.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="text-[52px] mb-4">🗺</div>
-          <h3 className="text-[18px] font-semibold text-gray-800 mb-2">
-            No stores found
+        <div className="rounded-3xl border border-dashed border-stone-200 bg-white/80 px-6 py-16 text-center shadow-inner">
+          <div className="text-[48px] leading-none">🗺</div>
+          <h3 className="mt-4 font-display text-xl font-semibold text-stone-900">
+            No stores here yet
           </h3>
-          <p className="text-[14px] text-gray-400 max-w-[300px] mx-auto">
+          <p className="mx-auto mt-2 max-w-sm text-[14px] text-stone-500">
             {activeFilters.size > 0
-              ? "No stores match your filters. Try removing some filters."
-              : "We don't have any registered stores in this area yet. Check back soon."}
+              ? "Try clearing a specialty filter or widen your search on the map."
+              : "We don&apos;t have listings in this area. Check back soon."}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {stores.map((store) => (
             <StoreCard
               key={store.id}

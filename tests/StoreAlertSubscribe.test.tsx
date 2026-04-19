@@ -67,25 +67,25 @@ describe("Guest render branch", () => {
       />,
     );
     expect(
-      screen.getByText(/Get deals & restocks from Fresh Mart/i),
+      screen.getByText(/Save Fresh Mart to your list/i),
     ).toBeInTheDocument();
   });
 
-  it("shows a 'Subscribe — log in' link pointing to /login with callbackUrl", () => {
+  it("shows a neighbor sign-in link pointing to /shopper/login with callbackUrl", () => {
     render(
       <StoreAlertSubscribe
         {...BASE_PROPS}
         viewerRole={null}
       />,
     );
-    const loginLink = screen.getByRole("link", { name: /subscribe — log in/i });
+    const loginLink = screen.getByRole("link", { name: /sign in to save shops/i });
     expect(loginLink).toHaveAttribute(
       "href",
-      `/login?callbackUrl=${encodeURIComponent("/stores/store-abc")}`,
+      `/shopper/login?callbackUrl=${encodeURIComponent("/stores/store-abc")}`,
     );
   });
 
-  it("shows a 'Subscribe — sign up free' link pointing to /signup/shopper with callbackUrl", () => {
+  it("shows a sign-up link pointing to /signup/shopper with callbackUrl", () => {
     render(
       <StoreAlertSubscribe
         {...BASE_PROPS}
@@ -93,7 +93,7 @@ describe("Guest render branch", () => {
       />,
     );
     const signupLink = screen.getByRole("link", {
-      name: /subscribe — sign up free/i,
+      name: /create neighbor account/i,
     });
     expect(signupLink).toHaveAttribute(
       "href",
@@ -101,7 +101,7 @@ describe("Guest render branch", () => {
     );
   });
 
-  it("does NOT render the subscribe/unsubscribe button", () => {
+  it("does NOT render the save / remove button", () => {
     render(
       <StoreAlertSubscribe
         {...BASE_PROPS}
@@ -109,7 +109,7 @@ describe("Guest render branch", () => {
       />,
     );
     expect(
-      screen.queryByRole("button", { name: /subscribe|unsubscribe/i }),
+      screen.queryByRole("button", { name: /save shop|remove from saved/i }),
     ).not.toBeInTheDocument();
   });
 });
@@ -119,14 +119,14 @@ describe("Guest render branch", () => {
 // ---------------------------------------------------------------------------
 
 describe("Authenticated render", () => {
-  it("shows 'Subscribe' button when not yet subscribed", () => {
+  it("shows Save shop button when not yet subscribed", () => {
     render(<StoreAlertSubscribe {...BASE_PROPS} initialSubscribed={false} />);
     expect(
-      screen.getByRole("button", { name: /^subscribe$/i }),
+      screen.getByRole("button", { name: /^save shop$/i }),
     ).toBeInTheDocument();
   });
 
-  it("shows 'Unsubscribe' button when already subscribed", () => {
+  it("shows Remove from saved button when already subscribed", () => {
     render(
       <StoreAlertSubscribe
         {...BASE_PROPS}
@@ -135,17 +135,17 @@ describe("Authenticated render", () => {
       />,
     );
     expect(
-      screen.getByRole("button", { name: /^unsubscribe$/i }),
+      screen.getByRole("button", { name: /^remove from saved$/i }),
     ).toBeInTheDocument();
   });
 
   it("shows inactive status line and unsubscribed description in one render", () => {
     render(<StoreAlertSubscribe {...BASE_PROPS} initialSubscribed={false} />);
     expect(
-      screen.getByText(/inactive · not following this store/i),
+      screen.getByText(/not saved yet/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/get notified about new deals and restocks at Fresh Mart/i),
+      screen.getByText(/Pin Fresh Mart to your saved shops for deals and restocks/i),
     ).toBeInTheDocument();
   });
 
@@ -158,10 +158,10 @@ describe("Authenticated render", () => {
       />,
     );
     expect(
-      screen.getByText(/active · store alerts on/i),
+      screen.getByText(/saved · you.ll see updates/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/highlight activity for Fresh Mart/i),
+      screen.getByText(/Fresh Mart is pinned to your saved shops/i),
     ).toBeInTheDocument();
   });
 });
@@ -175,16 +175,16 @@ describe("toggle — subscribe (POST /api/alerts)", () => {
     jest.clearAllMocks();
   });
 
-  it("optimistically shows 'Unsubscribe' while the POST is in flight", async () => {
+  it("optimistically shows Remove from saved while the POST is in flight", async () => {
     const user = userEvent.setup();
     // Never-resolving fetch keeps pending state visible
     global.fetch = jest.fn().mockReturnValue(new Promise(() => {}));
 
     render(<StoreAlertSubscribe {...BASE_PROPS} initialSubscribed={false} />);
 
-    await user.click(screen.getByRole("button", { name: /^subscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^save shop$/i }));
 
-    // Button shows "…" while pending; optimistic subscribed=true means Unsubscribe would follow
+    // Button shows "…" while pending; optimistic subscribed=true means Remove from saved would follow
     expect(screen.getByRole("button", { name: /^…$/i })).toBeDisabled();
   });
 
@@ -196,14 +196,14 @@ describe("toggle — subscribe (POST /api/alerts)", () => {
 
     render(<StoreAlertSubscribe {...BASE_PROPS} initialSubscribed={false} />);
 
-    await user.click(screen.getByRole("button", { name: /^subscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^save shop$/i }));
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /^unsubscribe$/i }),
+        screen.getByRole("button", { name: /^remove from saved$/i }),
       ).toBeInTheDocument();
     });
-    expect(screen.getByText(/active · store alerts on/i)).toBeInTheDocument();
+    expect(screen.getByText(/saved · you.ll see updates/i)).toBeInTheDocument();
   });
 
   it("reverts to unsubscribed and shows error message when POST returns !ok (generic)", async () => {
@@ -216,14 +216,14 @@ describe("toggle — subscribe (POST /api/alerts)", () => {
 
     render(<StoreAlertSubscribe {...BASE_PROPS} initialSubscribed={false} />);
 
-    await user.click(screen.getByRole("button", { name: /^subscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^save shop$/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
     });
     expect(screen.getByRole("alert")).toHaveTextContent(/could not subscribe/i);
     expect(
-      screen.getByRole("button", { name: /^subscribe$/i }),
+      screen.getByRole("button", { name: /^save shop$/i }),
     ).toBeInTheDocument();
   });
 
@@ -237,13 +237,13 @@ describe("toggle — subscribe (POST /api/alerts)", () => {
 
     render(<StoreAlertSubscribe {...BASE_PROPS} initialSubscribed={false} />);
 
-    await user.click(screen.getByRole("button", { name: /^subscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^save shop$/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
     });
     expect(screen.getByRole("alert")).toHaveTextContent(
-      /this account can.t subscribe/i,
+      /neighbor sign-in/i,
     );
   });
 
@@ -257,7 +257,7 @@ describe("toggle — subscribe (POST /api/alerts)", () => {
 
     render(<StoreAlertSubscribe {...BASE_PROPS} initialSubscribed={false} />);
 
-    await user.click(screen.getByRole("button", { name: /^subscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^save shop$/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
@@ -275,7 +275,7 @@ describe("toggle — subscribe (POST /api/alerts)", () => {
 
     render(<StoreAlertSubscribe {...BASE_PROPS} initialSubscribed={false} />);
 
-    await user.click(screen.getByRole("button", { name: /^subscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^save shop$/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent("Store not found");
@@ -288,7 +288,7 @@ describe("toggle — subscribe (POST /api/alerts)", () => {
 
     render(<StoreAlertSubscribe {...BASE_PROPS} initialSubscribed={false} />);
 
-    await user.click(screen.getByRole("button", { name: /^subscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^save shop$/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
@@ -320,11 +320,11 @@ describe("toggle — unsubscribe (DELETE /api/alerts/:id)", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: /^unsubscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^remove from saved$/i }));
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /^subscribe$/i }),
+        screen.getByRole("button", { name: /^save shop$/i }),
       ).toBeInTheDocument();
     });
 
@@ -351,14 +351,14 @@ describe("toggle — unsubscribe (DELETE /api/alerts/:id)", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: /^unsubscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^remove from saved$/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
     });
     expect(screen.getByRole("alert")).toHaveTextContent(/could not unsubscribe/i);
     expect(
-      screen.getByRole("button", { name: /^unsubscribe$/i }),
+      screen.getByRole("button", { name: /^remove from saved$/i }),
     ).toBeInTheDocument();
   });
 });
@@ -393,11 +393,11 @@ describe("toggle — unsubscribe when followAlertId is unknown", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: /^unsubscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^remove from saved$/i }));
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /^subscribe$/i }),
+        screen.getByRole("button", { name: /^save shop$/i }),
       ).toBeInTheDocument();
     });
 
@@ -426,7 +426,7 @@ describe("toggle — unsubscribe when followAlertId is unknown", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: /^unsubscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^remove from saved$/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
@@ -435,7 +435,7 @@ describe("toggle — unsubscribe when followAlertId is unknown", () => {
       /could not update subscription/i,
     );
     expect(
-      screen.getByRole("button", { name: /^unsubscribe$/i }),
+      screen.getByRole("button", { name: /^remove from saved$/i }),
     ).toBeInTheDocument();
   });
 
@@ -454,7 +454,7 @@ describe("toggle — unsubscribe when followAlertId is unknown", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: /^unsubscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^remove from saved$/i }));
 
     await waitFor(() => {
       expect(mockRefresh).toHaveBeenCalledTimes(1);
@@ -463,15 +463,15 @@ describe("toggle — unsubscribe when followAlertId is unknown", () => {
 });
 
 // ---------------------------------------------------------------------------
-// toggle — non-shopper redirects to login
+// toggle — non-shopper redirects to sign-in hub
 // ---------------------------------------------------------------------------
 
-describe("toggle — non-shopper (owner role) redirects to login", () => {
+describe("toggle — non-shopper (owner role) redirects to sign-in", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("calls router.push with the login URL instead of POSTing", async () => {
+  it("calls router.push with the sign-in hub URL instead of POSTing", async () => {
     const user = userEvent.setup();
     global.fetch = jest.fn();
 
@@ -483,10 +483,10 @@ describe("toggle — non-shopper (owner role) redirects to login", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: /^subscribe$/i }));
+    await user.click(screen.getByRole("button", { name: /^save shop$/i }));
 
     expect(mockPush).toHaveBeenCalledWith(
-      `/login?callbackUrl=${encodeURIComponent("/stores/store-abc")}`,
+      `/sign-in?next=${encodeURIComponent("/stores/store-abc")}`,
     );
     expect(global.fetch).not.toHaveBeenCalled();
   });
@@ -503,7 +503,7 @@ describe("useEffect sync", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /^subscribe$/i }),
+      screen.getByRole("button", { name: /^save shop$/i }),
     ).toBeInTheDocument();
 
     rerender(
@@ -516,7 +516,7 @@ describe("useEffect sync", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /^unsubscribe$/i }),
+        screen.getByRole("button", { name: /^remove from saved$/i }),
       ).toBeInTheDocument();
     });
   });
@@ -531,7 +531,7 @@ describe("useEffect sync", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /^unsubscribe$/i }),
+      screen.getByRole("button", { name: /^remove from saved$/i }),
     ).toBeInTheDocument();
 
     rerender(
@@ -544,7 +544,7 @@ describe("useEffect sync", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /^subscribe$/i }),
+        screen.getByRole("button", { name: /^save shop$/i }),
       ).toBeInTheDocument();
     });
   });

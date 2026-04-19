@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { FRESH_UPDATE_PUBLIC_WINDOW_MS } from "@/lib/fresh-updates";
+import { requireStoreOwnerForStore } from "@/lib/require-store-owner";
 
 const MAX_RESULTS = 50;
 const MAX_CANDIDATES = 250;
@@ -109,6 +110,12 @@ export async function GET(
       return NextResponse.json({ error: "Store not found" }, { status: 404 });
     }
 
+    void prisma.storeItemSearch
+      .create({
+        data: { storeId, query: query.slice(0, 200) },
+      })
+      .catch(() => undefined);
+
     const locationQuery = normalizeForSearch(location);
     if (
       locationQuery &&
@@ -167,7 +174,56 @@ export async function GET(
   }
 }
 
-// Story 7: POST /api/stores/:id/items — Create an item
-export async function POST() {
-  return NextResponse.json({ message: "TODO: Create item" }, { status: 501 });
+// Story 7: POST /api/stores/:id/items — Create an item (store owner only)
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id: storeId } = await params;
+  const gate = await requireStoreOwnerForStore(storeId);
+  if ("response" in gate) return gate.response;
+
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const o = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const name = typeof o.name === "string" ? o.name.trim() : "";
+  if (!name) {
+    return NextResponse.json(
+      { error: "Validation failed", fieldErrors: { name: "Item name is required." } },
+      { status: 400 },
+    );
+  }
+  if (name.length > 200) {
+    return NextResponse.json(
+      { error: "Validation failed", fieldErrors: { name: "Name must be at most 200 characters." } },
+      { status: 400 },
+    );
+  }
+
+  const descriptionRaw = typeof o.description === "string" ? o.description.trim() : "";
+  const description = descriptionRaw.length > 0 ? descriptionRaw : null;
+  const inStock = typeof o.inStock === "boolean" ? o.inStock : true;
+
+  const item = await prisma.item.create({
+    data: {
+      storeId: gate.store.id,
+      name,
+      description,
+      inStock,
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      inStock: true,
+      lastUpdated: true,
+    },
+  });
+
+  return NextResponse.json(item, { status: 201 });
 }

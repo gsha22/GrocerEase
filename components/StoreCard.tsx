@@ -1,4 +1,8 @@
+"use client";
+
+import Image from "next/image";
 import Link from "next/link";
+import { getStoreCoverImageUrl } from "@/lib/store-hero-images";
 
 export interface StoreData {
   id: string;
@@ -33,30 +37,48 @@ interface StoreCardProps {
 }
 
 export default function StoreCard({ store, neighborhood }: StoreCardProps) {
+  const coverSrc = getStoreCoverImageUrl(store.id, store.categories);
+  const emoji = heroEmoji(store.categories);
+
   return (
     <Link
       href={`/stores/${store.id}`}
-      className="block bg-white rounded-2xl border border-gray-200 overflow-hidden hover:-translate-y-0.5 hover:shadow-md hover:border-gray-400 transition-all"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06),0_8px_24px_-4px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:border-emerald-300/60 hover:shadow-[0_12px_40px_-8px_rgba(15,23,42,0.15)] active:translate-y-0 active:scale-[0.99]"
     >
-      <div className="h-[140px] w-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center text-5xl">
-        {heroEmoji(store.categories)}
+      <div className="relative h-[152px] w-full overflow-hidden bg-stone-200">
+        <Image
+          src={coverSrc}
+          alt=""
+          fill
+          className="object-cover transition duration-500 ease-out group-hover:scale-[1.04]"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-stone-900/65 via-stone-900/10 to-transparent"
+          aria-hidden
+        />
+        <span className="absolute bottom-3 left-3 flex size-11 items-center justify-center rounded-xl border border-white/35 bg-white/92 text-[22px] shadow-md backdrop-blur-[2px]">
+          {emoji}
+        </span>
       </div>
-      <div className="p-3.5">
-        <div className="font-semibold text-[16px] text-gray-800 mb-1">
+      <div className="flex flex-1 flex-col p-4">
+        <h2 className="font-display text-[17px] font-semibold leading-snug text-stone-900 group-hover:text-emerald-900">
           {store.name}
-        </div>
-        <div className="text-[13px] text-gray-400 mb-2.5 flex gap-3">
+        </h2>
+        <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-[13px] text-stone-500">
           {store.distanceMiles != null && (
-            <span>📍 {store.distanceMiles} mi</span>
+            <span className="font-semibold text-emerald-800 tabular-nums">
+              {store.distanceMiles} mi
+            </span>
           )}
-          <span>{neighborhood ?? store.address}</span>
-        </div>
+          <span className="line-clamp-2">{neighborhood ?? store.address}</span>
+        </p>
         {store.categories.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="mt-3 flex flex-wrap gap-1.5">
             {store.categories.map((tag) => (
               <span
                 key={tag}
-                className="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-800 font-medium capitalize"
+                className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold capitalize text-emerald-900 ring-1 ring-emerald-800/10"
               >
                 {tag}
               </span>

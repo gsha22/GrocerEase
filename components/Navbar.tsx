@@ -16,9 +16,9 @@ export default async function Navbar() {
       >
         <Link
           href="/"
-          className="font-display text-[20px] sm:text-[22px] font-semibold text-green-600 tracking-tight mr-2 sm:mr-10 shrink-0"
+          className="font-display text-[20px] sm:text-[22px] font-semibold text-emerald-800 tracking-tight mr-2 sm:mr-10 shrink-0"
         >
-          Local<span className="text-green-200">Grocer</span>
+          Grocer<span className="text-emerald-500">Ease</span>
         </Link>
 
         {/* Desktop nav links */}
@@ -29,6 +29,20 @@ export default async function Navbar() {
           >
             Discover Stores
           </Link>
+          <Link
+            href="/browse"
+            className="px-3.5 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors"
+          >
+            Local feed
+          </Link>
+          {isOwner && (
+            <Link
+              href="/vendor"
+              className="px-3.5 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors"
+            >
+              Vendor
+            </Link>
+          )}
           <Link
             href="/map"
             className="px-3.5 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors"
@@ -50,7 +64,7 @@ export default async function Navbar() {
                 href="/dashboard"
                 className="px-4 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors"
               >
-                Owner portal
+                Manage store
               </Link>
             )}
             {isShopper && (
@@ -58,7 +72,7 @@ export default async function Navbar() {
                 href="/my-alerts"
                 className="px-4 py-1.5 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-800 transition-colors"
               >
-                My alerts
+                Saved shops
               </Link>
             )}
             <SignOutButton className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors" />
@@ -66,16 +80,10 @@ export default async function Navbar() {
         ) : (
           <div className="hidden sm:flex flex-wrap gap-2 items-center justify-end ml-auto">
             <Link
-              href="/shopper/login"
+              href="/sign-in"
               className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors"
             >
-              Shopper log in
-            </Link>
-            <Link
-              href="/login"
-              className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors"
-            >
-              Owner log in
+              Sign in
             </Link>
             <Link
               href="/signup"
@@ -94,7 +102,7 @@ export default async function Navbar() {
                 href="/dashboard"
                 className="px-2.5 py-1 rounded-md text-xs font-medium text-white bg-green-600 hover:bg-green-800 transition-colors whitespace-nowrap"
               >
-                Owner
+                Store
               </Link>
             )}
             {isShopper && (
@@ -102,7 +110,7 @@ export default async function Navbar() {
                 href="/my-alerts"
                 className="px-2.5 py-1 rounded-md text-xs font-medium text-white bg-green-600 hover:bg-green-800 transition-colors whitespace-nowrap"
               >
-                Alerts
+                Saved
               </Link>
             )}
             <SignOutButton className="px-2.5 py-1 rounded-md text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors whitespace-nowrap" />
@@ -110,16 +118,10 @@ export default async function Navbar() {
         ) : (
           <div className="sm:hidden ml-auto flex items-center gap-1.5 min-w-0">
             <Link
-              href="/shopper/login"
+              href="/sign-in"
               className="px-2.5 py-1 rounded-md text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors whitespace-nowrap"
             >
-              Shopper
-            </Link>
-            <Link
-              href="/login"
-              className="px-2.5 py-1 rounded-md text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors whitespace-nowrap"
-            >
-              Owner
+              Sign in
             </Link>
             <Link
               href="/signup"
