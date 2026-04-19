@@ -1,5 +1,6 @@
 // Story 17: Owner view of shopper-submitted reports for their own store.
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -23,14 +24,15 @@ function formatReportTime(d: Date) {
 
 export default async function DashboardReportsPage() {
   const session = await auth();
-  const ownerId = session?.user?.id;
+  if (!session?.user?.id || session.role !== "owner") {
+    redirect("/login");
+  }
+  const ownerId = session.user.id;
 
-  const store = ownerId
-    ? await prisma.store.findUnique({
-        where: { ownerId },
-        select: { id: true, name: true },
-      })
-    : null;
+  const store = await prisma.store.findUnique({
+    where: { ownerId },
+    select: { id: true, name: true },
+  });
 
   if (!store) {
     return (

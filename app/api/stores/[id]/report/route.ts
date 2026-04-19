@@ -60,33 +60,61 @@ export async function POST(
   }
 
   const since = new Date(Date.now() - DUPLICATE_WINDOW_MS);
-  const recent = await prisma.storeReport.findFirst({
-    where: {
-      storeId,
-      shopperId: session.user.id,
-      createdAt: { gt: since },
-    },
-    select: { id: true },
-  });
-  if (recent) {
-    return NextResponse.json(
-      {
-        error:
-          "You've already reported this store in the last 24 hours. Thanks for helping keep info fresh.",
+  // Atomic check-then-create: Serializable isolation ensures two concurrent
+  // POSTs can't both pass the "no recent duplicate" check and then both
+  // insert. The loser aborts with a serialization failure (P2034), which we
+  // translate to the same 429 the UI already handles.
+  try {
+    const report = await prisma.$transaction(
+      async (tx) => {
+        const recent = await tx.storeReport.findFirst({
+          where: {
+            storeId,
+            shopperId: session.user.id,
+            createdAt: { gt: since },
+          },
+          select: { id: true },
+        });
+        if (recent) return null;
+        return tx.storeReport.create({
+          data: {
+            storeId,
+            shopperId: session.user.id,
+            type: type as ReportType,
+            comment,
+          },
+          select: { id: true, type: true, comment: true, createdAt: true },
+        });
       },
-      { status: 429 },
+      { isolationLevel: "Serializable" },
     );
+
+    if (!report) {
+      return NextResponse.json(
+        {
+          error:
+            "You've already reported this store in the last 24 hours. Thanks for helping keep info fresh.",
+        },
+        { status: 429 },
+      );
+    }
+
+    return NextResponse.json({ report }, { status: 201 });
+  } catch (e) {
+    if (
+      typeof e === "object" &&
+      e !== null &&
+      "code" in e &&
+      (e as { code?: string }).code === "P2034"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "You've already reported this store in the last 24 hours. Thanks for helping keep info fresh.",
+        },
+        { status: 429 },
+      );
+    }
+    throw e;
   }
-
-  const report = await prisma.storeReport.create({
-    data: {
-      storeId,
-      shopperId: session.user.id,
-      type: type as ReportType,
-      comment,
-    },
-    select: { id: true, type: true, comment: true, createdAt: true },
-  });
-
-  return NextResponse.json({ report }, { status: 201 });
 }
