@@ -18,6 +18,7 @@ import Link from "next/link";
 import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
 import StoreAlertSubscribe from "@/components/StoreAlertSubscribe";
 import StoreFreshUpdatesFeed from "@/components/StoreFreshUpdatesFeed";
+import StoreReportButton from "@/components/StoreReportButton";
 
 export const dynamic = "force-dynamic";
 
@@ -204,6 +205,11 @@ export default async function StoreProfilePage({
           storeId={store.id}
           initialUpdates={initialFreshUpdates}
         />
+      </div>
+
+      {/* Report incorrect info — Story 17 */}
+      <div className="mt-6 mb-4">
+        <StoreReportButton storeId={store.id} viewerRole={viewerRole} />
       </div>
 
       {/* Deals This Week — Story 2 */}
