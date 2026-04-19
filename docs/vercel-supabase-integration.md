@@ -21,6 +21,8 @@ So you **do not** have to manually duplicate the string as `DATABASE_URL` unless
 
 **Security:** Never paste connection strings or API keys into chat or tickets. If any secret was exposed, rotate it in Supabase and Vercel and redeploy.
 
+**Prisma + Supabase pooler:** Vercel’s auto-synced `POSTGRES_PRISMA_URL` may omit `pgbouncer=true` and `connection_limit=1`. GrocerEase adds these automatically when the host is `*.pooler.supabase.com` (see `ensurePrismaPoolerQueryParams` in `lib/database-url.ts`). If signup still fails, run `npx prisma migrate deploy` so tables exist.
+
 Optional client-side Supabase keys (`NEXT_PUBLIC_SUPABASE_*`) are synced for future use; **auth and data still use NextAuth + Prisma**.
 
 ## After provisioning

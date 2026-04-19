@@ -33,54 +33,65 @@ export async function POST(req: NextRequest) {
 
   const { email, password, name, callbackUrl } = validated.data;
 
-  const [existingShopper, existingOwner] = await Promise.all([
-    prisma.shopper.findUnique({ where: { email }, select: { id: true } }),
-    prisma.storeOwner.findUnique({ where: { email }, select: { id: true } }),
-  ]);
+  let shopper;
+  try {
+    const [existingShopper, existingOwner] = await Promise.all([
+      prisma.shopper.findUnique({ where: { email }, select: { id: true } }),
+      prisma.storeOwner.findUnique({ where: { email }, select: { id: true } }),
+    ]);
 
-  if (existingShopper) {
-    return NextResponse.json(
-      { error: "This email is already registered as a shopper. Sign in instead." },
-      { status: 409 },
-    );
-  }
+    if (existingShopper) {
+      return NextResponse.json(
+        { error: "This email is already registered as a shopper. Sign in instead." },
+        { status: 409 },
+      );
+    }
 
-  if (existingOwner) {
+    if (existingOwner) {
+      return NextResponse.json(
+        {
+          error:
+            "This email is already used for a store owner account. Use a different email for a shopper account, or sign in as a store owner.",
+        },
+        { status: 409 },
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+
+    try {
+      shopper = await prisma.shopper.create({
+        data: {
+          email,
+          name,
+          passwordHash,
+        },
+        select: { id: true, email: true, name: true },
+      });
+    } catch (e: unknown) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === "P2002"
+      ) {
+        return NextResponse.json(
+          { error: "An account with this email already exists." },
+          { status: 409 }
+        );
+      }
+      console.error("POST /auth/shopper/signup create error:", e);
+      return NextResponse.json(
+        { error: "Could not create account. Try again." },
+        { status: 500 }
+      );
+    }
+  } catch (e: unknown) {
+    console.error("POST /auth/shopper/signup database error:", e);
     return NextResponse.json(
       {
         error:
-          "This email is already used for a store owner account. Use a different email for a shopper account, or sign in as a store owner.",
+          "Could not reach the database. Redeploy after Supabase env vars are set, run `npx prisma migrate deploy` against that database, then try again.",
       },
-      { status: 409 },
-    );
-  }
-
-  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-
-  let shopper;
-  try {
-    shopper = await prisma.shopper.create({
-      data: {
-        email,
-        name,
-        passwordHash,
-      },
-      select: { id: true, email: true, name: true },
-    });
-  } catch (e: unknown) {
-    if (
-      e instanceof Prisma.PrismaClientKnownRequestError &&
-      e.code === "P2002"
-    ) {
-      return NextResponse.json(
-        { error: "An account with this email already exists." },
-        { status: 409 }
-      );
-    }
-    console.error("POST /auth/shopper/signup create error:", e);
-    return NextResponse.json(
-      { error: "Could not create account. Try again." },
-      { status: 500 }
+      { status: 503 },
     );
   }
 
