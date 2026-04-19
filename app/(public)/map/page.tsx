@@ -99,13 +99,11 @@ export default function MapPage() {
           Store Map
         </h1>
         <p className="text-[15px] text-gray-600 mt-1.5">
-          {loading
-            ? "Finding stores near you…"
-            : stores.length === 0
-              ? activeFilters.size > 0
-                ? "No stores match the selected filters."
-                : "No stores within 10 miles."
-              : `${stores.length} store${stores.length === 1 ? "" : "s"} within 10 miles`}
+          {stores.length > 0
+            ? `${stores.length} store${stores.length === 1 ? "" : "s"} within 10 miles`
+            : !loading && activeFilters.size > 0
+              ? "No stores match the selected filters."
+              : "Finding stores near you…"}
         </p>
       </div>
 
