@@ -16,7 +16,7 @@ A lightweight discovery platform that helps Pittsburgh shoppers find out what ne
 
 ### Deploy to Vercel
 
-This app is a standard Next.js project. **You** connect the Git repo in the [Vercel dashboard](https://vercel.com) and set environment variables there. Step-by-step instructions (Postgres, `NEXTAUTH_URL`, migrations) are in **[docs/deploy-vercel.md](docs/deploy-vercel.md)**.
+This app is a standard Next.js project. **You** connect the Git repo in the [Vercel dashboard](https://vercel.com) and set environment variables there. Step-by-step instructions (Postgres, `NEXTAUTH_URL`, migrations) are in **[docs/deploy-vercel.md](docs/deploy-vercel.md)**. To **provision Supabase from Vercel** (Storage → Supabase) and use synced vars like `POSTGRES_PRISMA_URL`, see **[docs/vercel-supabase-integration.md](docs/vercel-supabase-integration.md)**.
 
 ## Getting Started
 

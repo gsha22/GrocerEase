@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../app/generated/prisma/client";
+import { resolveDatabaseUrl } from "../lib/database-url";
 import {
   alerts,
   deals,
@@ -15,12 +16,15 @@ import {
   stores,
 } from "./fixtures";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is required to run prisma/seed.ts");
+const seedDatabaseUrl = resolveDatabaseUrl();
+if (!seedDatabaseUrl) {
+  throw new Error(
+    "DATABASE_URL (or Vercel POSTGRES_PRISMA_URL) is required to run prisma/seed.ts",
+  );
 }
 
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+  adapter: new PrismaPg({ connectionString: seedDatabaseUrl }),
 });
 
 async function resetAndSeed() {

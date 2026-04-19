@@ -2,14 +2,23 @@
 
 Deployment must be done from **your** Vercel account (this repo cannot be deployed for you automatically).
 
+## 0. Common failure: `Can't reach database server at 127.0.0.1:5432`
+
+That means **`DATABASE_URL` in Vercel still points at localhost** (often copied from a developer’s `.env`). Vercel runs in AWS regions — there is no Postgres on `127.0.0.1` there.
+
+**Fix:** In **Vercel → Project → Settings → Environment Variables**, set `DATABASE_URL` to your **hosted** Postgres connection string (Supabase dashboard → Settings → Database → URI, or Neon/Vercel Postgres). Use the **pooled** URL for serverless if the provider recommends it. Remove any `127.0.0.1` or `localhost` value, save, then **Redeploy** (Deployments → … → Redeploy). Run `npx prisma migrate deploy` against that same database from your laptop once.
+
 ## 1. Push the code to GitHub (or GitLab / Bitbucket)
 
 Vercel deploys from a Git repository.
 
 ## 2. Create a production Postgres database
 
-Use **Supabase**, **Neon**, **Vercel Postgres**, or any Postgres that allows connections from Vercel’s regions. Copy the **connection string** (often called `DATABASE_URL`).  
-Use a **pooled** URL for serverless if your provider recommends it.
+Use **Supabase**, **Neon**, **Vercel Postgres**, or any Postgres that allows connections from Vercel’s regions.
+
+**Easiest on Vercel:** **Storage → Create → Supabase** in your Vercel team — it provisions Postgres and syncs env vars (often `POSTGRES_PRISMA_URL`). GrocerEase picks that up automatically; see **[vercel-supabase-integration.md](./vercel-supabase-integration.md)**.
+
+Otherwise copy the **connection string** into `DATABASE_URL`. Use a **pooled** URL for serverless if your provider recommends it.
 
 ## 3. Import the project in Vercel
 
