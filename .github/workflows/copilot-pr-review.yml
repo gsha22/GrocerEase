@@ -98,22 +98,30 @@ jobs:
           set -euo pipefail
           {
             printf '%s\n' \
-              'You are a senior engineer doing an automated pull request review for CI.' \
+              'You are a senior engineer doing a concise, automated PR review for CI.' \
               '' \
-              'Use ONLY the information below (do not invent files or changes not shown in the diff).' \
+              'Use ONLY the diff below. Do not invent files or changes not present.' \
+              'If the diff is empty or trivial (docs/config only), say so in one sentence and stop.' \
               '' \
-              'Produce Markdown with exactly these sections and headings:' \
-              '## Executive summary' \
-              '## Correctness and edge cases' \
-              '## Security and privacy' \
-              '## Tests and verification' \
-              '## Readability and maintainability' \
+              'Format: Markdown. Be terse — prefer bullets over prose. Max 600 words total.' \
+              '' \
+              'Produce exactly these sections:' \
+              '' \
+              '## Summary' \
+              '1–2 sentences: what changed and why it matters.' \
+              '' \
+              '## Issues' \
+              'Table with columns: | Severity | File | Finding |' \
+              'Severity values: `BLOCKER` | `WARN` | `INFO`' \
+              'Only include real findings. If none, write "No issues found."' \
+              '' \
               '## Action items' \
-              '- Bullet list of concrete, prioritized changes. If none, say "None blocking."' \
+              'Numbered list, highest priority first. If none, write "None blocking."' \
               '' \
               'Rules:' \
-              '- Be concise but specific; reference paths when possible.' \
-              '- If the diff is empty or not a code change, say so and keep the review short.' \
+              '- One finding per table row; keep each to ≤15 words.' \
+              '- Reference file paths and line numbers when visible in the diff.' \
+              '- Skip sections that have nothing to say (except Summary and Action items).' \
               '' \
               '---' \
               ''
