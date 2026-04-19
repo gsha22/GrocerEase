@@ -1,0 +1,195 @@
+# LLM-assisted PR review using GitHub Copilot CLI (official Actions pattern).
+# Docs: https://docs.github.com/en/copilot/how-tos/copilot-cli/automate-copilot-cli/automate-with-actions
+#
+# Repeatability (for graders / teammates):
+# - Trigger: pull_request (opened, synchronize, reopened) and workflow_dispatch on the PR branch.
+# - Output: PR comment from this workflow, full model text in the Actions run log, and an uploaded artifact.
+# - Configuration: this file + repo secret named below (Settings → Secrets and variables → Actions).
+#
+# Human judgment:
+# - This job is informational only: it does not block merge. Humans decide what to change and when to merge.
+#
+# Setup (one-time):
+# 1) Fine-grained PAT on an account with Copilot: include "Copilot Requests" (and repository access to this repo).
+#    https://github.com/settings/personal-access-tokens/new?type=fine_grained
+# 2) Add secret COPILOT_PR_REVIEW_PAT with that token (name is referenced in the job env).
+#
+# Fork PR note: comments from GITHUB_TOKEN may be restricted on forked PR workflows; same-repo PRs are the supported path.
+
+name: Copilot PR review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+concurrency:
+  group: copilot-pr-review-${{ github.repository }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  copilot-review:
+    name: Copilot CLI review
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.draft == false &&
+       github.actor != 'dependabot[bot]')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install GitHub Copilot CLI
+        run: npm install -g @github/copilot
+
+      - name: Prepare PR diff and review prompt
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh pr diff "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" > pr-diff.patch || true
+          if ! [ -s pr-diff.patch ]; then
+            echo "(No diff produced; empty PR or diff unavailable.)" > pr-diff.patch
+          fi
+          # Keep prompt size reasonable for Copilot CLI non-interactive runs.
+          if [ "$(wc -c < pr-diff.patch)" -gt 200000 ]; then
+            head -c 200000 pr-diff.patch > pr-diff.truncated.patch
+            mv pr-diff.truncated.patch pr-diff.patch
+            printf "\n\n[Diff truncated to 200KB for automation.]\n" >> pr-diff.patch
+          fi
+
+      - name: Prepare review prompt (manual run)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -euo pipefail
+          git fetch origin "${{ github.ref_name }}" --depth=50 2>/dev/null || true
+          BASE="${{ github.event.repository.default_branch }}"
+          git fetch origin "$BASE" --depth=50 2>/dev/null || true
+          git diff "origin/${BASE}...HEAD" > pr-diff.patch || git diff HEAD~1...HEAD > pr-diff.patch || true
+          if ! [ -s pr-diff.patch ]; then
+            echo "(No diff produced for workflow_dispatch context.)" > pr-diff.patch
+          fi
+          if [ "$(wc -c < pr-diff.patch)" -gt 200000 ]; then
+            head -c 200000 pr-diff.patch > pr-diff.truncated.patch
+            mv pr-diff.truncated.patch pr-diff.patch
+            printf "\n\n[Diff truncated to 200KB for automation.]\n" >> pr-diff.patch
+          fi
+
+      - name: Run Copilot CLI (structured review)
+        id: copilot
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PR_REVIEW_PAT }}
+          PR_TITLE: ${{ github.event.pull_request.title || github.event.head_commit.message || '' }}
+          PR_BODY: ${{ github.event.pull_request.body || '' }}
+        run: |
+          set -euo pipefail
+          {
+            printf '%s\n' \
+              'You are a senior engineer doing an automated pull request review for CI.' \
+              '' \
+              'Use ONLY the information below (do not invent files or changes not shown in the diff).' \
+              '' \
+              'Produce Markdown with exactly these sections and headings:' \
+              '## Executive summary' \
+              '## Correctness and edge cases' \
+              '## Security and privacy' \
+              '## Tests and verification' \
+              '## Readability and maintainability' \
+              '## Action items' \
+              '- Bullet list of concrete, prioritized changes. If none, say "None blocking."' \
+              '' \
+              'Rules:' \
+              '- Be concise but specific; reference paths when possible.' \
+              '- If the diff is empty or not a code change, say so and keep the review short.' \
+              '' \
+              '---' \
+              ''
+            echo "### PR"
+            echo "- Repo: ${{ github.repository }}"
+            echo "- PR number: ${{ github.event.pull_request.number || 'workflow_dispatch' }}"
+            echo "- Title: ${PR_TITLE:-$(git log -1 --pretty=%s)}"
+            echo
+            echo "### PR description"
+            printf '%s\n' "${PR_BODY:-}"
+            echo
+            echo "### Unified diff (pr-diff.patch)"
+            cat pr-diff.patch
+          } > copilot-prompt.md
+
+          copilot -p "$(cat copilot-prompt.md)" -s --no-ask-user > copilot-review.md
+
+      - name: Record review output availability
+        id: review_output
+        if: always()
+        run: |
+          if [ -f copilot-review.md ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Append run metadata to review
+        if: always() && steps.review_output.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          {
+            echo
+            echo "---"
+            echo "_Automated review: GitHub Copilot CLI in GitHub Actions._"
+            echo "_Workflow: \`${{ github.workflow }}\` · Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } >> copilot-review.md
+
+      - name: Upload review artifact
+        if: always() && steps.review_output.outputs.present == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: copilot-pr-review
+          path: copilot-review.md
+          if-no-files-found: warn
+
+      - name: Write job summary
+        if: always() && steps.review_output.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          {
+            echo "## Copilot PR review"
+            echo
+            echo "Full text is in the uploaded artifact **copilot-pr-review** and in the **Run Copilot CLI** step log."
+            echo
+            echo "<details><summary>Preview (first 8KB)</summary>"
+            echo
+            echo '```markdown'
+            head -c 8192 copilot-review.md || true
+            echo '```'
+            echo
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post PR comment
+        if: github.event_name == 'pull_request' && always() && steps.review_output.outputs.present == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # GitHub PR comment body size limit is 65536 bytes; keep headroom for metadata footer.
+          head -c 62000 copilot-review.md > copilot-review.comment.md
+          if [ "$(wc -c < copilot-review.md)" -gt 62000 ]; then
+            {
+              echo
+              echo "_Preview truncated for PR comment size limits. See the workflow run log and artifact for the full review._"
+            } >> copilot-review.comment.md
+          fi
+          gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --body-file copilot-review.comment.md
