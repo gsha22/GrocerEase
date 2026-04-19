@@ -17,6 +17,6 @@ When Prisma releases a patch that upgrades `@hono/node-server` (or removes the v
 
 ## Production hardening
 
-- Rotate `NEXTAUTH_SECRET`, `CRON_SECRET`, and database credentials on a schedule.
+- Rotate `NEXTAUTH_SECRET` and database credentials on a schedule.
 - Use Supabase **connection pooling** URLs as recommended for serverless.
 - Enable Supabase/Vercel **WAF** and **rate limits** at the edge for auth routes if abuse appears.

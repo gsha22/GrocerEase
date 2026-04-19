@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
+import DealMaintenanceOnAppOpen from "@/components/DealMaintenanceTrigger";
 import DevPerformanceMeasureGuard from "@/components/DevPerformanceMeasureGuard";
 import SessionProvider from "@/components/SessionProvider";
 import { auth } from "@/auth";
@@ -50,6 +51,7 @@ export default async function RootLayout({
           Skip to main content
         </a>
         <SessionProvider session={session}>
+          <DealMaintenanceOnAppOpen />
           {children}
         </SessionProvider>
       </body>

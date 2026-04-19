@@ -1,5 +1,6 @@
 import Link from "next/link";
 import DealCard from "@/components/DealCard";
+import { DealMaintenanceRefreshButton } from "@/components/DealMaintenanceTrigger";
 import { findActivePublishedDeals } from "@/lib/active-published-deals";
 
 export const dynamic = "force-dynamic";
@@ -11,13 +12,16 @@ export default async function DealsPage() {
 
   return (
     <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-7">
-        <h1 className="font-display text-[28px] font-medium text-gray-800 tracking-tight">
-          Deals this week
-        </h1>
-        <p className="text-[15px] text-gray-600 mt-1.5">
-          Active promotions at local stores &mdash; sorted by expiry date
-        </p>
+      <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="font-display text-[28px] font-medium text-gray-800 tracking-tight">
+            Deals this week
+          </h1>
+          <p className="text-[15px] text-gray-600 mt-1.5">
+            Active promotions at local stores &mdash; sorted by expiry date
+          </p>
+        </div>
+        <DealMaintenanceRefreshButton />
       </div>
 
       {deals.length === 0 ? (

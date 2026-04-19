@@ -32,7 +32,6 @@ In **Project → Settings → Environment Variables**, add at least:
 | `NEXTAUTH_SECRET` | Random string, e.g. `openssl rand -base64 32` |
 | `NEXTAUTH_URL` | **Production URL**, e.g. `https://your-project.vercel.app` (use your real Vercel domain). Update when you attach a custom domain. |
 | `GOOGLE_MAPS_API_KEY` | Optional; geocoding falls back if unset. |
-| `CRON_SECRET` | Random string; protects `/api/cron/deals` when not using Vercel Cron headers alone. |
 | `RESEND_API_KEY` + `EMAIL_FROM` | Optional; for owner password reset emails (see `.env.example`). |
 
 Add the same keys for **Production** (and **Preview** if you want preview deployments to hit a real DB—often people use a separate preview `DATABASE_URL`).
@@ -53,9 +52,9 @@ Or run your seed if needed: `npm run db:seed` (only if appropriate for productio
 
 Trigger a new deployment from the Vercel dashboard so the app starts with a migrated database.
 
-## 7. Cron jobs
+## 7. Deal maintenance (no cron)
 
-`vercel.json` schedules `/api/cron/deals` every 5 minutes. On Vercel, [Cron Jobs](https://vercel.com/docs/cron-jobs) run only for **production** on paid plans where the feature is available; verify in your Vercel plan docs.
+Expired deals and “expiring soon” owner notifications are updated when users load the app (`GET /api/deals/maintenance` from the root layout) and from the **Deals** page refresh control. The route is **throttled** server-side so traffic spikes do not overload the database.
 
 ## CLI alternative
 

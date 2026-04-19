@@ -226,15 +226,10 @@ async function main() {
   const soft = await prisma.deal.findFirst({ where: { id: deleteId! } });
   assert.ok(soft?.deletedAt, "DELETE should set deletedAt (soft delete)");
 
-  const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const cronRes = await fetch(`${BASE}/api/cron/deals`, {
-      headers: { Authorization: `Bearer ${cronSecret}` },
-    });
-    assert.equal(cronRes.status, 200, "Cron GET should succeed with CRON_SECRET");
-    const cronJson = (await cronRes.json()) as { ok?: boolean; ranAt?: string };
-    assert.ok(cronJson.ok === true && typeof cronJson.ranAt === "string", "Cron body should include ranAt");
-  }
+  const maintenanceRes = await fetch(`${BASE}/api/deals/maintenance`);
+  assert.equal(maintenanceRes.status, 200, "GET /api/deals/maintenance should succeed");
+  const maintenanceJson = (await maintenanceRes.json()) as { ok?: boolean };
+  assert.ok(maintenanceJson.ok === true, "Maintenance body should include ok: true");
 
   // 3) GET /stores/:id/deals returns only expires_at > now (active public list)
   const storeDealsRes = await fetch(`${BASE}/api/stores/${STORE_ID}/deals`);

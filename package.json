@@ -10,7 +10,7 @@
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force && npm run db:seed",
-    "deals:cron": "curl -sf -H \"Authorization: Bearer ${CRON_SECRET}\" \"${NEXTAUTH_URL:-http://localhost:3000}/api/cron/deals\"",
+    "deals:maintenance": "curl -sf \"${NEXTAUTH_URL:-http://localhost:3000}/api/deals/maintenance\"",
     "test:auth": "tsx scripts/auth-machine-tests.ts",
     "test:shopper-auth": "tsx scripts/shopper-auth-machine-tests.ts",
     "test:signup": "tsx scripts/signup-machine-tests.ts",

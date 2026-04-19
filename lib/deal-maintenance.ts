@@ -4,7 +4,7 @@ const ONE_HOUR_MS = 60 * 60 * 1000;
 
 /**
  * Marks past deals expired, then notifies owners once per deal when expiry is within 1 hour.
- * Intended to run on a schedule (e.g. every 5 minutes).
+ * Invoked from `GET /api/deals/maintenance` (throttled), triggered on app load and optionally via UI.
  */
 export async function runDealMaintenance(now = new Date()): Promise<{
   markedExpired: number;
