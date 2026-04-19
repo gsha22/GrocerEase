@@ -52,49 +52,64 @@ export default function ShopperSignupForm() {
       });
       const data = (await res.json().catch(() => ({}))) as SignupApiResponse;
 
+      const serverMessage =
+        typeof data.error === "string" && data.error.length > 0
+          ? data.error
+          : null;
+
       if (res.status === 400) {
         const fe = data.fieldErrors;
         if (fe && typeof fe === "object") {
           setFieldErrors(fe);
         }
-        setError(
-          typeof data.error === "string"
-            ? data.error
-            : "Please fix the errors below."
-        );
+        setError(serverMessage ?? "Please fix the errors below.");
         return;
       }
 
       if (res.status === 409) {
+        setError(serverMessage ?? "This email is already registered.");
+        return;
+      }
+
+      if (res.status === 429) {
         setError(
-          typeof data.error === "string"
-            ? data.error
-            : "This email is already registered."
+          serverMessage ?? "Too many attempts. Please wait a minute and try again.",
+        );
+        return;
+      }
+
+      if (res.status >= 500) {
+        setError(
+          serverMessage ??
+            "The server had a problem (often the database connection). Check deployment logs or try again.",
         );
         return;
       }
 
       if (res.status === 201 && data.ok) {
-        const url = data.redirectUrl;
-        if (typeof url === "string" && isSafeRelativeAppPath(url)) {
-          router.push(url);
-          router.refresh();
-          return;
-        }
+        const raw = data.redirectUrl;
+        const url =
+          typeof raw === "string" && isSafeRelativeAppPath(raw)
+            ? raw
+            : "/shopper/account";
+        router.push(url);
+        router.refresh();
+        return;
       }
 
       if (res.status === 201 && data.user) {
         setError(
-          typeof data.error === "string"
-            ? data.error
-            : "Account created. Please sign in."
+          serverMessage ?? "Account created. Please sign in.",
         );
         router.push("/shopper/login");
         router.refresh();
         return;
       }
 
-      setError("Something went wrong. Try again.");
+      setError(
+        serverMessage ??
+          `Something went wrong (HTTP ${res.status}). Try again or use a different email.`,
+      );
     } finally {
       setPending(false);
     }

@@ -28,7 +28,7 @@ In **Project → Settings → Environment Variables**, add at least:
 
 | Name | Notes |
 |------|--------|
-| `DATABASE_URL` | Postgres URL from step 2. |
+| `DATABASE_URL` | Postgres URL from step 2. On **Supabase**, prefer the **pooled** “Transaction” string and add Prisma-friendly params, e.g. `?pgbouncer=true` (see [Prisma + Supabase](https://www.prisma.io/docs/orm/overview/databases/supabase)); missing or direct-only URLs often cause intermittent **500** errors on Vercel. |
 | `NEXTAUTH_SECRET` | Random string, e.g. `openssl rand -base64 32` |
 | `NEXTAUTH_URL` | **Production URL**, e.g. `https://your-project.vercel.app` (use your real Vercel domain). Update when you attach a custom domain. |
 | `GOOGLE_MAPS_API_KEY` | Optional; geocoding falls back if unset. |

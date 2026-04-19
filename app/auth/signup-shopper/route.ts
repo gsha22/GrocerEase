@@ -31,7 +31,10 @@ export async function POST(req: NextRequest) {
   });
   if (existingOwner) {
     return NextResponse.json(
-      { error: "This email is already registered as a store owner." },
+      {
+        error:
+          "This email is already used for a store owner account. Use a different email for a shopper account, or sign in as a store owner.",
+      },
       { status: 409 },
     );
   }
@@ -42,7 +45,7 @@ export async function POST(req: NextRequest) {
   });
   if (existingShopper) {
     return NextResponse.json(
-      { error: "An account with this email already exists." },
+      { error: "This email is already registered as a shopper. Sign in instead." },
       { status: 409 },
     );
   }

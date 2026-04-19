@@ -38,10 +38,20 @@ export async function POST(req: NextRequest) {
     prisma.storeOwner.findUnique({ where: { email }, select: { id: true } }),
   ]);
 
-  if (existingShopper || existingOwner) {
+  if (existingShopper) {
     return NextResponse.json(
-      { error: "An account with this email already exists." },
-      { status: 409 }
+      { error: "This email is already registered as a shopper. Sign in instead." },
+      { status: 409 },
+    );
+  }
+
+  if (existingOwner) {
+    return NextResponse.json(
+      {
+        error:
+          "This email is already used for a store owner account. Use a different email for a shopper account, or sign in as a store owner.",
+      },
+      { status: 409 },
     );
   }
 
