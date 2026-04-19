@@ -116,6 +116,56 @@ the same for every story — only the issue body changes.
 > When uncertain between two reasonable designs, pick the simpler one and
 > note the tradeoff in the PR body. Do not merge — a human reviews.
 
+## System prompt used for debugging
+
+Once a PR is open, the developer watches CI. When a check fails, paste
+the following prompt to the agent along with the PR number. The agent
+is already authenticated with `gh` (see **Tooling**), so it can pull
+the failing logs on its own — the human does *not* need to copy the
+log output into chat.
+
+> `PR #<N>` for `US <X>` failed its CI checks — please fix it.
+>
+> Follow this loop:
+>
+> 1. **Pull the failing signal directly.** Run
+>    `gh pr checks <N> --repo <owner>/<repo>` to see which job failed,
+>    then `gh run view <run-id> --repo <owner>/<repo> --log-failed` to
+>    read the actual failure. Do not ask me to paste logs.
+> 2. **Diagnose before editing.** Identify the specific assertion,
+>    compile error, lint rule, or type that failed. Tie the failure to
+>    a single cause. If tests fail, read the test file — never "fix" by
+>    changing the test unless the test itself is clearly wrong *and*
+>    you say so explicitly.
+> 3. **Respect the test contract.** Existing tests encode behavior
+>    contracts from earlier stories. If your change broke one, the
+>    default assumption is that your change is wrong, not the test.
+>    Restore the contract while keeping the new feature.
+> 4. **Make the smallest diff that turns the check green.** No drive-by
+>    refactors, no reformatting, no new abstractions. If you need to
+>    touch more than the failing surface, explain why in the commit
+>    message.
+> 5. **Re-run the failing job locally before pushing.** For Jest, run
+>    the exact file (`npx jest tests/<file>`); for type-check, run
+>    `npx tsc --noEmit`; for lint, run `npm run lint`. Only push if it
+>    passes locally.
+> 6. **Push to the same branch, don't open a new PR.** Commit message
+>    form: `fix(us<X>): <what you changed> — <why CI failed>`.
+> 7. **Watch the re-run.** `gh pr checks <N> --repo <owner>/<repo> --watch`.
+>    If it fails again, go back to step 1. Do not amend or force-push
+>    without explicit human approval.
+>
+> Do not merge the PR, and do not mark the issue as fixed in the PR
+> description — a human reviews and merges.
+
+This prompt was used to fix `PR #124` (US16) after the `MapPage` test
+regressed because the empty-state copy changed: the agent read the
+failing log via `gh run view … --log-failed`, identified the single
+broken assertion in `tests/MapPage.test.tsx`, restored the original
+"Finding stores near you…" string for the unfiltered empty case while
+keeping the new "No stores match the selected filters." copy for the
+filtered empty case, and pushed one commit (`036b33c`).
+
 ## Story-level notes
 
 ### US15 — Shopper ratings (#119)
