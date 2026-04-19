@@ -24,8 +24,22 @@ This app is a standard Next.js project. **You** connect the Git repo in the [Ver
 
 - Node.js 18+
 - npm
-- A [Supabase](https://supabase.com) project (free tier works)
-- A Google Maps Geocoding API key
+- PostgreSQL — either **[Docker](#local-database-with-docker)** (simplest for teammates) or a [Supabase](https://supabase.com) project (free tier works)
+- A Google Maps Geocoding API key (optional; server falls back without it)
+
+### Local database with Docker
+
+If a shared or remote database is unavailable, run Postgres on your machine:
+
+```bash
+docker compose up -d
+cp .env.example .env   # if you don’t have .env yet
+# Set DATABASE_URL=postgresql://postgres:postgres@localhost:5432/grocerease
+npx prisma migrate deploy
+npm run db:seed
+```
+
+Stop the database with `npm run db:down` or `docker compose down`. Data persists in the Docker volume until you remove it.
 
 ### Setup
 
