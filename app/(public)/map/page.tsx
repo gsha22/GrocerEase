@@ -3,7 +3,7 @@
 // Story 16: Category filter on map view (reuses /api/stores?category=)
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import StoreFilterBar, { type FilterKey } from "@/components/StoreFilterBar";
@@ -49,25 +49,36 @@ export default function MapPage() {
   );
   const [activeFilters, setActiveFilters] = useState<Set<FilterKey>>(new Set());
 
+  // Request-ordering guard: only the most recent `loadStores` call is
+  // allowed to write to state. Avoids the race where a slow initial
+  // geolocation fetch clobbers a newer filter-triggered result.
+  const latestRequestId = useRef(0);
+  const activeFiltersRef = useRef(activeFilters);
+  activeFiltersRef.current = activeFilters;
+
   const loadStores = useCallback(
     async (
       lat: number | null,
       lng: number | null,
       filters: Set<FilterKey>,
     ) => {
+      const requestId = ++latestRequestId.current;
       setLoading(true);
       try {
         const res = await fetch(buildMapStoresApiUrl(lat, lng, filters));
         const data = await res.json();
+        if (requestId !== latestRequestId.current) return;
         setStores(data);
       } finally {
-        setLoading(false);
+        if (requestId === latestRequestId.current) setLoading(false);
       }
     },
     [],
   );
 
   useEffect(() => {
+    // Always read the *current* filters via ref — the geolocation
+    // callback may resolve after the user has already selected filters.
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -77,15 +88,14 @@ export default function MapPage() {
           };
           setCoords(loc);
           setCenter([loc.lat, loc.lng]);
-          loadStores(loc.lat, loc.lng, activeFilters);
+          loadStores(loc.lat, loc.lng, activeFiltersRef.current);
         },
-        () => loadStores(null, null, activeFilters)
+        () => loadStores(null, null, activeFiltersRef.current),
       );
     } else {
-      loadStores(null, null, activeFilters);
+      loadStores(null, null, activeFiltersRef.current);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadStores]);
 
   function handleFiltersChange(next: Set<FilterKey>) {
     setActiveFilters(next);
