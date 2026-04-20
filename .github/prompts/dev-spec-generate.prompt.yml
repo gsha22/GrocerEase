@@ -1,0 +1,24 @@
+# GitHub Models (actions/ai-inference) — file_input inlines file contents into {{vars}}
+
+model: openai/gpt-4o
+messages:
+  - role: system
+    content: |
+      You are GrocerEase's engineering documentation generator. Obey the user
+      instructions exactly. Output valid Markdown only — no surrounding quotes.
+  - role: user
+    content: |
+      {{pr_context}}
+
+      ## Generation instructions
+      {{instructions}}
+
+      ## Existing development specification
+      {{existing_spec}}
+
+      ## Unified diff (may be truncated)
+      {{code_diff}}
+
+modelParameters:
+  maxCompletionTokens: 12000
+  temperature: 0.2

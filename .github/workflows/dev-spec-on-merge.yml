@@ -1,0 +1,154 @@
+# LLM-assisted development specs using GitHub Models (no third-party API key).
+# Merge a PR to main with label `dev-spec:US5` → opens a docs PR updating
+# docs/dev-specs/US5-development-spec.md
+
+name: Dev specification (on PR merge)
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  models: read
+
+concurrency:
+  group: dev-spec-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve dev-spec slug from PR labels
+        id: slug
+        env:
+          LABELS_JSON: ${{ toJson(github.event.pull_request.labels) }}
+        run: |
+          python3 << 'PY'
+          import json, os
+          labels = json.loads(os.environ["LABELS_JSON"])
+          slug = ""
+          for label in labels:
+              name = label.get("name", "")
+              if name.startswith("dev-spec:"):
+                  slug = name.split(":", 1)[1].strip()
+                  break
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+              f.write(f"slug={slug}\n")
+          PY
+
+      - name: Skip when no dev-spec label
+        if: steps.slug.outputs.slug == ''
+        run: |
+          echo "No label matching dev-spec:* — skipping (add e.g. dev-spec:US5 to opt in)."
+
+      - name: Prepare context, diff, and instruction files
+        id: prep
+        if: steps.slug.outputs.slug != ''
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          SLUG: ${{ steps.slug.outputs.slug }}
+          PR_JSON: ${{ toJson(github.event.pull_request) }}
+        run: |
+          set -euo pipefail
+          python3 << 'PY'
+          import json, os, pathlib
+          pr = json.loads(os.environ["PR_JSON"])
+          title = pr.get("title") or ""
+          body = (pr.get("body") or "").strip()
+          num = pr.get("number")
+          pathlib.Path("context.md").write_text(
+              f"# PR #{num}: {title}\n\n{body}\n",
+              encoding="utf-8",
+          )
+          PY
+          mkdir -p docs/dev-specs
+          SPEC_FILE="docs/dev-specs/${SLUG}-development-spec.md"
+          echo "spec_file=${SPEC_FILE}" >> "$GITHUB_OUTPUT"
+          if [ -f "$SPEC_FILE" ] && [ -s "$SPEC_FILE" ]; then
+            cp docs/dev-specs/prompts/spec-update.md instructions.md
+            cp "$SPEC_FILE" existing_spec.md
+          else
+            cp docs/dev-specs/prompts/spec-new.md instructions.md
+            echo "(none yet — generate full specification)" > existing_spec.md
+          fi
+          git diff "$BASE_SHA"..."$HEAD_SHA" -- \
+            . ':(exclude)package-lock.json' ':(exclude)*.png' ':(exclude)*.jpg' \
+            ':(exclude)*.jpeg' ':(exclude)*.webp' ':(exclude)*.gif' > raw.diff || true
+          head -c 120000 raw.diff > diff.txt || cp raw.diff diff.txt
+          echo "diff_bytes=$(wc -c < diff.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Run GitHub Models (ai-inference)
+        id: llm
+        if: steps.slug.outputs.slug != ''
+        uses: actions/ai-inference@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prompt-file: .github/prompts/dev-spec-generate.prompt.yml
+          model: openai/gpt-4o
+          file_input: |
+            pr_context: ./context.md
+            instructions: ./instructions.md
+            existing_spec: ./existing_spec.md
+            code_diff: ./diff.txt
+
+      - name: Stage generated spec to temp
+        if: steps.slug.outputs.slug != ''
+        env:
+          SPEC_FILE: ${{ steps.prep.outputs.spec_file }}
+          RESPONSE_FILE: ${{ steps.llm.outputs['response-file'] }}
+        run: |
+          set -euo pipefail
+          if [ -z "${RESPONSE_FILE:-}" ] || [ ! -f "$RESPONSE_FILE" ]; then
+            echo "::error::Missing LLM response file from actions/ai-inference"
+            exit 1
+          fi
+          cp "$RESPONSE_FILE" "$SPEC_FILE"
+          cp "$SPEC_FILE" "${RUNNER_TEMP}/dev-spec-generated.md"
+          echo "First lines:" && head -n 15 "$SPEC_FILE"
+
+      - name: Commit and open documentation PR
+        if: steps.slug.outputs.slug != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLUG: ${{ steps.slug.outputs.slug }}
+          SPEC_FILE: ${{ steps.prep.outputs.spec_file }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout origin/main
+          BRANCH="docs/dev-spec-${SLUG}-pr-${PR_NUM}-run-${{ github.run_id }}"
+          git checkout -b "$BRANCH"
+          mkdir -p "$(dirname "$SPEC_FILE")"
+          cp "${RUNNER_TEMP}/dev-spec-generated.md" "$SPEC_FILE"
+          git add "$SPEC_FILE"
+          git commit -m "docs(spec): refresh ${SLUG} from PR #${PR_NUM}" \
+            -m "Generated by dev-spec-on-merge workflow." \
+            -m "Workflow: ${RUN_URL}" \
+            -m "Co-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          git push origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "docs(spec): ${SLUG} from merged PR #${PR_NUM}" \
+            --body "Automated **development specification** update (GitHub Models via \`actions/ai-inference\`).
+
+- Triggered by merge of #${PR_NUM}
+- Spec file: \`${SPEC_FILE}\`
+- Prompts: \`docs/dev-specs/prompts/\` and \`.github/prompts/dev-spec-generate.prompt.yml\`
+- Run log: ${RUN_URL}
+
+Add \`Refs #your-spec-issue\` here if your course requires a linked tracking issue."
+          echo "Opened docs PR from branch ${BRANCH}"
