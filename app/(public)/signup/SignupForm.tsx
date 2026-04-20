@@ -19,7 +19,10 @@ interface SignupApiResponse {
 export default function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = safeCallbackPath(searchParams.get("callbackUrl"));
+  const callbackUrl = safeCallbackPath(
+    searchParams.get("callbackUrl"),
+    "/owner-dashboard",
+  );
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

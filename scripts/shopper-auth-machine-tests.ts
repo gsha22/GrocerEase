@@ -68,7 +68,7 @@ async function shopperLogin(email: string, password: string) {
   return postJson("/auth/shopper/login", {
     email,
     password,
-    callbackUrl: "/shopper/account",
+    callbackUrl: "/",
   });
 }
 
@@ -249,7 +249,7 @@ async function main() {
       email: newEmail,
       password: newPassword,
       confirmPassword: newPassword,
-      callbackUrl: "/shopper/account",
+      callbackUrl: "/",
     });
     assert.equal(res.status, 201, "signup should return 201");
     assert.ok(
@@ -297,7 +297,7 @@ async function main() {
       email: newEmail,
       password: newPassword,
       confirmPassword: newPassword,
-      callbackUrl: "/shopper/account",
+      callbackUrl: "/",
     });
     assert.equal(res.status, 409, "duplicate shopper email should be 409");
     assertNoPasswordLeak(json, newPassword);
@@ -310,7 +310,7 @@ async function main() {
       email: OWNER_EMAIL,
       password: newPassword,
       confirmPassword: newPassword,
-      callbackUrl: "/shopper/account",
+      callbackUrl: "/",
     });
     assert.equal(res.status, 409, "shopper signup with owner email should be 409");
     assertNoPasswordLeak(json, newPassword);

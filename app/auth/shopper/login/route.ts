@@ -21,10 +21,7 @@ export async function POST(req: NextRequest) {
   const rawEmail = typeof body.email === "string" ? body.email : "";
   const email = rawEmail.trim().toLowerCase();
   const password = typeof body.password === "string" ? body.password : "";
-  const callbackUrl = safeCallbackPath(
-    body.callbackUrl,
-    "/shopper/account"
-  );
+  const callbackUrl = safeCallbackPath(body.callbackUrl, "/");
 
   if (!email || !password) {
     return NextResponse.json(
@@ -33,12 +30,5 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return runCredentialsSignIn(
-    req,
-    email,
-    password,
-    callbackUrl,
-    "shopper",
-    "/shopper/account"
-  );
+  return runCredentialsSignIn(req, email, password, callbackUrl, "shopper", "/");
 }

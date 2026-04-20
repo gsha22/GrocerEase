@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const rawEmail = typeof body.email === "string" ? body.email : "";
   const email = rawEmail.trim().toLowerCase();
   const password = typeof body.password === "string" ? body.password : "";
-  const callbackUrl = safeCallbackPath(body.callbackUrl);
+  const callbackUrl = safeCallbackPath(body.callbackUrl, "/owner-dashboard");
 
   if (!email || !password) {
     return NextResponse.json(
@@ -39,7 +39,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const response = await runCredentialsSignIn(req, email, password, callbackUrl);
+  const response = await runCredentialsSignIn(
+    req,
+    email,
+    password,
+    callbackUrl,
+    "owner",
+    "/owner-dashboard",
+  );
 
   await writeAuthAuditLog({
     event: "login_attempt",

@@ -4,7 +4,7 @@ export type OwnerSignupInput = {
   email: string;
   password: string;
   name: string;
-  /** Same-origin path only; defaults to /dashboard */
+  /** Same-origin path only; defaults to /owner-dashboard */
   callbackUrl: string;
 };
 
@@ -17,7 +17,7 @@ const EMAIL_RE =
 
 export function validateSignupInput(
   body: unknown,
-  defaultCallbackPath: string = "/dashboard",
+  defaultCallbackPath: string = "/owner-dashboard",
 ): SignupValidationResult {
   if (!body || typeof body !== "object") {
     return { ok: false, errors: { form: "Invalid JSON body." } };

@@ -79,7 +79,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const signInRes = await runCredentialsSignIn(req, email, password, callbackUrl);
+  const signInRes = await runCredentialsSignIn(
+    req,
+    email,
+    password,
+    callbackUrl,
+    "shopper",
+    "/",
+  );
   const setCookies = signInRes.headers.getSetCookie?.() ?? [];
   const signInJson = (await signInRes.json().catch(() => null)) as {
     ok?: boolean;

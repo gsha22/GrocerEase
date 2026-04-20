@@ -58,7 +58,8 @@ export async function POST(req: NextRequest) {
     });
 
     const base =
-      process.env.NEXTAUTH_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
+      process.env.NEXTAUTH_URL?.replace(/\/$/, "") ??
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
     const resetUrl = `${base}/login/reset?token=${encodeURIComponent(tokenRaw)}`;
 
     const emailResult = await sendPasswordResetEmail({

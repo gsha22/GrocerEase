@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const validated = validateSignupInput(body, "/shopper/account");
+  const validated = validateSignupInput(body, "/");
   if (!validated.ok) {
     return NextResponse.json(
       { error: "Validation failed", fieldErrors: validated.errors },
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     password,
     callbackUrl,
     "shopper",
-    "/shopper/account"
+    "/",
   );
   const setCookies = signInRes.headers.getSetCookie?.() ?? [];
   const signInJson = (await signInRes.json().catch(() => null)) as {

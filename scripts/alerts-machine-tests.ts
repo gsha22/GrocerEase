@@ -22,7 +22,7 @@ async function loginShopper() {
     body: JSON.stringify({
       email: SHOPPER_EMAIL,
       password: SHOPPER_PASSWORD,
-      callbackUrl: "/shopper/account",
+      callbackUrl: "/",
     }),
   });
   const setCookies = res.headers.getSetCookie?.() ?? [];

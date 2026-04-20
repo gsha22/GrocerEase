@@ -7,7 +7,7 @@ import LoginForm from "./LoginForm";
 export default async function LoginPage() {
   const session = await auth();
   if (session?.user) {
-    redirect(session.role === "shopper" ? "/shopper/account" : "/dashboard");
+    redirect(session.role === "shopper" ? "/" : "/owner-dashboard");
   }
 
   return (
