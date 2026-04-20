@@ -7,7 +7,7 @@ import ShopperLoginForm from "./ShopperLoginForm";
 export default async function ShopperLoginPage() {
   const session = await auth();
   if (session?.user) {
-    redirect(session.role === "shopper" ? "/shopper/account" : "/dashboard");
+    redirect(session.role === "shopper" ? "/" : "/owner-dashboard");
   }
 
   return (

@@ -89,6 +89,8 @@ export async function POST(req: NextRequest) {
     email,
     password,
     callbackUrl,
+    "owner",
+    "/owner-dashboard",
   );
   const setCookies = signInRes.headers.getSetCookie?.() ?? [];
   const signInJson = (await signInRes.json().catch(() => null)) as {

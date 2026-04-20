@@ -19,10 +19,7 @@ interface SignupApiResponse {
 export default function ShopperSignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = safeCallbackPath(
-    searchParams.get("callbackUrl"),
-    "/shopper/account"
-  );
+  const callbackUrl = safeCallbackPath(searchParams.get("callbackUrl"), "/");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -89,9 +86,7 @@ export default function ShopperSignupForm() {
       if (res.status === 201 && data.ok) {
         const raw = data.redirectUrl;
         const url =
-          typeof raw === "string" && isSafeRelativeAppPath(raw)
-            ? raw
-            : "/shopper/account";
+          typeof raw === "string" && isSafeRelativeAppPath(raw) ? raw : "/";
         router.push(url);
         router.refresh();
         return;

@@ -1,6 +1,8 @@
 import { Auth, skipCSRFCheck } from "@auth/core";
 import { NextRequest, NextResponse } from "next/server";
 import { authConfig } from "@/auth";
+import { getAuthSecret } from "@/lib/auth-secret";
+import { safeCallbackPath } from "@/lib/safe-callback-path";
 
 /**
  * Turns Auth.js Location into a same-origin path safe for client router.push
@@ -39,7 +41,7 @@ export function buildCredentialsAuthRequest(
   email: string,
   password: string,
   callbackUrl: string,
-  accountType: CredentialsAccountType = "owner"
+  accountType: CredentialsAccountType = "owner",
 ) {
   const origin = req.nextUrl.origin;
   const url = new URL(`${origin}/api/auth/callback/credentials`);
@@ -53,12 +55,15 @@ export function buildCredentialsAuthRequest(
 }
 
 /**
- * Maps Auth.js credentials callback Response to a JSON API response + session cookies.
+ * Maps Auth.js credentials callback to JSON + Set-Cookie.
+ * Uses the sanitized redirect path passed to Auth.js so the client always gets
+ * a stable `redirectUrl` (the Location header can differ by version).
  */
 export function nextResponseFromCredentialsAuth(
   req: NextRequest,
   authRes: Response,
-  fallbackPath: string = "/dashboard",
+  successRedirectPath: string,
+  role: "owner" | "shopper",
 ): NextResponse {
   const location = authRes.headers.get("Location") ?? "";
 
@@ -68,18 +73,15 @@ export function nextResponseFromCredentialsAuth(
   ) {
     return NextResponse.json(
       { error: "Invalid email or password." },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
   if (authRes.status === 302 || authRes.status === 303) {
     const res = NextResponse.json({
       ok: true,
-      redirectUrl: safeRedirectPathForClient(
-        location,
-        req.nextUrl.origin,
-        fallbackPath
-      ),
+      role,
+      redirectUrl: successRedirectPath,
     });
     const rawCookies = authRes.headers.getSetCookie?.() ?? [];
     for (const cookie of rawCookies) {
@@ -100,18 +102,21 @@ export async function runCredentialsSignIn(
   password: string,
   callbackUrl: string,
   accountType: CredentialsAccountType = "owner",
-  fallbackPath: string = "/dashboard"
+  fallbackPath: string = "/dashboard",
 ): Promise<NextResponse> {
+  const resolvedRedirect = safeCallbackPath(callbackUrl, fallbackPath);
   const authRequest = buildCredentialsAuthRequest(
     req,
     email,
     password,
-    callbackUrl,
-    accountType
+    resolvedRedirect,
+    accountType,
   );
   const authRes = await Auth(authRequest, {
     ...authConfig,
+    secret: getAuthSecret(),
     skipCSRFCheck,
   });
-  return nextResponseFromCredentialsAuth(req, authRes, fallbackPath);
+  const role = accountType === "shopper" ? "shopper" : "owner";
+  return nextResponseFromCredentialsAuth(req, authRes, resolvedRedirect, role);
 }

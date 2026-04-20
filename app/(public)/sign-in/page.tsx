@@ -24,8 +24,10 @@ export default async function SignInPage({
   const next = safeNextPath(sp.next);
   const shopperQs = next
     ? `?callbackUrl=${encodeURIComponent(next)}`
-    : "?callbackUrl=%2Fshopper%2Faccount";
-  const ownerQs = next ? `?callbackUrl=${encodeURIComponent(next)}` : "";
+    : "?callbackUrl=%2F";
+  const ownerQs = next
+    ? `?callbackUrl=${encodeURIComponent(next)}`
+    : "?callbackUrl=%2Fowner-dashboard";
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-8rem)] max-w-3xl flex-col justify-center px-4 py-12 sm:px-6">

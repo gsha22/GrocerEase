@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import type { JWT } from "next-auth/jwt";
 import { getToken } from "next-auth/jwt";
+import { getAuthSecret } from "@/lib/auth-secret";
 
 function isShopperToken(token: Awaited<ReturnType<typeof getToken>>) {
   if (!token || typeof token === "string") return false;
@@ -10,7 +11,7 @@ function isShopperToken(token: Awaited<ReturnType<typeof getToken>>) {
 }
 
 export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({ req, secret: getAuthSecret() });
   const path = req.nextUrl.pathname;
 
   if (path.startsWith("/dashboard") || path.startsWith("/vendor")) {

@@ -64,7 +64,7 @@ async function login(email: string, password: string) {
   const { res, json, setCookies } = await postJson("/auth/login", {
     email,
     password,
-    callbackUrl: "/dashboard",
+    callbackUrl: "/owner-dashboard",
   });
   return {
     res,
@@ -126,6 +126,16 @@ async function main() {
       "valid login should return ok: true"
     );
     assert.ok(cookieHeader.length > 0, "valid login should Set-Cookie");
+    assert.equal(
+      (json as { redirectUrl?: string }).redirectUrl,
+      "/owner-dashboard",
+      "login response should include redirectUrl",
+    );
+    assert.equal(
+      (json as { role?: string }).role,
+      "owner",
+      "login response should include role owner",
+    );
     const body = JSON.stringify(json);
     assert.ok(
       !body.toLowerCase().includes("password") &&
@@ -200,8 +210,8 @@ async function main() {
     );
     const loc = res.headers.get("location") ?? "";
     assert.ok(
-      loc.includes("/dashboard"),
-      `expected /login to redirect to dashboard, got: ${loc}`
+      loc.includes("/owner-dashboard") || loc.includes("/dashboard"),
+      `expected /login to redirect toward owner dashboard, got: ${loc}`
     );
   }
 
