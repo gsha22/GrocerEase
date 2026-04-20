@@ -18,6 +18,7 @@ import Link from "next/link";
 import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
 import StoreAlertSubscribe from "@/components/StoreAlertSubscribe";
 import StoreFreshUpdatesFeed from "@/components/StoreFreshUpdatesFeed";
+import StoreRatingsPanel from "@/components/StoreRatingsPanel";
 import StoreReportButton from "@/components/StoreReportButton";
 
 export const dynamic = "force-dynamic";
@@ -83,6 +84,68 @@ export default async function StoreProfilePage({
     });
     initialStoreFollow = Boolean(follow);
     storeFollowAlertId = follow?.id ?? null;
+  }
+
+  const RATINGS_PAGE_SIZE = 10;
+  // Mirror GET /api/stores/[id]/ratings: `total` counts all ratings (for the
+  // "X ratings" header), but the preloaded feed and `hasMore` only consider
+  // ratings that actually carry a note — otherwise the UI would render
+  // empty rows and paginate past real content.
+  const notesWhere = {
+    storeId: id,
+    note: { not: null },
+    NOT: { note: "" },
+  } as const;
+  const [ratingAgg, recentNotesCount, recentNotes] = await Promise.all([
+    prisma.storeRating.aggregate({
+      where: { storeId: id },
+      _avg: { score: true },
+      _count: { _all: true },
+    }),
+    prisma.storeRating.count({ where: notesWhere }),
+    prisma.storeRating.findMany({
+      where: notesWhere,
+      orderBy: { createdAt: "desc" },
+      take: RATINGS_PAGE_SIZE,
+      select: {
+        id: true,
+        score: true,
+        note: true,
+        createdAt: true,
+        shopper: { select: { name: true } },
+      },
+    }),
+  ]);
+
+  const ratingsSummary = {
+    average:
+      ratingAgg._avg.score != null
+        ? Math.round(ratingAgg._avg.score * 10) / 10
+        : null,
+    total: ratingAgg._count._all,
+    ratings: recentNotes.map((r) => ({
+      id: r.id,
+      score: r.score,
+      note: r.note,
+      createdAt: r.createdAt.toISOString(),
+      authorName: r.shopper.name,
+    })),
+    hasMore: recentNotesCount > RATINGS_PAGE_SIZE,
+  };
+
+  let initialOwnRating: {
+    id: string;
+    score: number;
+    note: string | null;
+  } | null = null;
+  if (session?.role === "shopper") {
+    const own = await prisma.storeRating.findUnique({
+      where: {
+        storeId_shopperId: { storeId: id, shopperId: session.user.id },
+      },
+      select: { id: true, score: true, note: true },
+    });
+    if (own) initialOwnRating = own;
   }
 
   const freshUpdatesDisplay = enrichFreshUpdatesWithStale(
@@ -194,6 +257,14 @@ export default async function StoreProfilePage({
         storeName={store.name}
         storeAddress={store.address}
         viewerRole={viewerRole}
+      />
+
+      {/* Shopper ratings — Story 15 */}
+      <StoreRatingsPanel
+        storeId={store.id}
+        viewerRole={viewerRole}
+        initialSummary={ratingsSummary}
+        initialOwnRating={initialOwnRating}
       />
 
       {/* Fresh Today — Story 1 */}
