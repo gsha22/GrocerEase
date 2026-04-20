@@ -74,6 +74,7 @@ jobs:
           SLUG: ${{ steps.slug.outputs.slug }}
           PR_JSON: ${{ toJson(github.event.pull_request) }}
           REPO: ${{ github.repository }}
+          REVIEW_SUBMITTED_AT: ${{ github.event.review.submitted_at }}
         run: |
           set -euo pipefail
           python3 << 'PY'
@@ -89,12 +90,47 @@ jobs:
               encoding="utf-8",
           )
           pathlib.Path("story_slug.md").write_text(slug + "\n", encoding="utf-8")
-          refs = sorted(set(re.findall(r"(?i)\\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?|refs?)\\s+#(\\d+)\\b", body)))
+          refs = sorted(
+              set(
+                  re.findall(
+                      r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?|refs?)\s+#(\d+)\b",
+                      body,
+                  )
+              ),
+              key=int,
+          )
           if refs:
               lines = [f"- https://github.com/{repo}/issues/{n}" for n in refs]
           else:
               lines = ["None found in PR metadata"]
           pathlib.Path("issue_links.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+          author = (pr.get("user") or {}).get("login") or "unknown"
+          assignees = [
+              a.get("login")
+              for a in (pr.get("assignees") or [])
+              if isinstance(a, dict) and a.get("login")
+          ]
+          owners_lines = [
+              f"- PR author (GitHub): @{author}",
+              "- Assignees: "
+              + (", ".join(f"@{a}" for a in assignees) if assignees else "(none listed)"),
+              "- Suggested mapping: primary = issue owner if stated in linked issue, else PR author; secondary = first assignee not equal to primary (fill from issue if missing).",
+          ]
+          pathlib.Path("owners_context.md").write_text(
+              "\n".join(owners_lines) + "\n", encoding="utf-8"
+          )
+
+          merged_at = pr.get("merged_at")
+          review_at = os.environ.get("REVIEW_SUBMITTED_AT", "").strip()
+          merge_lines = [
+              f"- pull_request.merged: {pr.get('merged')}",
+              f"- pull_request.merged_at (API): {merged_at or 'null (not merged yet)'}",
+              f"- This workflow run: PR approval submitted_at (UTC): {review_at or 'unknown'}",
+          ]
+          pathlib.Path("merge_context.md").write_text(
+              "\n".join(merge_lines) + "\n", encoding="utf-8"
+          )
           PY
           mkdir -p docs/dev-specs
           SPEC_FILE="docs/dev-specs/${SLUG}-development-spec.md"
@@ -134,6 +170,8 @@ jobs:
             pr_context: ./context.md
             story_slug: ./story_slug.md
             issue_links: ./issue_links.md
+            owners_context: ./owners_context.md
+            merge_context: ./merge_context.md
             changed_files: ./changed_files.md
             instructions: ./instructions.md
             existing_spec: ./existing_spec.md
@@ -160,22 +198,25 @@ jobs:
           SPEC_FILE: ${{ steps.prep.outputs.spec_file }}
         run: |
           set -euo pipefail
+          if ! grep -qE '^# Development specification:' "$SPEC_FILE"; then
+            echo "::error::Missing H1 title starting with \"# Development specification:\""
+            exit 1
+          fi
           required=(
-            "## User story"
-            "## Summary"
-            "## Scope"
-            "## User-visible behavior"
-            "## Files changed"
-            "## Implementation map"
-            "## Data & persistence"
-            "## APIs"
-            "## Errors & edge cases"
-            "## Testing"
-            "## Traceability"
-            "## Out of scope / follow-ups"
+            "## Primary and secondary owners"
+            "## Merge date"
+            "## Architecture diagram (Mermaid)"
+            "## Information flow diagram (Mermaid)"
+            "## Class diagram (Mermaid)"
+            "## Classes in implementation"
+            "## Technologies, libraries, and external APIs"
+            "## Database data types and storage"
+            "## Failure mode effects (frontend)"
+            "## Personally Identifying Information (PII)"
+            "## Minors and PII"
           )
           for h in "${required[@]}"; do
-            if ! rg -n "^${h}$" "$SPEC_FILE" >/dev/null; then
+            if ! grep -qxF "$h" "$SPEC_FILE"; then
               echo "::error::Missing required section heading: ${h}"
               exit 1
             fi
