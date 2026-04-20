@@ -12,11 +12,14 @@ This folder holds **development specifications**: living docs that describe what
 
 ## How to trigger an update for a story
 
-1. Add a PR label: **`dev-spec:US5`** (prefix `dev-spec:`, suffix is the slug — becomes `docs/dev-specs/US5-development-spec.md`).
-2. Get the PR **approved** (GitHub review → Approve) while it targets **`main`**.
-3. Wait for the workflow run; review and merge the bot-opened docs PR.
+1. Include a story marker in PR title/body, e.g. **`Story 4`** or **`US4`** (the workflow maps this to `docs/dev-specs/US4-development-spec.md`).
+2. *(Optional fallback)* add label **`dev-spec:US4`** if your PR text does not include a story marker.
+3. Get the PR **approved** (GitHub review → Approve) while it targets **`main`**.
+4. Wait for the workflow run; review and merge the bot-opened docs PR.
 
-If no `dev-spec:*` label is present, the workflow **skips** (does not fail CI).
+If no story marker is found and no `dev-spec:*` label fallback is present, the workflow **skips** (does not fail CI).
+
+The workflow validates that generated docs include required headings (`User story`, `Summary`, `Files changed`, `Traceability`, etc.). If any are missing, the run fails and no docs PR is opened.
 
 ## Prompts (assignment / audit trail)
 
@@ -29,5 +32,7 @@ If no `dev-spec:*` label is present, the workflow **skips** (does not fail CI).
 ## GitHub Models availability
 
 GitHub Models must be enabled for your account/org. If inference fails in Actions, see [Integrating AI models into your development workflow](https://docs.github.com/en/github-models/github-models-at-scale/integrating-ai-models-into-your-development-workflow) and the [inference API](https://docs.github.com/en/rest/models/inference).
+
+Issue links in `## Traceability` are extracted from PR body references such as `Closes #123`, `Fixes #123`, or `Refs #123`.
 
 **Fallback:** You can fork the workflow to call OpenAI or another provider with a repository secret; the prompt files in `docs/dev-specs/prompts/` stay the same.

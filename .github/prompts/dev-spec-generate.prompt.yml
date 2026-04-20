@@ -10,6 +10,15 @@ messages:
     content: |
       {{pr_context}}
 
+      ## Detected story slug
+      {{story_slug}}
+
+      ## Issue links extracted from PR metadata
+      {{issue_links}}
+
+      ## Changed files (group these in "## Files changed")
+      {{changed_files}}
+
       ## Generation instructions
       {{instructions}}
 

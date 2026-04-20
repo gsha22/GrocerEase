@@ -1,23 +1,31 @@
 You are generating a **new** development specification as a single **Markdown** document.
 
-## Required sections (in order)
+## Required headings (exact text)
 
-1. **Title** — `# Development specification: {slug} — …`
-2. **User story** — Restate the story in “As a / I want / so that” form **only if** inferable from the PR; otherwise say what the PR appears to implement.
-3. **Summary** — 2–4 sentences: what behavior shipped and who it is for.
-4. **Scope** — Bullet list of **in-scope** capabilities in this PR.
-5. **Out of scope / follow-ups** — Bullets for obvious gaps (empty if none).
-6. **User-visible behavior** — How a user triggers and experiences the feature (routes, pages, key UI).
-7. **Implementation map** — Table or bullets: **area** (e.g. API route, component, lib), **path** (repo-relative), **role**.
-8. **Data & persistence** — Prisma models, fields, migrations **if** touched; else “No schema changes in this diff.”
-9. **APIs** — Method, path, auth expectations, request/response notes (from code).
-10. **Errors & edge cases** — Validation, empty states, failure modes visible in code.
-11. **Testing** — Existing automated tests or scripts that cover this (file paths); suggested **human** checks if none.
-12. **Traceability** — PR number, link placeholder `https://github.com/OWNER/REPO/pull/N`, linked GitHub issue numbers if present in the PR body.
+Use these exact headings in this order.
+
+1. `# Development specification: {slug} — ...`
+2. `## User story`
+3. `## Summary`
+4. `## Scope`
+5. `## User-visible behavior`
+6. `## Files changed`
+7. `## Implementation map`
+8. `## Data & persistence`
+9. `## APIs`
+10. `## Errors & edge cases`
+11. `## Testing`
+12. `## Traceability`
+13. `## Out of scope / follow-ups`
 
 ## Rules
 
 - Use **only** the supplied PR metadata and **code diff**; do not invent features not evidenced by the diff.
 - Prefer **concrete file paths** and symbols from the diff.
+- In `## Files changed`, group paths by area and use only changed files from the supplied list.
+- In `## Traceability`, include:
+  - PR number and full PR URL
+  - user story slug (e.g. `US4`)
+  - linked issue URLs (or `None found in PR metadata` if absent)
 - If the diff is truncated, say so in a short note and still document what is visible.
 - Output **nothing** outside the Markdown document (no preamble).
