@@ -17,6 +17,13 @@ enum ShopperNotificationKind {
   store_new_deal
 }
 
+enum StoreReportType {
+  out_of_stock
+  incorrect_hours
+  wrong_price
+  other
+}
+
 model StoreOwner {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -65,6 +72,7 @@ model Store {
   profileViews StoreProfileView[]
   itemSearches StoreItemSearch[]
   ratings      StoreRating[]
+  reports      StoreReport[]
 
   @@map("stores")
 }
@@ -175,6 +183,7 @@ model Shopper {
   alerts Alert[]
   shopperNotifications ShopperNotification[]
   ratings StoreRating[]
+  reports StoreReport[]
 
   @@map("shoppers")
 }
@@ -231,6 +240,23 @@ model StoreRating {
   @@unique([storeId, shopperId])
   @@index([storeId, createdAt(sort: Desc)])
   @@map("store_ratings")
+}
+
+/// Story 17: shopper-submitted reports of incorrect/outdated store info.
+model StoreReport {
+  id        String          @id @default(uuid())
+  storeId   String          @map("store_id")
+  shopperId String          @map("shopper_id")
+  type      StoreReportType
+  comment   String?
+  createdAt DateTime        @default(now()) @map("created_at")
+
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  shopper Shopper @relation(fields: [shopperId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, createdAt])
+  @@index([shopperId, storeId, createdAt])
+  @@map("store_reports")
 }
 
 model Alert {

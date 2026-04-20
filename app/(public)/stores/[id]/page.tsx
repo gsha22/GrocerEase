@@ -19,6 +19,7 @@ import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
 import StoreAlertSubscribe from "@/components/StoreAlertSubscribe";
 import StoreFreshUpdatesFeed from "@/components/StoreFreshUpdatesFeed";
 import StoreRatingsPanel from "@/components/StoreRatingsPanel";
+import StoreReportButton from "@/components/StoreReportButton";
 
 export const dynamic = "force-dynamic";
 
@@ -86,14 +87,24 @@ export default async function StoreProfilePage({
   }
 
   const RATINGS_PAGE_SIZE = 10;
-  const [ratingAgg, recentRatings] = await Promise.all([
+  // Mirror GET /api/stores/[id]/ratings: `total` counts all ratings (for the
+  // "X ratings" header), but the preloaded feed and `hasMore` only consider
+  // ratings that actually carry a note — otherwise the UI would render
+  // empty rows and paginate past real content.
+  const notesWhere = {
+    storeId: id,
+    note: { not: null },
+    NOT: { note: "" },
+  } as const;
+  const [ratingAgg, recentNotesCount, recentNotes] = await Promise.all([
     prisma.storeRating.aggregate({
       where: { storeId: id },
       _avg: { score: true },
       _count: { _all: true },
     }),
+    prisma.storeRating.count({ where: notesWhere }),
     prisma.storeRating.findMany({
-      where: { storeId: id },
+      where: notesWhere,
       orderBy: { createdAt: "desc" },
       take: RATINGS_PAGE_SIZE,
       select: {
@@ -112,14 +123,14 @@ export default async function StoreProfilePage({
         ? Math.round(ratingAgg._avg.score * 10) / 10
         : null,
     total: ratingAgg._count._all,
-    ratings: recentRatings.map((r) => ({
+    ratings: recentNotes.map((r) => ({
       id: r.id,
       score: r.score,
       note: r.note,
       createdAt: r.createdAt.toISOString(),
       authorName: r.shopper.name,
     })),
-    hasMore: ratingAgg._count._all > RATINGS_PAGE_SIZE,
+    hasMore: recentNotesCount > RATINGS_PAGE_SIZE,
   };
 
   let initialOwnRating: {
@@ -265,6 +276,11 @@ export default async function StoreProfilePage({
           storeId={store.id}
           initialUpdates={initialFreshUpdates}
         />
+      </div>
+
+      {/* Report incorrect info — Story 17 */}
+      <div className="mt-6 mb-4">
+        <StoreReportButton storeId={store.id} viewerRole={viewerRole} />
       </div>
 
       {/* Deals This Week — Story 2 */}
