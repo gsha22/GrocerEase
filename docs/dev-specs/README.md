@@ -2,6 +2,7 @@
 
 This folder holds **development specifications** for P2 user stories. Each generated file is intended to match the **course “Development Specification” rubric** (owners, merge date, three Mermaid diagrams, class inventory, technology table, DB byte estimates, failure modes, PII, minors).
 
+
 ## How specs are generated
 
 - **Automation:** [`.github/workflows/dev-spec-on-pr-approval.yml`](../../.github/workflows/dev-spec-on-pr-approval.yml) runs when someone **submits an approving review** on a pull request **into `main`** (`pull_request_review` + `state == approved`).
