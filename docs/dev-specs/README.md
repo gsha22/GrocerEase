@@ -14,6 +14,11 @@ This folder holds **development specifications** for P2 user stories. Each gener
 
 This workflow runs on **approval**, which is usually **before** merge. The prompt instructs the model to write `Not merged to main at time of this document generation (workflow ran on PR approval).` unless `pull_request.merged_at` is present. After you merge the feature PR, regenerate or manually edit **`## Merge date`** once if your grader needs the exact merge timestamp.
 
+## Fork PRs and repeat approvals
+
+- Diffs use `git fetch origin refs/pull/N/head` so the **PR head is available even when it comes from a fork** (no need for `HEAD_SHA` on `origin`).
+- Docs branches use a **stable name** `docs/dev-spec-USn-pr-<feature-pr#>` so **re-approvals update the same branch**; `gh pr create` runs only if there is **no** open PR for that head yet.
+
 ## How to trigger
 
 1. Put `Story N` or `USN` in the PR title or body (or use label `dev-spec:USn`).
