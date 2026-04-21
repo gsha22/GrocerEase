@@ -4,6 +4,9 @@ import type { JWT } from "next-auth/jwt";
 import { getToken } from "next-auth/jwt";
 import { getAuthSecret } from "@/lib/auth-secret";
 
+// NextAuth v5 renamed the session cookie from "next-auth.session-token" to "authjs.session-token"
+const SESSION_COOKIE = "authjs.session-token";
+
 function isShopperToken(token: Awaited<ReturnType<typeof getToken>>) {
   if (!token || typeof token === "string") return false;
   const t = token as JWT;
@@ -11,7 +14,11 @@ function isShopperToken(token: Awaited<ReturnType<typeof getToken>>) {
 }
 
 export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: getAuthSecret() });
+  const token = await getToken({
+    req,
+    secret: getAuthSecret(),
+    cookieName: SESSION_COOKIE,
+  });
   const path = req.nextUrl.pathname;
 
   if (path.startsWith("/dashboard") || path.startsWith("/vendor")) {
