@@ -19,6 +19,10 @@ This workflow runs on **approval**, which is usually **before** merge. The promp
 - Diffs use `git fetch origin refs/pull/N/head` so the **PR head is available even when it comes from a fork** (no need for `HEAD_SHA` on `origin`).
 - Docs branches use a **stable name** `docs/dev-spec-USn-pr-<feature-pr#>` so **re-approvals update the same branch**; `gh pr create` runs only if there is **no** open PR for that head yet.
 
+## Tracking issue
+
+Each successful spec commit opens or reuses an **open** GitHub issue titled `Dev spec tracking: USn for feature PR #<n>` with label **`dev-spec-tracking`**. The spec commit message includes `Refs #<issue>`, and the docs PR body links the same issue for course traceability.
+
 ## How to trigger
 
 1. Put `Story N` or `USN` in the PR title or body (or use label `dev-spec:USn`).
