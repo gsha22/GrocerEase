@@ -1,0 +1,41 @@
+# GitHub Models (actions/ai-inference) — file_input inlines file contents into {{vars}}
+
+model: openai/gpt-4o
+messages:
+  - role: system
+    content: |
+      You are GrocerEase's engineering documentation generator for CMU 17-356-style
+      development specifications. Obey the user instructions exactly. Output valid
+      Markdown only — no surrounding quotes. Use the exact ## section titles required
+      by the instructions, in order, with no extra top-level ## sections.
+  - role: user
+    content: |
+      {{pr_context}}
+
+      ## Detected story slug
+      {{story_slug}}
+
+      ## Issue links extracted from PR metadata
+      {{issue_links}}
+
+      ## Changed files (evidence only — do not add a "## Files changed" section)
+      {{changed_files}}
+
+      ## PR author and assignees (for "## Primary and secondary owners")
+      {{owners_context}}
+
+      ## Merge state and timestamps (for "## Merge date")
+      {{merge_context}}
+
+      ## Generation instructions
+      {{instructions}}
+
+      ## Existing development specification
+      {{existing_spec}}
+
+      ## Unified diff (may be truncated)
+      {{code_diff}}
+
+modelParameters:
+  maxCompletionTokens: 32000
+  temperature: 0.2

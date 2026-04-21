@@ -1,0 +1,295 @@
+# LLM-assisted development specs using GitHub Models (GITHUB_TOKEN + models: read).
+# When a PR into main receives an **approved** review, infer story slug from
+# PR title/body (e.g. "Story 4", "US4"), with label `dev-spec:*` as fallback.
+# Slug is normalized to US[0-9]{1,3}. Diffs use refs/pull/N/head (fork-safe).
+# Docs branch docs/dev-spec-USn-pr-<pr#> is stable across re-approvals.
+
+name: Dev specification (on PR approval)
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: write
+  pull-requests: write
+  models: read
+
+concurrency:
+  group: dev-spec-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    if: |
+      github.event.review.state == 'approved' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.state == 'open'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve dev-spec slug from PR text or labels
+        id: slug
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          LABELS_JSON: ${{ toJson(github.event.pull_request.labels) }}
+        run: |
+          python3 << 'PY'
+          import json, os, re
+          title = os.environ.get("PR_TITLE", "") or ""
+          body = os.environ.get("PR_BODY", "") or ""
+          text = f"{title}\n{body}"
+          labels = json.loads(os.environ["LABELS_JSON"])
+          slug = ""
+          # Preferred: derive from PR text so teams do not need labels.
+          # Matches "Story 4", "story: 4", "US4", "US 4", etc.
+          m = re.search(r"(?i)\b(?:story|us)\s*[:#-]?\s*(\d{1,3})\b", text)
+          if m:
+              slug = f"US{int(m.group(1))}"
+          # Fallback: explicit label like dev-spec:US5
+          if not slug:
+              for label in labels:
+                  name = label.get("name", "")
+                  if name.startswith("dev-spec:"):
+                      slug = name.split(":", 1)[1].strip()
+                      break
+          # Strict allowlist: only US + 1–3 digits (no path / branch injection).
+          slug = slug.strip()
+          if slug:
+              m2 = re.fullmatch(r"(?i)US([0-9]{1,3})", slug)
+              if m2:
+                  slug = f"US{int(m2.group(1))}"
+              else:
+                  slug = ""
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+              f.write(f"slug={slug}\n")
+          PY
+
+      - name: Skip when no story number or dev-spec label
+        if: steps.slug.outputs.slug == ''
+        run: |
+          echo "No story marker found (expected 'Story N' or 'USN' in PR title/body), and no dev-spec:* label fallback."
+
+      - name: Prepare context, diff, and instruction files
+        id: prep
+        if: steps.slug.outputs.slug != ''
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          SLUG: ${{ steps.slug.outputs.slug }}
+          PR_JSON: ${{ toJson(github.event.pull_request) }}
+          REPO: ${{ github.repository }}
+          REVIEW_SUBMITTED_AT: ${{ github.event.review.submitted_at }}
+        run: |
+          set -euo pipefail
+          python3 << 'PY'
+          import json, os, pathlib, re
+          pr = json.loads(os.environ["PR_JSON"])
+          title = pr.get("title") or ""
+          body = (pr.get("body") or "").strip()
+          num = pr.get("number")
+          repo = os.environ["REPO"]
+          slug = os.environ["SLUG"]
+          pathlib.Path("context.md").write_text(
+              f"# PR #{num}: {title}\n\n{body}\n",
+              encoding="utf-8",
+          )
+          pathlib.Path("story_slug.md").write_text(slug + "\n", encoding="utf-8")
+          refs = sorted(
+              set(
+                  re.findall(
+                      r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?|refs?)\s+#(\d+)\b",
+                      body,
+                  )
+              ),
+              key=int,
+          )
+          if refs:
+              lines = [f"- https://github.com/{repo}/issues/{n}" for n in refs]
+          else:
+              lines = ["None found in PR metadata"]
+          pathlib.Path("issue_links.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+          author = (pr.get("user") or {}).get("login") or "unknown"
+          assignees = [
+              a.get("login")
+              for a in (pr.get("assignees") or [])
+              if isinstance(a, dict) and a.get("login")
+          ]
+          owners_lines = [
+              f"- PR author (GitHub): @{author}",
+              "- Assignees: "
+              + (", ".join(f"@{a}" for a in assignees) if assignees else "(none listed)"),
+              "- Suggested mapping: primary = issue owner if stated in linked issue, else PR author; secondary = first assignee not equal to primary (fill from issue if missing).",
+          ]
+          pathlib.Path("owners_context.md").write_text(
+              "\n".join(owners_lines) + "\n", encoding="utf-8"
+          )
+
+          merged_at = pr.get("merged_at")
+          review_at = os.environ.get("REVIEW_SUBMITTED_AT", "").strip()
+          merge_lines = [
+              f"- pull_request.merged: {pr.get('merged')}",
+              f"- pull_request.merged_at (API): {merged_at or 'null (not merged yet)'}",
+              f"- This workflow run: PR approval submitted_at (UTC): {review_at or 'unknown'}",
+          ]
+          pathlib.Path("merge_context.md").write_text(
+              "\n".join(merge_lines) + "\n", encoding="utf-8"
+          )
+          PY
+          mkdir -p docs/dev-specs
+          SPEC_FILE="docs/dev-specs/${SLUG}-development-spec.md"
+          echo "spec_file=${SPEC_FILE}" >> "$GITHUB_OUTPUT"
+          git fetch origin main
+          if git cat-file -e "origin/main:${SPEC_FILE}" 2>/dev/null; then
+            git show "origin/main:${SPEC_FILE}" > existing_spec.md
+            cp docs/dev-specs/prompts/spec-update.md instructions.md
+          else
+            cp docs/dev-specs/prompts/spec-new.md instructions.md
+            echo "(none yet — generate full specification)" > existing_spec.md
+          fi
+          # Fork-safe: PR head lives on refs/pull/N/head, not necessarily on origin.
+          git fetch origin "$BASE_SHA"
+          git fetch origin "+refs/pull/${PR_NUM}/head:refs/remotes/origin/pr-${PR_NUM}-head"
+          HEAD_REF="refs/remotes/origin/pr-${PR_NUM}-head"
+          git rev-parse "$HEAD_REF"
+          git diff "$BASE_SHA"..."$HEAD_REF" -- \
+            . ':(exclude)package-lock.json' ':(exclude)*.png' ':(exclude)*.jpg' \
+            ':(exclude)*.jpeg' ':(exclude)*.webp' ':(exclude)*.gif' > raw.diff || true
+          git diff --name-only "$BASE_SHA"..."$HEAD_REF" -- \
+            . ':(exclude)package-lock.json' ':(exclude)*.png' ':(exclude)*.jpg' \
+            ':(exclude)*.jpeg' ':(exclude)*.webp' ':(exclude)*.gif' > changed-files.txt || true
+          if [ -s changed-files.txt ]; then
+            awk '{print "- " $0}' changed-files.txt > changed_files.md
+          else
+            echo "- (no text file changes detected in diff scope)" > changed_files.md
+          fi
+          head -c 120000 raw.diff > diff.txt || cp raw.diff diff.txt
+          echo "diff_bytes=$(wc -c < diff.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Run GitHub Models (ai-inference)
+        id: llm
+        if: steps.slug.outputs.slug != ''
+        uses: actions/ai-inference@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prompt-file: .github/prompts/dev-spec-generate.prompt.yml
+          model: openai/gpt-4o
+          file_input: |
+            pr_context: ./context.md
+            story_slug: ./story_slug.md
+            issue_links: ./issue_links.md
+            owners_context: ./owners_context.md
+            merge_context: ./merge_context.md
+            changed_files: ./changed_files.md
+            instructions: ./instructions.md
+            existing_spec: ./existing_spec.md
+            code_diff: ./diff.txt
+
+      - name: Stage generated spec to temp
+        if: steps.slug.outputs.slug != ''
+        env:
+          SPEC_FILE: ${{ steps.prep.outputs.spec_file }}
+          RESPONSE_FILE: ${{ steps.llm.outputs['response-file'] }}
+        run: |
+          set -euo pipefail
+          if [ -z "${RESPONSE_FILE:-}" ] || [ ! -f "$RESPONSE_FILE" ]; then
+            echo "::error::Missing LLM response file from actions/ai-inference"
+            exit 1
+          fi
+          cp "$RESPONSE_FILE" "$SPEC_FILE"
+          cp "$SPEC_FILE" "${RUNNER_TEMP}/dev-spec-generated.md"
+          echo "First lines:" && head -n 15 "$SPEC_FILE"
+
+      - name: Validate required doc sections
+        if: steps.slug.outputs.slug != ''
+        env:
+          SPEC_FILE: ${{ steps.prep.outputs.spec_file }}
+        run: |
+          set -euo pipefail
+          if ! grep -qE '^# Development specification:' "$SPEC_FILE"; then
+            echo "::error::Missing H1 title starting with \"# Development specification:\""
+            exit 1
+          fi
+          required=(
+            "## Primary and secondary owners"
+            "## Merge date"
+            "## Architecture diagram (Mermaid)"
+            "## Information flow diagram (Mermaid)"
+            "## Class diagram (Mermaid)"
+            "## Classes in implementation"
+            "## Technologies, libraries, and external APIs"
+            "## Database data types and storage"
+            "## Failure mode effects (frontend)"
+            "## Personally Identifying Information (PII)"
+            "## Minors and PII"
+          )
+          for h in "${required[@]}"; do
+            if ! grep -qxF "$h" "$SPEC_FILE"; then
+              echo "::error::Missing required section heading: ${h}"
+              exit 1
+            fi
+          done
+
+      - name: Commit and open documentation PR
+        if: steps.slug.outputs.slug != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLUG: ${{ steps.slug.outputs.slug }}
+          SPEC_FILE: ${{ steps.prep.outputs.spec_file }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GITHUB_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # Drop untracked prep artifacts so checkout is clean (fork-safe prep writes under repo root).
+          git reset --hard
+          git clean -fd
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout origin/main
+          # Stable branch per (story slug, feature PR): re-approvals update the same branch / PR.
+          BRANCH="docs/dev-spec-${SLUG}-pr-${PR_NUM}"
+          git checkout -B "$BRANCH"
+          mkdir -p "$(dirname "$SPEC_FILE")"
+          cp "${RUNNER_TEMP}/dev-spec-generated.md" "$SPEC_FILE"
+          git add "$SPEC_FILE"
+          if git diff --staged --quiet; then
+            echo "No spec changes to commit; exiting."
+            exit 0
+          fi
+          git commit -m "docs(spec): refresh ${SLUG} after approval of PR #${PR_NUM}" \
+            -m "Generated by dev-spec-on-pr-approval workflow." \
+            -m "Workflow: ${RUN_URL}" \
+            -m "Co-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          if git ls-remote --heads origin "$BRANCH" | grep -q .; then
+            git push --force-with-lease origin "$BRANCH"
+          else
+            git push -u origin "$BRANCH"
+          fi
+          OPEN_COUNT=$(gh pr list --repo "$GITHUB_REPO" --head "$BRANCH" --state open --json number --jq 'length')
+          if [ "$OPEN_COUNT" -eq 0 ]; then
+            gh pr create --repo "$GITHUB_REPO" --base main --head "$BRANCH" \
+              --title "docs(spec): ${SLUG} from approved PR #${PR_NUM}" \
+              --body "Automated **development specification** update (GitHub Models via \`actions/ai-inference\`).
+
+- Triggered by **approval** of #${PR_NUM} (target: \`main\`)
+- Spec file: \`${SPEC_FILE}\`
+- Prompts: \`docs/dev-specs/prompts/\` and \`.github/prompts/dev-spec-generate.prompt.yml\`
+- Run log: ${RUN_URL}
+
+Re-approvals update this branch in place (stable branch name).
+
+Merge the feature PR when ready; this doc describes the approved diff.
+
+Add \`Refs #your-spec-issue\` here if your course requires a linked tracking issue."
+            echo "Opened docs PR from branch ${BRANCH}"
+          else
+            echo "Open docs PR already exists for head ${BRANCH}; branch updated only."
+          fi
