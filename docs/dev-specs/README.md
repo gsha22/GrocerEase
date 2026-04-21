@@ -24,8 +24,9 @@ This workflow runs on **approval**, which is usually **before** merge. The promp
 
 | File | Purpose |
 |------|---------|
+| [`prompts/README.md`](./prompts/README.md) | Which file to submit as “new” vs “update” prompt. |
 | [`prompts/spec-new.md`](./prompts/spec-new.md) | Full rubric section list and content rules for **new** specs. |
-| [`prompts/spec-update.md`](./prompts/spec-update.md) | Same rubric sections when **updating** an existing spec. |
+| [`prompts/spec-update.md`](./prompts/spec-update.md) | **Update** prompt: merge prior spec with new PR/diff; same rubric headings. |
 | [`.github/prompts/dev-spec-generate.prompt.yml`](../../.github/prompts/dev-spec-generate.prompt.yml) | Model template (injects PR text, slug, issues, owners, merge context, diff). |
 
 Issue links in prompts are extracted from PR body (`Closes #123`, `Fixes #123`, `Refs #123`, etc.).
