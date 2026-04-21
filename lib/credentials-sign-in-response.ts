@@ -117,6 +117,7 @@ export async function runCredentialsSignIn(
   const authRes = await Auth(authRequest, {
     ...authConfig,
     secret: getAuthSecret(),
+    basePath: "/api/auth",
     skipCSRFCheck,
   });
   const role = accountType === "shopper" ? "shopper" : "owner";
