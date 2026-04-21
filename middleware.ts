@@ -4,22 +4,27 @@ import type { JWT } from "next-auth/jwt";
 import { getToken } from "next-auth/jwt";
 import { getAuthSecret } from "@/lib/auth-secret";
 
-// NextAuth v5 renamed the session cookie from "next-auth.session-token" to "authjs.session-token".
-// In production (HTTPS), @auth/core prefixes cookies with "__Secure-".
-const useSecureCookies = (process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "").startsWith("https://");
-const SESSION_COOKIE = `${useSecureCookies ? "__Secure-" : ""}authjs.session-token`;
-
 function isShopperToken(token: Awaited<ReturnType<typeof getToken>>) {
   if (!token || typeof token === "string") return false;
   const t = token as JWT;
   return t.role === "shopper" || Boolean(t.shopperId);
 }
 
+// Mirror @auth/core's useSecureCookies logic: check the actual request protocol.
+// x-forwarded-proto is set by Vercel/proxies; fall back to the request URL protocol.
+function getSessionCookieName(req: NextRequest): string {
+  const proto =
+    req.headers.get("x-forwarded-proto") ??
+    req.nextUrl.protocol.replace(":", "");
+  const secure = proto === "https";
+  return `${secure ? "__Secure-" : ""}authjs.session-token`;
+}
+
 export async function middleware(req: NextRequest) {
   const token = await getToken({
     req,
     secret: getAuthSecret(),
-    cookieName: SESSION_COOKIE,
+    cookieName: getSessionCookieName(req),
   });
   const path = req.nextUrl.pathname;
 
