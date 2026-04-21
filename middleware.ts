@@ -13,9 +13,10 @@ function isShopperToken(token: Awaited<ReturnType<typeof getToken>>) {
 // Mirror @auth/core's useSecureCookies logic: check the actual request protocol.
 // x-forwarded-proto is set by Vercel/proxies; fall back to the request URL protocol.
 function getSessionCookieName(req: NextRequest): string {
-  const proto =
-    req.headers.get("x-forwarded-proto") ??
-    req.nextUrl.protocol.replace(":", "");
+  const proto = (
+    req.headers.get("x-forwarded-proto")?.split(",")[0].trim() ??
+    req.nextUrl.protocol.replace(":", "")
+  );
   const secure = proto === "https";
   return `${secure ? "__Secure-" : ""}authjs.session-token`;
 }
