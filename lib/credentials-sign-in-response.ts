@@ -43,7 +43,9 @@ export function buildCredentialsAuthRequest(
   callbackUrl: string,
   accountType: CredentialsAccountType = "owner",
 ) {
-  const origin = req.nextUrl.origin;
+  const origin =
+    (process.env.AUTH_URL ?? process.env.NEXTAUTH_URL)?.replace(/\/$/, "") ??
+    req.nextUrl.origin;
   const url = new URL(`${origin}/api/auth/callback/credentials`);
   url.searchParams.set("callbackUrl", callbackUrl);
 
