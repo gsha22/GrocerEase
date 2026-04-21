@@ -5,7 +5,7 @@ This folder holds **development specifications** for P2 user stories. Each gener
 
 ## How specs are generated
 
-- **Automation:** [`.github/workflows/dev-spec-on-pr-approval.yml`](../../.github/workflows/dev-spec-on-pr-approval.yml) runs when someone **submits an approving review** on a pull request **into `main`** (`pull_request_review` + `state == approved`).
+- **Automation:** [`.github/workflows/dev-spec-on-pr-approval.yml`](../../.github/workflows/dev-spec-on-pr-approval.yml) runs when a PR targeting **`main`** either (1) receives an **approving review** while still **open**, or (2) is **merged** (`pull_request` `closed` + `merged`). Same story slug rules apply in both cases.
 - **Story detection:** Parses PR **title/body** for `Story N` or `USN`, or falls back to label `dev-spec:USn`.
 - **LLM:** **GitHub Models** via [`actions/ai-inference`](https://github.com/actions/ai-inference) (`permissions: models: read`, default `GITHUB_TOKEN`).
 - **Validation:** The workflow fails if the Markdown is missing the **exact** `##` headings required by [`prompts/spec-new.md`](./prompts/spec-new.md) (so incomplete LLM output does not open a docs PR).
@@ -13,7 +13,7 @@ This folder holds **development specifications** for P2 user stories. Each gener
 
 ## Merge date note
 
-This workflow runs on **approval**, which is usually **before** merge. The prompt instructs the model to write `Not merged to main at time of this document generation (workflow ran on PR approval).` unless `pull_request.merged_at` is present. After you merge the feature PR, regenerate or manually edit **`## Merge date`** once if your grader needs the exact merge timestamp.
+If the workflow ran **only on approval** (before merge), the prompt may say the PR was not merged yet unless `merged_at` was already present. **Merge-triggered** runs include `pull_request.merged_at`, so the generated **`## Merge date`** can be accurate without a manual edit. If you use **both** approval and merge triggers for the same PR, you may get **two** runs (concurrency groups by PR number); the later merge run overwrites the docs branch with the merge-aware context.
 
 ## Fork PRs and repeat approvals
 
@@ -27,7 +27,7 @@ Each successful spec commit opens or reuses an **open** GitHub issue titled `Dev
 ## How to trigger
 
 1. Put `Story N` or `USN` in the PR title or body (or use label `dev-spec:USn`).
-2. Approve the PR (into `main`).
+2. Either **approve** the PR into `main` while it is open, **or** **merge** it into `main` (no separate approval required for the merge path).
 3. Review and merge the bot-opened docs PR.
 
 ## Prompts (assignment / audit trail)
