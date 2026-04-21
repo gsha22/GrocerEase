@@ -9,7 +9,7 @@
 
 - **Merged to `main`:** `2026-04-20T02:47:01Z` (UTC), from merge commit `b158897` on `main` for **Merge pull request #126** (`feature/us-15-store-ratings`).
 - **User story issue closed:** [#119](https://github.com/gsha22/GrocerEase/issues/119) — *US 15: Shopper-Facing Store Review or Rating* (`Closes #119` on PR #126).
-
+- **Dev-spec-tracking issue:** [#137](https://github.com/gsha22/GrocerEase/issues/137) — *US 15: Shopper-Facing Store Review or Rating* .
 ## Architecture diagram (Mermaid)
 
 ```mermaid

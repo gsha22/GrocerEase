@@ -2,6 +2,10 @@
 
 This folder holds **development specifications** for P2 user stories. Each generated file is intended to match the **course “Development Specification” rubric** (owners, merge date, three Mermaid diagrams, class inventory, technology table, DB byte estimates, failure modes, PII, minors).
 
+## Automation meta tracking
+
+Rollout and maintenance of **dev spec generation automation** (workflow, prompts, and related documentation) are tracked in [GitHub issue #137 — US15: Dev Specs Automation](https://github.com/gsha22/GrocerEase/issues/137). That issue is separate from the per-feature **`dev-spec-tracking`** issues the workflow opens for each generated spec (see [Tracking issue](#tracking-issue) below).
+
 ## How specs are generated
 
 - **Automation:** [`.github/workflows/dev-spec-on-pr-approval.yml`](../../.github/workflows/dev-spec-on-pr-approval.yml) runs when someone **submits an approving review** on a pull request **into `main`** (`pull_request_review` + `state == approved`).
