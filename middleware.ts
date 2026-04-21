@@ -4,8 +4,10 @@ import type { JWT } from "next-auth/jwt";
 import { getToken } from "next-auth/jwt";
 import { getAuthSecret } from "@/lib/auth-secret";
 
-// NextAuth v5 renamed the session cookie from "next-auth.session-token" to "authjs.session-token"
-const SESSION_COOKIE = "authjs.session-token";
+// NextAuth v5 renamed the session cookie from "next-auth.session-token" to "authjs.session-token".
+// In production (HTTPS), @auth/core prefixes cookies with "__Secure-".
+const useSecureCookies = (process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "").startsWith("https://");
+const SESSION_COOKIE = `${useSecureCookies ? "__Secure-" : ""}authjs.session-token`;
 
 function isShopperToken(token: Awaited<ReturnType<typeof getToken>>) {
   if (!token || typeof token === "string") return false;
