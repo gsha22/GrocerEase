@@ -270,8 +270,9 @@ jobs:
           TRACK_LABEL="dev-spec-tracking"
           gh label create "$TRACK_LABEL" --color "C2E0C6" --description "Tracks automated development specification PRs" 2>/dev/null || true
           ISSUE_TITLE="Dev spec tracking: ${SLUG} for feature PR #${PR_NUM}"
-          EXISTING_ISSUE=$(gh issue list --repo "$GITHUB_REPO" --state open --label "$TRACK_LABEL" --json number,title \
-            | jq -r --arg t "$ISSUE_TITLE" '.[] | select(.title == $t) | .number' | head -1)
+          # Raise limit so an older matching issue beyond the default page (30) is not missed (duplicate trackers).
+          EXISTING_ISSUE=$(gh issue list --repo "$GITHUB_REPO" --state open --label "$TRACK_LABEL" --limit 500 --json number,title \
+            | jq -r --arg t "$ISSUE_TITLE" '[.[] | select(.title == $t)] | first | .number // empty')
           if [ -z "$EXISTING_ISSUE" ]; then
             ISSUE_NUM=$(gh issue create --repo "$GITHUB_REPO" \
               --title "$ISSUE_TITLE" \
@@ -305,7 +306,7 @@ A follow-up docs PR will be linked in a comment below once it exists."
           else
             git push -u origin "$BRANCH"
           fi
-          OPEN_COUNT=$(gh pr list --repo "$GITHUB_REPO" --head "$BRANCH" --state open --json number --jq 'length')
+          OPEN_COUNT=$(gh pr list --repo "$GITHUB_REPO" --head "$BRANCH" --state open --limit 50 --json number --jq 'length')
           if [ "$OPEN_COUNT" -eq 0 ]; then
             DOCS_PR=$(gh pr create --repo "$GITHUB_REPO" --base main --head "$BRANCH" \
               --title "docs(spec): ${SLUG} from approved PR #${PR_NUM}" \
@@ -322,11 +323,19 @@ Re-approvals update this branch in place (stable branch name).
 
 Merge the feature PR when ready; this doc describes the approved diff."
               --json number -q .number)
+            if [ -z "${DOCS_PR:-}" ]; then
+              echo "::error::gh pr create succeeded but returned no PR number (check gh version / API)."
+              exit 1
+            fi
             gh issue comment "$ISSUE_NUM" --repo "$GITHUB_REPO" \
               --body "Opened docs PR #${DOCS_PR} for this tracking item. [Workflow run](${RUN_URL})"
             echo "Opened docs PR #${DOCS_PR} from branch ${BRANCH}"
           else
-            DOCS_PR=$(gh pr list --repo "$GITHUB_REPO" --head "$BRANCH" --state open --json number --jq '.[0].number')
+            DOCS_PR=$(gh pr list --repo "$GITHUB_REPO" --head "$BRANCH" --state open --limit 20 --json number --jq '.[0].number // empty')
+            if [ -z "${DOCS_PR:-}" ]; then
+              echo "::error::Expected an open docs PR for head \"${BRANCH}\" (OPEN_COUNT was ${OPEN_COUNT}) but gh pr list returned no number (possible race or API mismatch). See ${RUN_URL}"
+              exit 1
+            fi
             gh issue comment "$ISSUE_NUM" --repo "$GITHUB_REPO" \
               --body "Updated dev spec on branch \`${BRANCH}\` (existing docs PR #${DOCS_PR}). [Workflow run](${RUN_URL})"
             echo "Open docs PR already exists for head ${BRANCH}; branch updated only."
