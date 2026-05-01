@@ -12,7 +12,7 @@ export type ShopperSignupValidationResult =
   | { ok: false; errors: Record<string, string> };
 
 const EMAIL_RE =
-  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?=[^@]*\.[a-zA-Z]{2,}$)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 export function validateShopperSignup(body: unknown): ShopperSignupValidationResult {
   if (!body || typeof body !== "object") {

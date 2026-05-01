@@ -13,7 +13,7 @@ export type SignupValidationResult =
   | { ok: false; errors: Record<string, string> };
 
 const EMAIL_RE =
-  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?=[^@]*\.[a-zA-Z]{2,}$)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 export function validateSignupInput(
   body: unknown,
