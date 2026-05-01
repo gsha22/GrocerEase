@@ -45,8 +45,10 @@ export default function ForgotPasswordPage() {
         <div className="mb-1.5 font-display text-2xl font-semibold text-green-600">Reset password</div>
         <p className="mb-6 text-[14px] text-gray-400">
           Enter the email you use for your store owner account. If outbound email is configured for this
-          app, you&apos;ll receive a reset link shortly. In local development without email, check the server
-          terminal for the URL.
+          app, you&apos;ll receive a reset link shortly.{" "}
+          {process.env.NODE_ENV === "development"
+            ? "In local development without email, check the server terminal for the URL."
+            : "If you don’t receive an email within a few minutes, please contact support."}
         </p>
 
         <form onSubmit={onSubmit} className="space-y-4">
