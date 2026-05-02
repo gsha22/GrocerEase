@@ -5,9 +5,12 @@ import StoreProfileForm from "./StoreProfileForm";
 
 function parseHHmm(value: unknown, fallback: string): string {
   if (typeof value !== "string") return fallback;
-  const m = value.match(/^(\d{1,2}):(\d{2})/);
+  const m = value.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
   if (!m) return fallback;
-  return `${m[1].padStart(2, "0")}:${m[2]}`;
+  const h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  if (h > 23 || min > 59) return fallback;
+  return `${String(h).padStart(2, "0")}:${m[2]}`;
 }
 
 export default async function StoreProfileEditPage() {
