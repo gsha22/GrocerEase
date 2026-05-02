@@ -197,7 +197,7 @@ describe("StoreProfileForm component", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText(/Complete the required fields below before your store can go live/i),
+        screen.getByText(/Please fix the following before going live/i),
       ).toBeInTheDocument(),
     );
     expect(screen.getByText(/Store name is required/i)).toBeInTheDocument();
