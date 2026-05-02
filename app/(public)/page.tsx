@@ -4,6 +4,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   PITTSBURGH_NEIGHBORHOODS,
@@ -13,6 +14,8 @@ import StoreFilterBar, { type FilterKey } from "@/components/StoreFilterBar";
 import StoreCard, { type StoreData } from "@/components/StoreCard";
 
 export default function HomePage() {
+  const { data: session } = useSession();
+  const isAuthenticated = !!session?.user;
   const [stores, setStores] = useState<StoreData[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState<Set<FilterKey>>(new Set());
@@ -114,14 +117,30 @@ export default function HomePage() {
               >
                 live feed
               </Link>{" "}
-              — discovery only, no checkout. Want alerts?{" "}
-              <Link
-                href="/sign-in"
-                className="font-semibold text-emerald-800 underline decoration-emerald-800/30 underline-offset-2 transition hover:decoration-emerald-800"
-              >
-                Sign in
-              </Link>{" "}
-              from the header.
+              — discovery only, no checkout.{" "}
+              {isAuthenticated ? (
+                <>
+                  Check your{" "}
+                  <Link
+                    href="/my-alerts"
+                    className="font-semibold text-emerald-800 underline decoration-emerald-800/30 underline-offset-2 transition hover:decoration-emerald-800"
+                  >
+                    saved shops and alerts
+                  </Link>{" "}
+                  from the header.
+                </>
+              ) : (
+                <>
+                  Want alerts?{" "}
+                  <Link
+                    href="/sign-in"
+                    className="font-semibold text-emerald-800 underline decoration-emerald-800/30 underline-offset-2 transition hover:decoration-emerald-800"
+                  >
+                    Sign in
+                  </Link>{" "}
+                  from the header.
+                </>
+              )}
             </p>
           </div>
           <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center lg:flex-col">
