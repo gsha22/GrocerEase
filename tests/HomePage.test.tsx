@@ -31,7 +31,7 @@ jest.mock("next/link", () => ({
   },
 }));
 
-import HomePage from "@/app/(public)/page";
+import HomePageClient from "@/app/(public)/HomePageClient";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -123,7 +123,7 @@ describe("fetchStores", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await waitFor(() => {
       const url = (global.fetch as jest.Mock).mock.calls[0][0] as string;
@@ -135,7 +135,7 @@ describe("fetchStores", () => {
     mockGeoSuccess(40.44, -79.99);
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await waitFor(() => {
       const url = (global.fetch as jest.Mock).mock.calls[0][0] as string;
@@ -149,7 +149,7 @@ describe("fetchStores", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([makeStore()]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await screen.findByText("Test Market");
   });
@@ -158,7 +158,7 @@ describe("fetchStores", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await screen.findByText("No stores here yet");
   });
@@ -167,7 +167,7 @@ describe("fetchStores", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await waitFor(() => {
       expect(screen.getByText("No stores here yet")).toBeInTheDocument();
@@ -184,7 +184,7 @@ describe("fetchStores", () => {
       ]),
     );
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await screen.findByText(/2 stores within 10 miles/i);
   });
@@ -193,7 +193,7 @@ describe("fetchStores", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([makeStore()]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await screen.findByText(/1 store within 10 miles/i);
   });
@@ -209,7 +209,7 @@ describe("geolocation initialisation (useEffect)", () => {
     // Never-resolving fetch keeps the loading state visible indefinitely
     global.fetch = jest.fn().mockReturnValue(new Promise(() => {}));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     // Loading skeletons use animate-pulse
     const pulsingDivs = document.querySelectorAll(".animate-pulse");
@@ -222,7 +222,7 @@ describe("geolocation initialisation (useEffect)", () => {
       .fn()
       .mockResolvedValue(jsonRes([makeStore({ id: "s1", name: "Nearby Shop" })]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await screen.findByText(/your location/i);
   });
@@ -231,7 +231,7 @@ describe("geolocation initialisation (useEffect)", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await screen.findByText(/couldn't detect your location/i);
     expect(
@@ -243,7 +243,7 @@ describe("geolocation initialisation (useEffect)", () => {
     mockGeoUnavailable();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await screen.findByText(/couldn't detect your location/i);
   });
@@ -258,7 +258,7 @@ describe("selectNeighborhood", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await screen.findByText(/couldn't detect your location/i);
 
@@ -279,7 +279,7 @@ describe("selectNeighborhood", () => {
       .fn()
       .mockResolvedValue(jsonRes([makeStore({ id: "s2", name: "Oakland Store" })]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await screen.findByText(/couldn't detect your location/i);
 
@@ -294,7 +294,7 @@ describe("selectNeighborhood", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await screen.findByText(/couldn't detect your location/i);
 
@@ -317,7 +317,7 @@ describe("handleFilterChange", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await waitFor(() => {
       expect((global.fetch as jest.Mock).mock.calls.length).toBe(1);
@@ -343,7 +343,7 @@ describe("handleFilterChange", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await waitFor(() => {
       expect((global.fetch as jest.Mock).mock.calls.length).toBe(1);
@@ -375,7 +375,7 @@ describe("static content", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     const link = await screen.findByRole("link", { name: /^sign in$/i });
     expect(link).toHaveAttribute("href", "/sign-in");
@@ -385,7 +385,7 @@ describe("static content", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     expect(await screen.findByText(/^List$/i)).toBeInTheDocument();
     const mapLink = screen.getByRole("link", { name: /^map$/i });
@@ -396,7 +396,7 @@ describe("static content", () => {
     mockGeoFailure();
     global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
 
-    render(<HomePage />);
+    render(<HomePageClient isAuthenticated={false} />);
 
     await screen.findByText(/Discover what'?s fresh nearby/i);
     expect(
