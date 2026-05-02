@@ -26,6 +26,7 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
   const [editItemName, setEditItemName] = useState("");
   const [editNote, setEditNote] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const mountedRef = useRef(true);
@@ -136,6 +137,7 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
   function beginEdit(update: ApiFreshUpdate) {
     setError(null);
     setSuccess(null);
+    setEditError(null);
     setEditingId(update.id);
     setEditItemName(update.itemName);
     setEditNote(update.note ?? "");
@@ -145,14 +147,14 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
     setEditingId(null);
     setEditItemName("");
     setEditNote("");
+    setEditError(null);
   }
 
   async function saveEdit(postId: string) {
-    setError(null);
-    setSuccess(null);
+    setEditError(null);
     const name = editItemName.trim();
     if (!name) {
-      setError("Item name is required.");
+      setEditError("Item name is required.");
       return;
     }
 
@@ -176,7 +178,7 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
         };
       };
       if (!res.ok) {
-        setError(typeof data.error === "string" ? data.error : "Could not save edits.");
+        setEditError(typeof data.error === "string" ? data.error : "Could not save edits.");
         return;
       }
 
@@ -197,7 +199,7 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
       cancelEdit();
       setSuccess("Post updated.");
     } catch {
-      setError("Could not save edits.");
+      setEditError("Could not save edits.");
     } finally {
       if (mountedRef.current) setSavingEdit(false);
     }
@@ -355,6 +357,11 @@ export default function ManageFreshUpdatesClient({ storeId }: { storeId: string 
                         className="w-full px-2.5 py-1.5 rounded-md border border-gray-300 text-[13px] text-gray-700 bg-white outline-none focus:border-green-400 transition-colors resize-y min-h-[70px]"
                         aria-label="Edit note"
                       />
+                      {editError && (
+                        <div className="text-[12px] text-red-700 bg-red-50 border border-red-100 rounded-md px-2.5 py-1.5">
+                          {editError}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <>
