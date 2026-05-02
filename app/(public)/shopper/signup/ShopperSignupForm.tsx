@@ -8,6 +8,8 @@ import {
   safeCallbackPath,
 } from "@/lib/safe-callback-path";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 interface SignupApiResponse {
   ok?: boolean;
   redirectUrl?: string;
@@ -33,6 +35,13 @@ export default function ShopperSignupForm() {
     e.preventDefault();
     setError(null);
     setFieldErrors({});
+
+    if (!EMAIL_RE.test(email.trim())) {
+      setFieldErrors({ email: "Enter a valid email address." });
+      setError("Please fix the errors below.");
+      return;
+    }
+
     setPending(true);
     try {
       const res = await fetch("/auth/shopper/signup", {
