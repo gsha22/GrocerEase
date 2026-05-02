@@ -91,7 +91,11 @@ export default function StoreProfileForm({ initial }: { initial: StoreProfileIni
     setSaveSuccess(null);
     setFieldErrors({});
 
-    if (publish) {
+    // Run publish-readiness validation only when actually publishing for the
+    // first time. Re-publishing an already-live store (e.g. updating hours or
+    // address) skips the gate so existing published owners are never blocked.
+    const needsPublishValidation = publish && !initial?.isPublished;
+    if (needsPublishValidation) {
       const preflight = validateStoreProfileReadyToPublish({
         name,
         address,
@@ -101,8 +105,11 @@ export default function StoreProfileForm({ initial }: { initial: StoreProfileIni
       });
       if (!preflight.ok) {
         setFieldErrors(preflight.fieldErrors);
+        const fieldList = Object.keys(preflight.fieldErrors)
+          .map((k) => preflight.fieldErrors[k])
+          .join(" ");
         setFormError(
-          "Complete the required fields below before your store can go live on the directory.",
+          `Please fix the following before going live: ${fieldList}`,
         );
         setLoading(false);
         return;
