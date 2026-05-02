@@ -48,7 +48,9 @@ function ResetPasswordForm() {
       <div className="w-full max-w-[420px] rounded-3xl border border-gray-200 bg-white p-10 shadow-md">
         <div className="mb-1.5 font-display text-2xl font-semibold text-green-600">Set new password</div>
         <p className="mb-6 text-[14px] text-gray-400">
-          Paste the reset token from your email (or from the server log in development).
+          {tokenFromQuery
+            ? "Enter and confirm your new password below."
+            : "Paste the reset token from your email, then choose a new password."}
         </p>
 
         <form onSubmit={onSubmit} className="space-y-4">
@@ -61,20 +63,22 @@ function ResetPasswordForm() {
             </div>
           )}
 
-          <div>
-            <label htmlFor="reset-token" className="mb-1.5 block text-[13px] font-medium text-gray-600">
-              Reset token
-            </label>
-            <input
-              id="reset-token"
-              type="text"
-              autoComplete="off"
-              required
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              className="w-full rounded-md border-[1.5px] border-gray-200 bg-white px-3.5 py-2.5 text-[15px] text-gray-800 outline-none transition-colors focus:border-green-400"
-            />
-          </div>
+          {!tokenFromQuery && (
+            <div>
+              <label htmlFor="reset-token" className="mb-1.5 block text-[13px] font-medium text-gray-600">
+                Reset token
+              </label>
+              <input
+                id="reset-token"
+                type="text"
+                autoComplete="off"
+                required
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                className="w-full rounded-md border-[1.5px] border-gray-200 bg-white px-3.5 py-2.5 text-[15px] text-gray-800 outline-none transition-colors focus:border-green-400"
+              />
+            </div>
+          )}
 
           <div>
             <label htmlFor="reset-password" className="mb-1.5 block text-[13px] font-medium text-gray-600">
