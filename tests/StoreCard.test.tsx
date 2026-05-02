@@ -41,7 +41,7 @@ describe("StoreCard", () => {
 
   it("links to the store profile", () => {
     render(<StoreCard store={base} neighborhood="Shadyside" />);
-    const link = screen.getByRole("link");
+    const link = screen.getByRole("link", { name: /Visit Store/i });
     expect(link).toHaveAttribute("href", "/stores/s1");
   });
 
