@@ -106,8 +106,8 @@ export default function StoreProfileForm({ initial }: { initial: StoreProfileIni
       if (!preflight.ok) {
         setFieldErrors(preflight.fieldErrors);
         const fieldList = Object.keys(preflight.fieldErrors)
-          .map((k) => preflight.fieldErrors[k])
-          .join(" ");
+          .map((k) => preflight.fieldErrors[k].replace(/\.$/, ""))
+          .join(", ");
         setFormError(
           `Please fix the following before going live: ${fieldList}`,
         );

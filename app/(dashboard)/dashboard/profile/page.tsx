@@ -3,6 +3,13 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import StoreProfileForm from "./StoreProfileForm";
 
+function parseHHmm(value: unknown, fallback: string): string {
+  if (typeof value !== "string") return fallback;
+  const m = value.match(/^(\d{1,2}):(\d{2})/);
+  if (!m) return fallback;
+  return `${m[1].padStart(2, "0")}:${m[2]}`;
+}
+
 export default async function StoreProfileEditPage() {
   const session = await auth();
   const ownerId = session?.user?.id ?? "";
@@ -32,8 +39,8 @@ export default async function StoreProfileEditPage() {
         name: existingStore.name,
         address: existingStore.address,
         categories: existingStore.categories,
-        open: typeof rawHours.open === "string" ? rawHours.open.slice(0, 5) : "08:00",
-        close: typeof rawHours.close === "string" ? rawHours.close.slice(0, 5) : "20:00",
+        open: parseHHmm(rawHours.open, "08:00"),
+        close: parseHHmm(rawHours.close, "20:00"),
         isPublished: existingStore.isPublished,
         lat: existingStore.lat,
         lng: existingStore.lng,
