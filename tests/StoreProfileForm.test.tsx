@@ -200,9 +200,9 @@ describe("StoreProfileForm component", () => {
         screen.getByText(/Please fix the following before going live/i),
       ).toBeInTheDocument(),
     );
-    expect(screen.getByText(/Store name is required/i)).toBeInTheDocument();
-    expect(screen.getByText(/Address is required/i)).toBeInTheDocument();
-    expect(screen.getByText(/Select at least one specialty category/i)).toBeInTheDocument();
+    expect(screen.getByText(/Store name is required/i, { selector: "p" })).toBeInTheDocument();
+    expect(screen.getByText(/Address is required/i, { selector: "p" })).toBeInTheDocument();
+    expect(screen.getByText(/Select at least one specialty category/i, { selector: "p" })).toBeInTheDocument();
   });
 
   it("shows a success message when saving as draft for an existing store", async () => {
