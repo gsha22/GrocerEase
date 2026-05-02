@@ -1,17 +1,8 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { parseHHmm } from "@/lib/time";
 import StoreProfileForm from "./StoreProfileForm";
-
-function parseHHmm(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  const m = value.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-  if (!m) return null;
-  const h = parseInt(m[1], 10);
-  const min = parseInt(m[2], 10);
-  if (h > 23 || min > 59) return null;
-  return `${String(h).padStart(2, "0")}:${m[2]}`;
-}
 
 export default async function StoreProfileEditPage() {
   const session = await auth();
