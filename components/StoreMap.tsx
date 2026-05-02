@@ -64,7 +64,8 @@ export default function StoreMap({
               )}
               <Link
                 href={`/stores/${store.id}`}
-                className="inline-block mt-2 text-[12px] font-medium text-white bg-green-600 px-3 py-1 rounded-md hover:bg-green-800 transition-colors"
+                className="inline-block mt-2 text-[12px] font-semibold text-white bg-green-700 px-3 py-1 rounded-md hover:bg-green-800 transition-colors"
+                style={{ color: "#ffffff" }}
               >
                 View store →
               </Link>
