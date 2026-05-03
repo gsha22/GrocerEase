@@ -32,8 +32,6 @@ export default function VendorDashboardClient() {
   const addListing = useMarketplaceStore((s) => s.addListing);
   const updateListing = useMarketplaceStore((s) => s.updateListing);
   const deleteListing = useMarketplaceStore((s) => s.deleteListing);
-  const resetToSeed = useMarketplaceStore((s) => s.resetToSeed);
-
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<MarketplaceListingInput>(emptyForm);
   const [message, setMessage] = useState<string | null>(null);
@@ -240,16 +238,6 @@ export default function VendorDashboardClient() {
             <h2 className="font-display text-xl font-semibold text-stone-900">
               Active inventory
             </h2>
-            <button
-              type="button"
-              onClick={() => {
-                resetToSeed();
-                setMessage("Reset to demo seed data.");
-              }}
-              className="self-start rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 hover:bg-stone-50"
-            >
-              Reset demo data
-            </button>
           </div>
           <p className="mt-1 text-sm text-stone-500">
             {sorted.length} listing{sorted.length !== 1 ? "s" : ""} · same data as{" "}
