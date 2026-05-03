@@ -176,7 +176,7 @@ export default async function StoreProfilePage({
         <div className="relative h-52 sm:h-64 w-full bg-stone-200">
           <Image
             src={getStoreCoverImageUrl(store.id, store.categories)}
-            alt=""
+            alt={`${store.name} cover photo`}
             fill
             className="object-cover"
             sizes="(max-width: 1100px) 100vw, 1100px"
