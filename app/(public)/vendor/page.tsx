@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import VendorDashboardClient from "@/components/marketplace/VendorDashboardClient";
 
 export const metadata: Metadata = {
@@ -27,9 +28,16 @@ export default async function VendorPage() {
     redirect("/shopper/account?notice=owner-only");
   }
 
+  const ownerStore = session.storeId
+    ? await prisma.store.findUnique({
+        where: { id: session.storeId },
+        select: { id: true, name: true, address: true },
+      })
+    : null;
+
   return (
     <Suspense fallback={<VendorFallback />}>
-      <VendorDashboardClient />
+      <VendorDashboardClient ownerStore={ownerStore} />
     </Suspense>
   );
 }

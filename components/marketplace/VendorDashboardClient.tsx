@@ -9,17 +9,6 @@ import { useMarketplaceStore } from "@/stores/marketplace-store";
 const PLACEHOLDER_IMAGE =
   "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80";
 
-const emptyForm: MarketplaceListingInput = {
-  shopName: "",
-  shopAddress: "",
-  itemName: "",
-  description: "",
-  price: 0,
-  imageUrl: "",
-  isFreshToday: false,
-  isSpecialDeal: false,
-};
-
 function formatPrice(n: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -27,43 +16,78 @@ function formatPrice(n: number) {
   }).format(Number.isFinite(n) ? n : 0);
 }
 
-export default function VendorDashboardClient() {
+interface OwnerStore {
+  id: string;
+  name: string;
+  address: string;
+}
+
+interface VendorDashboardClientProps {
+  ownerStore: OwnerStore | null;
+}
+
+export default function VendorDashboardClient({ ownerStore }: VendorDashboardClientProps) {
   const listings = useMarketplaceStore((s) => s.listings);
   const addListing = useMarketplaceStore((s) => s.addListing);
   const updateListing = useMarketplaceStore((s) => s.updateListing);
   const deleteListing = useMarketplaceStore((s) => s.deleteListing);
+
+  const blankForm = (): MarketplaceListingInput => ({
+    shopName: ownerStore?.name ?? "",
+    shopAddress: ownerStore?.address ?? "",
+    itemName: "",
+    description: "",
+    price: 0,
+    imageUrl: "",
+    isFreshToday: false,
+    isSpecialDeal: false,
+  });
+
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<MarketplaceListingInput>(emptyForm);
+  const [form, setForm] = useState<MarketplaceListingInput>(blankForm);
   const [message, setMessage] = useState<string | null>(null);
 
-  const sorted = useMemo(
+  const allSorted = useMemo(
     () => [...listings].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     [listings],
   );
 
-  const startEdit = useCallback((id: string) => {
-    const row = listings.find((l) => l.id === id);
-    if (!row) return;
-    setEditingId(id);
-    setForm({
-      shopName: row.shopName,
-      shopAddress: row.shopAddress,
-      itemName: row.itemName,
-      description: row.description,
-      price: row.price,
-      imageUrl: row.imageUrl,
-      isFreshToday: row.isFreshToday,
-      isSpecialDeal: row.isSpecialDeal,
-    });
-    setMessage(null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [listings]);
+  // Only show listings that belong to this owner's store
+  const ownedListings = useMemo(
+    () =>
+      ownerStore
+        ? allSorted.filter((l) => l.shopName === ownerStore.name)
+        : allSorted,
+    [allSorted, ownerStore],
+  );
+
+  const startEdit = useCallback(
+    (id: string) => {
+      const row = listings.find((l) => l.id === id);
+      if (!row) return;
+      setEditingId(id);
+      setForm({
+        shopName: row.shopName,
+        shopAddress: row.shopAddress,
+        itemName: row.itemName,
+        description: row.description,
+        price: row.price,
+        imageUrl: row.imageUrl,
+        isFreshToday: row.isFreshToday,
+        isSpecialDeal: row.isSpecialDeal,
+      });
+      setMessage(null);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    [listings],
+  );
 
   const clearForm = useCallback(() => {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm(blankForm());
     setMessage(null);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ownerStore]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -101,7 +125,7 @@ export default function VendorDashboardClient() {
           GrocerEase · Vendor
         </p>
         <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-stone-900">
-          Your listings board
+          {ownerStore ? ownerStore.name : "Your listings board"}
         </h1>
         <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-stone-600">
           Add or edit what&apos;s fresh and what&apos;s on special. Listings are{" "}
@@ -120,28 +144,38 @@ export default function VendorDashboardClient() {
             {editingId ? "Edit listing" : "Add listing"}
           </h2>
           <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-medium text-stone-700">
-                Shop name
-                <input
-                  required
-                  className="mt-1.5 w-full rounded-xl border border-stone-200 bg-stone-50/80 px-3 py-2.5 text-stone-900 outline-none ring-emerald-700/0 transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-700/15"
-                  value={form.shopName}
-                  onChange={(e) => setForm((f) => ({ ...f, shopName: e.target.value }))}
-                  placeholder="Lotus Asian Market"
-                />
-              </label>
-              <label className="block text-sm font-medium text-stone-700 sm:col-span-2">
-                Shop address
-                <input
-                  required
-                  className="mt-1.5 w-full rounded-xl border border-stone-200 bg-stone-50/80 px-3 py-2.5 text-stone-900 outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-700/15"
-                  value={form.shopAddress}
-                  onChange={(e) => setForm((f) => ({ ...f, shopAddress: e.target.value }))}
-                  placeholder="5899 Forbes Ave, Pittsburgh, PA"
-                />
-              </label>
-            </div>
+            {ownerStore ? (
+              <div className="rounded-xl border border-stone-100 bg-stone-50/60 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                  Posting for
+                </p>
+                <p className="mt-0.5 text-sm font-semibold text-stone-900">{ownerStore.name}</p>
+                <p className="text-xs text-stone-500">{ownerStore.address}</p>
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm font-medium text-stone-700">
+                  Shop name
+                  <input
+                    required
+                    className="mt-1.5 w-full rounded-xl border border-stone-200 bg-stone-50/80 px-3 py-2.5 text-stone-900 outline-none ring-emerald-700/0 transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-700/15"
+                    value={form.shopName}
+                    onChange={(e) => setForm((f) => ({ ...f, shopName: e.target.value }))}
+                    placeholder="Lotus Asian Market"
+                  />
+                </label>
+                <label className="block text-sm font-medium text-stone-700 sm:col-span-2">
+                  Shop address
+                  <input
+                    required
+                    className="mt-1.5 w-full rounded-xl border border-stone-200 bg-stone-50/80 px-3 py-2.5 text-stone-900 outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-700/15"
+                    value={form.shopAddress}
+                    onChange={(e) => setForm((f) => ({ ...f, shopAddress: e.target.value }))}
+                    placeholder="5899 Forbes Ave, Pittsburgh, PA"
+                  />
+                </label>
+              </div>
+            )}
             <label className="block text-sm font-medium text-stone-700">
               Item name
               <input
@@ -234,13 +268,11 @@ export default function VendorDashboardClient() {
         </section>
 
         <section className="rounded-2xl border border-stone-200/90 bg-white p-6 shadow-sm ring-1 ring-stone-900/[0.04]">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="font-display text-xl font-semibold text-stone-900">
-              Active inventory
-            </h2>
-          </div>
+          <h2 className="font-display text-xl font-semibold text-stone-900">
+            Active inventory
+          </h2>
           <p className="mt-1 text-sm text-stone-500">
-            {sorted.length} listing{sorted.length !== 1 ? "s" : ""} · same data as{" "}
+            {ownedListings.length} listing{ownedListings.length !== 1 ? "s" : ""} · same data as{" "}
             <Link href="/browse" className="font-medium text-emerald-800 underline-offset-2 hover:underline">
               /browse
             </Link>
@@ -259,69 +291,77 @@ export default function VendorDashboardClient() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100 bg-white">
-                {sorted.map((row) => (
-                  <tr key={row.id} className="align-middle hover:bg-stone-50/50">
-                    <td className="px-4 py-3">
-                      <div className="relative size-12 overflow-hidden rounded-lg bg-stone-100">
-                        <ListingPhoto
-                          src={row.imageUrl}
-                          alt={row.itemName}
-                          seed={row.id}
-                          variant="thumb"
-                          className="object-cover"
-                          sizes="48px"
-                        />
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 font-medium text-stone-900">{row.itemName}</td>
-                    <td className="max-w-[140px] truncate px-4 py-3 text-stone-600">
-                      {row.shopName}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 font-medium text-emerald-800">
-                      {formatPrice(row.price)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {row.isFreshToday ? (
-                          <span className="rounded-full bg-lime-100 px-2 py-0.5 text-[10px] font-bold text-lime-900">
-                            Fresh
-                          </span>
-                        ) : null}
-                        {row.isSpecialDeal ? (
-                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-950">
-                            Deal
-                          </span>
-                        ) : null}
-                        {!row.isFreshToday && !row.isSpecialDeal ? (
-                          <span className="text-stone-400">—</span>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => startEdit(row.id)}
-                          className="rounded-lg border border-stone-200 px-2.5 py-1 text-xs font-semibold text-stone-700 hover:bg-white"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (window.confirm(`Remove “${row.itemName}” from the board?`)) {
-                              deleteListing(row.id);
-                              if (editingId === row.id) clearForm();
-                            }
-                          }}
-                          className="rounded-lg border border-red-200 bg-red-50/80 px-2.5 py-1 text-xs font-semibold text-red-800 hover:bg-red-100"
-                        >
-                          Delete
-                        </button>
-                      </div>
+                {ownedListings.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-stone-400">
+                      No listings yet — add one above.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  ownedListings.map((row) => (
+                    <tr key={row.id} className="align-middle hover:bg-stone-50/50">
+                      <td className="px-4 py-3">
+                        <div className="relative size-12 overflow-hidden rounded-lg bg-stone-100">
+                          <ListingPhoto
+                            src={row.imageUrl}
+                            alt={row.itemName}
+                            seed={row.id}
+                            variant="thumb"
+                            className="object-cover"
+                            sizes="48px"
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-stone-900">{row.itemName}</td>
+                      <td className="max-w-[140px] truncate px-4 py-3 text-stone-600">
+                        {row.shopName}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 font-medium text-emerald-800">
+                        {formatPrice(row.price)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {row.isFreshToday ? (
+                            <span className="rounded-full bg-lime-100 px-2 py-0.5 text-[10px] font-bold text-lime-900">
+                              Fresh
+                            </span>
+                          ) : null}
+                          {row.isSpecialDeal ? (
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-950">
+                              Deal
+                            </span>
+                          ) : null}
+                          {!row.isFreshToday && !row.isSpecialDeal ? (
+                            <span className="text-stone-400">—</span>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(row.id)}
+                            className="rounded-lg border border-stone-200 px-2.5 py-1 text-xs font-semibold text-stone-700 hover:bg-white"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Remove "${row.itemName}" from the board?`)) {
+                                deleteListing(row.id);
+                                if (editingId === row.id) clearForm();
+                              }
+                            }}
+                            className="rounded-lg border border-red-200 bg-red-50/80 px-2.5 py-1 text-xs font-semibold text-red-800 hover:bg-red-100"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
