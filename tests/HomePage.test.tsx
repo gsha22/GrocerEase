@@ -11,6 +11,9 @@ import "@testing-library/jest-dom";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import React from "react";
 
+// Mock @/auth so importing page.tsx doesn't pull in next-auth ESM
+jest.mock("@/auth", () => ({ auth: jest.fn() }));
+
 // Mock next/link to a plain <a> tag — avoids Next.js router dependency
 jest.mock("next/link", () => ({
   __esModule: true,
@@ -32,6 +35,8 @@ jest.mock("next/link", () => ({
 }));
 
 import HomePageClient from "@/app/(public)/HomePageClient";
+import HomePage from "@/app/(public)/page";
+import { auth } from "@/auth";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -402,5 +407,41 @@ describe("static content", () => {
     expect(
       screen.getByText(/Browse real neighborhood grocers/i),
     ).toBeInTheDocument();
+  });
+
+  it("shows saved-shops link and hides sign-in prompt when authenticated", async () => {
+    mockGeoFailure();
+    global.fetch = jest.fn().mockResolvedValue(jsonRes([]));
+
+    render(<HomePageClient isAuthenticated={true} />);
+
+    await screen.findByText(/Discover what'?s fresh nearby/i);
+    expect(screen.queryByRole("link", { name: /^sign in$/i })).not.toBeInTheDocument();
+    const alertsLink = screen.getByRole("link", { name: /saved shops or manage your alerts/i });
+    expect(alertsLink).toHaveAttribute("href", "/my-alerts");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// page.tsx auth wiring
+// ---------------------------------------------------------------------------
+
+describe("page.tsx auth wiring", () => {
+  it("passes isAuthenticated=true when auth() returns a user session", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce({ user: { id: "u1", email: "owner@example.com" } });
+    const el = await HomePage();
+    expect((el as React.ReactElement).props.isAuthenticated).toBe(true);
+  });
+
+  it("passes isAuthenticated=false when auth() returns null", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(null);
+    const el = await HomePage();
+    expect((el as React.ReactElement).props.isAuthenticated).toBe(false);
+  });
+
+  it("passes isAuthenticated=false when auth() returns a session with no user", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce({ user: null });
+    const el = await HomePage();
+    expect((el as React.ReactElement).props.isAuthenticated).toBe(false);
   });
 });
