@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { parseHHmm } from "@/lib/time";
 import StoreProfileForm from "./StoreProfileForm";
 
 export default async function StoreProfileEditPage() {
@@ -32,8 +33,8 @@ export default async function StoreProfileEditPage() {
         name: existingStore.name,
         address: existingStore.address,
         categories: existingStore.categories,
-        open: typeof rawHours.open === "string" ? rawHours.open : "08:00",
-        close: typeof rawHours.close === "string" ? rawHours.close : "20:00",
+        open: parseHHmm(rawHours.open) ?? "",
+        close: parseHHmm(rawHours.close) ?? "",
         isPublished: existingStore.isPublished,
         lat: existingStore.lat,
         lng: existingStore.lng,

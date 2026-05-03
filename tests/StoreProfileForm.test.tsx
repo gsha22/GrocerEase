@@ -197,12 +197,32 @@ describe("StoreProfileForm component", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText(/Complete the required fields below before your store can go live/i),
+        screen.getByText(/Please fix the following before going live/i),
       ).toBeInTheDocument(),
     );
-    expect(screen.getByText(/Store name is required/i)).toBeInTheDocument();
-    expect(screen.getByText(/Address is required/i)).toBeInTheDocument();
-    expect(screen.getByText(/Select at least one specialty category/i)).toBeInTheDocument();
+    expect(screen.getByText(/Store name is required/i, { selector: "p" })).toBeInTheDocument();
+    expect(screen.getByText(/Address is required/i, { selector: "p" })).toBeInTheDocument();
+    expect(screen.getByText(/Select at least one specialty category/i, { selector: "p" })).toBeInTheDocument();
+  });
+
+  it("shows blank time fields when persisted hours are malformed", () => {
+    const { container } = render(
+      <StoreProfileForm
+        initial={{
+          id: "s1",
+          name: "My Market",
+          address: "1 Main St",
+          categories: ["halal"],
+          open: "",
+          close: "",
+          isPublished: false,
+        }}
+      />,
+    );
+    const timeInputs = container.querySelectorAll('input[type="time"]');
+    expect(timeInputs).toHaveLength(2);
+    expect(timeInputs[0]).toHaveValue("");
+    expect(timeInputs[1]).toHaveValue("");
   });
 
   it("shows a success message when saving as draft for an existing store", async () => {

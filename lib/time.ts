@@ -1,3 +1,18 @@
+/**
+ * Parses a stored time string in HH:mm or HH:mm:ss format into HH:mm.
+ * Returns null for invalid or out-of-range values so callers can surface
+ * the problem rather than silently substituting a default.
+ */
+export function parseHHmm(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const m = value.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (!m) return null;
+  const h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  if (h > 23 || min > 59) return null;
+  return `${String(h).padStart(2, "0")}:${m[2]}`;
+}
+
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;

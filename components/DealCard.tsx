@@ -15,9 +15,18 @@ interface Props {
   showStore?: boolean;
 }
 
+const SEED_DESCRIPTION_PATTERN = /^\s*bulk-seeded deal/i;
+
+export function sanitizeDescription(description: string | null): string | null {
+  if (!description) return null;
+  if (SEED_DESCRIPTION_PATTERN.test(description)) return null;
+  return description;
+}
+
 export default function DealCard({ deal, showStore = false }: Props) {
   const urgent = isUrgent(deal.expiresAt);
   const priceLabel = formatPriceUsd(deal.price ?? null);
+  const description = sanitizeDescription(deal.description);
 
   return (
     <div className="flex gap-3.5 p-3.5 bg-amber-50 rounded-xl border border-amber-100 mb-2.5 last:mb-0">
@@ -38,9 +47,9 @@ export default function DealCard({ deal, showStore = false }: Props) {
             </span>
           )}
         </div>
-        {deal.description && (
+        {description && (
           <div className="text-[13px] text-gray-600 mt-0.5">
-            {deal.description}
+            {description}
           </div>
         )}
         {showStore && deal.storeName && (

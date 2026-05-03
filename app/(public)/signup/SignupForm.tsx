@@ -7,6 +7,7 @@ import {
   isSafeRelativeAppPath,
   safeCallbackPath,
 } from "@/lib/safe-callback-path";
+import { EMAIL_RE } from "@/lib/email/validate";
 
 interface SignupApiResponse {
   ok?: boolean;
@@ -36,6 +37,13 @@ export default function SignupForm() {
     e.preventDefault();
     setError(null);
     setFieldErrors({});
+
+    if (!EMAIL_RE.test(email.trim())) {
+      setFieldErrors({ email: "Enter a valid email address." });
+      setError("Please fix the errors below.");
+      return;
+    }
+
     setPending(true);
     try {
       const res = await fetch("/auth/signup", {
