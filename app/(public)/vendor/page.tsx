@@ -31,8 +31,8 @@ export default async function VendorPage() {
   const storeSelect = { id: true, name: true, address: true } as const;
 
   // Fast path: verify the JWT storeId belongs to this owner.
-  // Retry with ownerId alone when storeId is absent or stale so legitimate
-  // owners are not locked out by an outdated token.
+  // Fallback to ownerId when storeId is absent or stale — ownerId is
+  // @unique on Store so findUnique is deterministic (one store per owner).
   const ownerStore =
     (session.storeId
       ? await prisma.store.findFirst({
@@ -40,7 +40,7 @@ export default async function VendorPage() {
           select: storeSelect,
         })
       : null) ??
-    (await prisma.store.findFirst({
+    (await prisma.store.findUnique({
       where: { ownerId: session.user.id },
       select: storeSelect,
     }));
