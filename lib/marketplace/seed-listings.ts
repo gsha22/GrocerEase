@@ -12,7 +12,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
     description: "Crisp bunches from regional growers — perfect for stir-fry.",
     price: 2.49,
     imageUrl:
-      "https://images.unsplash.com/photo-1592419049011-0b919ccd419d?w=800&q=80",
+      "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800&q=80",
     isFreshToday: true,
     isSpecialDeal: true,
     updatedAt: "2026-05-03T08:00:00.000Z",
@@ -126,7 +126,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
     description: "Fiery North African chili paste with caraway and coriander.",
     price: 4.79,
     imageUrl:
-      "https://images.unsplash.com/photo-1604429868519-8a59c8e9a2e1?w=800&q=80",
+      "https://images.unsplash.com/photo-1574484284002-952d92456975?w=800&q=80",
     isFreshToday: false,
     isSpecialDeal: false,
     updatedAt: "2026-05-01T12:00:00.000Z",
@@ -156,7 +156,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
     description: "Dairy-free staple for coffee and baking.",
     price: 3.99,
     imageUrl:
-      "https://images.unsplash.com/photo-1600788886242-5c96aa287b88?w=800&q=80",
+      "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=800&q=80",
     isFreshToday: false,
     isSpecialDeal: false,
     updatedAt: "2026-05-02T14:00:00.000Z",
@@ -212,7 +212,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
     description: "Deep-orange yolks from free-range hens. Local farm, weekly delivery.",
     price: 6.99,
     imageUrl:
-      "https://images.unsplash.com/photo-1569288052389-dac9b0ac9eac?w=800&q=80",
+      "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80",
     isFreshToday: false,
     isSpecialDeal: false,
     updatedAt: "2026-05-02T10:00:00.000Z",
@@ -284,7 +284,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
     description: "Traditional baechu kimchi fermented in-house — tangy and crisp.",
     price: 7.99,
     imageUrl:
-      "https://images.unsplash.com/photo-1583224964978-2257b8a1ff4d?w=800&q=80",
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80",
     isFreshToday: false,
     isSpecialDeal: false,
     updatedAt: "2026-05-02T08:00:00.000Z",
@@ -342,7 +342,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
     description: "Tart, chewy Turkish apricots — no added sugar or preservatives.",
     price: 5.99,
     imageUrl:
-      "https://images.unsplash.com/photo-1596591868231-05e808fd7e59?w=800&q=80",
+      "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=800&q=80",
     isFreshToday: false,
     isSpecialDeal: false,
     updatedAt: "2026-05-01T16:00:00.000Z",
@@ -500,7 +500,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
     description: "Curated mix of 6–8 seasonal fruits — perfect for gifting or snacking.",
     price: 18.99,
     imageUrl:
-      "https://images.unsplash.com/photo-1490218021742-00d07e1b9fa7?w=800&q=80",
+      "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=800&q=80",
     isFreshToday: false,
     isSpecialDeal: false,
     updatedAt: "2026-05-02T14:00:00.000Z",
