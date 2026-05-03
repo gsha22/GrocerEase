@@ -39,12 +39,10 @@ interface StoreCardProps {
 export default function StoreCard({ store, neighborhood }: StoreCardProps) {
   const coverSrc = getStoreCoverImageUrl(store.id, store.categories);
   const emoji = heroEmoji(store.categories);
+  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(store.address)}`;
 
   return (
-    <Link
-      href={`/stores/${store.id}`}
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06),0_8px_24px_-4px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:border-emerald-300/60 hover:shadow-[0_12px_40px_-8px_rgba(15,23,42,0.15)] active:translate-y-0 active:scale-[0.99]"
-    >
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06),0_8px_24px_-4px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:border-emerald-300/60 hover:shadow-[0_12px_40px_-8px_rgba(15,23,42,0.15)] active:translate-y-0 active:scale-[0.99]">
       <div className="relative h-[152px] w-full overflow-hidden bg-stone-200">
         <Image
           src={coverSrc}
@@ -85,7 +83,25 @@ export default function StoreCard({ store, neighborhood }: StoreCardProps) {
             ))}
           </div>
         )}
+        <div className="mt-4 flex gap-2">
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-center text-[13px] font-semibold text-stone-700 transition hover:bg-stone-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Get Directions
+          </a>
+          <Link
+            href={`/stores/${store.id}`}
+            className="flex-1 rounded-lg bg-emerald-600 px-3 py-2 text-center text-[13px] font-semibold text-white transition hover:bg-emerald-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Visit Store
+          </Link>
+        </div>
       </div>
-    </Link>
+    </div>
   );
 }
