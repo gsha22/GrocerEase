@@ -17,7 +17,7 @@ interface Props {
 
 const SEED_DESCRIPTION_PATTERN = /bulk-seeded deal/i;
 
-function sanitizeDescription(description: string | null): string | null {
+export function sanitizeDescription(description: string | null): string | null {
   if (!description) return null;
   if (SEED_DESCRIPTION_PATTERN.test(description)) return null;
   return description;
