@@ -1,4 +1,5 @@
 import { safeCallbackPath } from "@/lib/safe-callback-path";
+import { EMAIL_RE } from "@/lib/email/validate";
 
 export type ShopperSignupInput = {
   email: string;
@@ -11,8 +12,6 @@ export type ShopperSignupValidationResult =
   | { ok: true; data: ShopperSignupInput }
   | { ok: false; errors: Record<string, string> };
 
-const EMAIL_RE =
-  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 export function validateShopperSignup(body: unknown): ShopperSignupValidationResult {
   if (!body || typeof body !== "object") {
