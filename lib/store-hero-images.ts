@@ -2,6 +2,18 @@
  * Curated Unsplash storefront imagery — deterministic per store for list + profile.
  */
 
+// Per-store photos uploaded to public/store-photos/. Keyed by store ID.
+// Only populated for stores that have a real photo; all others fall through to
+// the category-based Unsplash covers below.
+const STORE_PHOTO: Record<string, string> = {
+  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1": "/store-photos/lotus.jpg",
+  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2": "/store-photos/crescenthalal.jpg",
+  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3": "/store-photos/threerivers.jpg",
+  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4": "/store-photos/tokyo.jpg",
+  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5": "/store-photos/riverhalal.jpg",
+  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6": "/store-photos/eastend.jpg",
+};
+
 const CATEGORY_COVER: Record<string, string> = {
   asian:
     "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1200&q=80&auto=format&fit=crop",
@@ -32,6 +44,9 @@ function hashIndex(key: string, modulo: number): number {
 }
 
 export function getStoreCoverImageUrl(storeId: string, categories: string[]): string {
+  const local = STORE_PHOTO[storeId];
+  if (local) return local;
+
   for (const c of categories) {
     const url = CATEGORY_COVER[c.toLowerCase()];
     if (url) return url;
