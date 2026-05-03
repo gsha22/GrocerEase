@@ -21,9 +21,9 @@ export default function OwnerHeader() {
       >
         <Link
           href="/dashboard"
-          className="font-display text-[20px] font-semibold text-green-600 tracking-tight sm:text-[22px] shrink-0"
+          className="font-display text-[20px] font-semibold text-emerald-800 tracking-tight sm:text-[22px] shrink-0"
         >
-          Local<span className="text-green-200">Grocer</span>
+          Grocer<span className="text-emerald-500">Ease</span>
         </Link>
         <span className="hidden sm:inline text-[11px] font-semibold uppercase tracking-wider text-green-600/90 bg-green-50 px-2 py-0.5 rounded-md border border-green-100">
           Owner
