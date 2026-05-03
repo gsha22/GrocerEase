@@ -7,8 +7,7 @@ import {
   isSafeRelativeAppPath,
   safeCallbackPath,
 } from "@/lib/safe-callback-path";
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { EMAIL_RE } from "@/lib/email/validate";
 
 interface SignupApiResponse {
   ok?: boolean;

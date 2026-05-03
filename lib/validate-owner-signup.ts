@@ -1,4 +1,5 @@
 import { safeCallbackPath } from "@/lib/safe-callback-path";
+import { EMAIL_RE } from "@/lib/email/validate";
 
 export type OwnerSignupInput = {
   email: string;
@@ -12,8 +13,6 @@ export type SignupValidationResult =
   | { ok: true; data: OwnerSignupInput }
   | { ok: false; errors: Record<string, string> };
 
-const EMAIL_RE =
-  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?=[^@]*\.[a-zA-Z]{2,}$)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 export function validateSignupInput(
   body: unknown,
