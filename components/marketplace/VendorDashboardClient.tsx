@@ -265,9 +265,9 @@ export default function VendorDashboardClient({ ownerStore }: VendorDashboardCli
             </Link>
           </p>
 
-          <div className="mt-6 overflow-x-auto rounded-xl border border-stone-100">
+          <div className="mt-6 max-h-[520px] overflow-auto rounded-xl border border-stone-100">
             <table className="min-w-full divide-y divide-stone-100 text-left text-sm">
-              <thead className="bg-stone-50/80 text-xs font-semibold uppercase tracking-wide text-stone-500">
+              <thead className="sticky top-0 bg-stone-50/80 text-xs font-semibold uppercase tracking-wide text-stone-500">
                 <tr>
                   <th className="px-4 py-3">Preview</th>
                   <th className="px-4 py-3">Item</th>
