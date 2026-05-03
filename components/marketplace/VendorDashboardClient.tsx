@@ -33,6 +33,7 @@ export default function VendorDashboardClient({ ownerStore }: VendorDashboardCli
   const deleteListing = useMarketplaceStore((s) => s.deleteListing);
 
   const blankForm = (): MarketplaceListingInput => ({
+    storeId: ownerStore?.id,
     shopName: ownerStore?.name ?? "",
     shopAddress: ownerStore?.address ?? "",
     itemName: "",
@@ -52,12 +53,12 @@ export default function VendorDashboardClient({ ownerStore }: VendorDashboardCli
     [listings],
   );
 
-  // Only show listings that belong to this owner's store
+  // Only show listings that belong to this owner's store; empty when no store is linked.
   const ownedListings = useMemo(
     () =>
       ownerStore
-        ? allSorted.filter((l) => l.shopName === ownerStore.name)
-        : allSorted,
+        ? allSorted.filter((l) => l.storeId === ownerStore.id)
+        : [],
     [allSorted, ownerStore],
   );
 
@@ -97,6 +98,7 @@ export default function VendorDashboardClient({ ownerStore }: VendorDashboardCli
     }
     const payload: MarketplaceListingInput = {
       ...form,
+      storeId: ownerStore?.id,
       shopName: form.shopName.trim(),
       shopAddress: form.shopAddress.trim(),
       itemName: form.itemName.trim(),
@@ -118,6 +120,16 @@ export default function VendorDashboardClient({ ownerStore }: VendorDashboardCli
     );
   };
 
+  if (!ownerStore) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8 text-center">
+        <p className="text-sm font-medium text-stone-500">
+          No store is linked to your account. Contact support to get set up.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <header className="mb-8">
@@ -125,7 +137,7 @@ export default function VendorDashboardClient({ ownerStore }: VendorDashboardCli
           GrocerEase · Vendor
         </p>
         <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-stone-900">
-          {ownerStore ? ownerStore.name : "Your listings board"}
+          {ownerStore.name}
         </h1>
         <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-stone-600">
           Add or edit what&apos;s fresh and what&apos;s on special. Listings are{" "}
@@ -144,38 +156,13 @@ export default function VendorDashboardClient({ ownerStore }: VendorDashboardCli
             {editingId ? "Edit listing" : "Add listing"}
           </h2>
           <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-            {ownerStore ? (
-              <div className="rounded-xl border border-stone-100 bg-stone-50/60 px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
-                  Posting for
-                </p>
-                <p className="mt-0.5 text-sm font-semibold text-stone-900">{ownerStore.name}</p>
-                <p className="text-xs text-stone-500">{ownerStore.address}</p>
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block text-sm font-medium text-stone-700">
-                  Shop name
-                  <input
-                    required
-                    className="mt-1.5 w-full rounded-xl border border-stone-200 bg-stone-50/80 px-3 py-2.5 text-stone-900 outline-none ring-emerald-700/0 transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-700/15"
-                    value={form.shopName}
-                    onChange={(e) => setForm((f) => ({ ...f, shopName: e.target.value }))}
-                    placeholder="Lotus Asian Market"
-                  />
-                </label>
-                <label className="block text-sm font-medium text-stone-700 sm:col-span-2">
-                  Shop address
-                  <input
-                    required
-                    className="mt-1.5 w-full rounded-xl border border-stone-200 bg-stone-50/80 px-3 py-2.5 text-stone-900 outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-700/15"
-                    value={form.shopAddress}
-                    onChange={(e) => setForm((f) => ({ ...f, shopAddress: e.target.value }))}
-                    placeholder="5899 Forbes Ave, Pittsburgh, PA"
-                  />
-                </label>
-              </div>
-            )}
+            <div className="rounded-xl border border-stone-100 bg-stone-50/60 px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                Posting for
+              </p>
+              <p className="mt-0.5 text-sm font-semibold text-stone-900">{ownerStore.name}</p>
+              <p className="text-xs text-stone-500">{ownerStore.address}</p>
+            </div>
             <label className="block text-sm font-medium text-stone-700">
               Item name
               <input

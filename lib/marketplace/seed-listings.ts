@@ -4,6 +4,7 @@ import type { MarketplaceListing } from "./types";
 export const seedMarketplaceListings: MarketplaceListing[] = [
   {
     id: "mp-seed-001",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
     shopName: "Lotus Asian Market",
     shopAddress: "5899 Forbes Ave, Pittsburgh, PA 15217",
     itemName: "Baby Bok Choy",
@@ -17,6 +18,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-002",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
     shopName: "Lotus Asian Market",
     shopAddress: "5899 Forbes Ave, Pittsburgh, PA 15217",
     itemName: "Shin Ramyun 4-Pack",
@@ -30,6 +32,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-003",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
     shopName: "Crescent Halal Grocer",
     shopAddress: "202 Brownsville Rd, Pittsburgh, PA 15210",
     itemName: "Halal Lamb Shoulder",
@@ -43,6 +46,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-004",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6",
     shopName: "East End Organic Pantry",
     shopAddress: "6400 Penn Ave, Pittsburgh, PA 15206",
     itemName: "Organic Kale",
@@ -56,6 +60,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-005",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4",
     shopName: "Tokyo Mart Shadyside",
     shopAddress: "5525 Walnut St, Pittsburgh, PA 15232",
     itemName: "Gochujang Paste",
@@ -69,6 +74,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-006",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3",
     shopName: "Three Rivers Organic Produce",
     shopAddress: "2401 Smallman St, Pittsburgh, PA 15222",
     itemName: "Oat Milk Unsweetened",
