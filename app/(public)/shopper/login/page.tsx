@@ -6,8 +6,10 @@ import ShopperLoginForm from "./ShopperLoginForm";
 
 export default async function ShopperLoginPage() {
   const session = await auth();
-  if (session?.user) {
-    redirect(session.role === "shopper" ? "/" : "/owner-dashboard");
+  // Only redirect already-authenticated shoppers — business owners should be
+  // allowed to reach this page so they can sign in with a separate shopper account.
+  if (session?.user && session.role === "shopper") {
+    redirect("/");
   }
 
   return (
