@@ -43,6 +43,22 @@ function hashIndex(key: string, modulo: number): number {
   return modulo > 0 ? h % modulo : 0;
 }
 
+const CATEGORY_EMOJI: Record<string, string> = {
+  asian: "\u{1F962}",
+  halal: "☪",
+  organic: "\u{1F33F}",
+  produce: "\u{1F966}",
+  ebt: "\u{1F4B3}",
+};
+
+export function heroEmoji(categories: string[]): string {
+  for (const cat of categories) {
+    const emoji = CATEGORY_EMOJI[cat.toLowerCase()];
+    if (emoji) return emoji;
+  }
+  return "\u{1F6D2}";
+}
+
 export function getStoreCoverImageUrl(storeId: string, categories: string[]): string {
   const local = STORE_PHOTO[storeId];
   if (local) return local;

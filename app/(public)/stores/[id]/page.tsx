@@ -12,8 +12,7 @@ import {
   FRESH_UPDATE_PUBLIC_WINDOW_MS,
   mapEnrichedFreshUpdatesToFeedItems,
 } from "@/lib/fresh-updates";
-import { getStoreCoverImageUrl } from "@/lib/store-hero-images";
-import { heroEmoji } from "@/components/StoreCard";
+import { getStoreCoverImageUrl, heroEmoji } from "@/lib/store-hero-images";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Image from "next/image";
