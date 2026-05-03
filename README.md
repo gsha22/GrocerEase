@@ -67,16 +67,18 @@ Stop the database with `npm run db:down` or `docker compose down`. Data persists
 4. **Run database migrations**
 
    ```bash
-   npx prisma migrate dev --name init
+   npx prisma migrate deploy
    ```
 
-5. **Generate Prisma Client**
+   > Use `prisma migrate deploy` (applies existing migrations). `prisma migrate dev` is for *creating* new migrations during schema development.
+
+5. **Seed test data (optional)**
 
    ```bash
-   npx prisma generate
+   npm run db:seed
    ```
 
-5. **Start the dev server**
+6. **Start the dev server**
 
    ```bash
    npm run dev
@@ -90,22 +92,29 @@ Stop the database with `npm run db:down` or `docker compose down`. Data persists
 app/
   (public)/              — unauthenticated routes
     page.tsx             — home / store directory
+    browse/page.tsx      — browse all stores
     stores/[id]/page.tsx — store profile
     map/page.tsx         — map view
     deals/page.tsx       — deals feed
+    my-alerts/page.tsx   — shopper alerts (auth-protected)
     login/page.tsx       — owner login
+    login/forgot/page.tsx — owner forgot-password request
+    login/reset/page.tsx  — owner password reset
     signup/page.tsx      — owner registration
-    shopper/login/page.tsx — shopper login
-    shopper/signup/page.tsx — shopper registration (canonical; `/signup/shopper` redirects here)
-    shopper/account/page.tsx — shopper account (auth-protected)
+    shopper/login/page.tsx   — shopper login
+    shopper/signup/page.tsx  — shopper registration (canonical; `/signup/shopper` redirects here)
+    shopper/account/page.tsx — shopper account settings
   (dashboard)/           — owner routes (auth-protected)
     dashboard/page.tsx
     dashboard/profile/page.tsx
     dashboard/posts/page.tsx
     dashboard/deals/page.tsx
+    dashboard/reports/page.tsx
   auth/                  — JSON auth helpers
     login/route.ts
     signup/route.ts
+    forgot-password/route.ts
+    reset-password/route.ts
     shopper/login/route.ts
     shopper/signup/route.ts
   api/                   — API routes
@@ -113,14 +122,23 @@ app/
     stores/route.ts
     stores/[id]/route.ts
     stores/[id]/updates/route.ts
+    stores/[id]/posts/[postId]/route.ts
     stores/[id]/deals/route.ts
+    stores/[id]/deals/[dealId]/route.ts
     stores/[id]/items/route.ts
+    stores/[id]/ratings/route.ts
+    stores/[id]/report/route.ts
     alerts/route.ts
+    alerts/[id]/route.ts
+    owner/notifications/route.ts
+    shopper/notifications/route.ts
+    address/suggest/route.ts
 prisma/
-  schema.prisma          — database schema (7 tables)
+  schema.prisma          — database schema (15 models)
 components/              — shared UI components
-lib/                     — utilities (Prisma client, helpers)
-middleware.ts            — protects /dashboard/* routes
+lib/                     — utilities (Prisma client, auth helpers, validation)
+tests/                   — Jest unit and integration tests
+middleware.ts            — protects /dashboard/* and /my-alerts routes
 ```
 
 ## Scripts
@@ -134,7 +152,8 @@ middleware.ts            — protects /dashboard/* routes
 | `npm run db:seed` | Seed deterministic relational test fixtures |
 | `npm run db:reset` | Reset DB and re-seed deterministic fixtures |
 | `npx prisma studio` | Open Prisma Studio (DB browser) |
-| `npx prisma migrate dev` | Run pending migrations |
+| `npx prisma migrate dev` | Create new migrations in development |
+| `npx prisma migrate deploy` | Apply existing migrations (production / CI) |
 | `npm run test:auth` | HTTP integration tests for auth & session (needs running app) |
 | `npm run test:shopper-auth` | HTTP integration tests for shopper signup/login & alerts (needs running app + DB) |
 | `npm run test:signup` | HTTP integration tests for `POST /auth/signup` (needs running app + DB) |
@@ -274,7 +293,3 @@ Nina Patel and Jordan Chen have sample **alerts** in the seed data (useful for c
 > These credentials are for **local/demo databases only**. Do not reuse these passwords in production.
 
 New shoppers can also self-register at **`/shopper/signup`**. New owners can register at **`/signup`** (email, password, display name).
-
-## Branch Strategy
-
-All feature work branches off `main` after this scaffold is merged. See the implementation brief for the full story dependency graph and branch naming conventions (`feature/story-N-description`).
