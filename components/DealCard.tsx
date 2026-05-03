@@ -15,7 +15,7 @@ interface Props {
   showStore?: boolean;
 }
 
-const SEED_DESCRIPTION_PATTERN = /^bulk-seeded deal/i;
+const SEED_DESCRIPTION_PATTERN = /^\s*bulk-seeded deal/i;
 
 export function sanitizeDescription(description: string | null): string | null {
   if (!description) return null;

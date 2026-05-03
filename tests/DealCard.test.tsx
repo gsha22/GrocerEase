@@ -25,6 +25,11 @@ describe("sanitizeDescription", () => {
     expect(sanitizeDescription("BULK-SEEDED DEAL placeholder")).toBeNull();
   });
 
+  it("suppresses descriptions with leading whitespace before the seed phrase", () => {
+    expect(sanitizeDescription("  bulk-seeded deal placeholder")).toBeNull();
+    expect(sanitizeDescription("\t Bulk-Seeded Deal")).toBeNull();
+  });
+
   it("does not suppress a description that contains the phrase mid-sentence", () => {
     expect(sanitizeDescription("This item was a bulk-seeded deal")).toBe(
       "This item was a bulk-seeded deal",
