@@ -8,8 +8,8 @@ import type {
   MarketplaceListingInput,
 } from "@/lib/marketplace/types";
 
-const BROADCAST_NAME = "grocerease-marketplace-v1";
-const PERSIST_KEY = "grocerease-marketplace-v1";
+const BROADCAST_NAME = "grocerease-marketplace-v2";
+const PERSIST_KEY = "grocerease-marketplace-v2";
 
 function newId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -23,7 +23,6 @@ type MarketplaceStore = {
   addListing: (input: MarketplaceListingInput) => void;
   updateListing: (id: string, patch: Partial<MarketplaceListingInput>) => void;
   deleteListing: (id: string) => void;
-  resetToSeed: () => void;
 };
 
 let broadcast: BroadcastChannel | null = null;
@@ -83,11 +82,6 @@ export const useMarketplaceStore = create<MarketplaceStore>()(
       },
       deleteListing: (id) => {
         const listings = get().listings.filter((row) => row.id !== id);
-        set({ listings });
-        publishListings(listings);
-      },
-      resetToSeed: () => {
-        const listings = [...seedMarketplaceListings];
         set({ listings });
         publishListings(listings);
       },
