@@ -88,8 +88,7 @@ export default function MarketplaceBrowseClient({
       >
         <p className="text-sm text-stone-500">
           Showing{" "}
-          <span className="font-semibold text-stone-800">{visible.length}</span> listing
-          {visible.length !== 1 ? "s" : ""}
+          <span className="font-semibold text-stone-800">{visible.length}</span> listing{visible.length !== 1 ? "s" : ""}
         </p>
         <div className="flex flex-wrap gap-2">
           {FILTERS.map((chip) => (
