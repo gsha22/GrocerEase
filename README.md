@@ -240,14 +240,15 @@ After `npm run db:seed`, every seeded store shares the same fixture password. Us
 
 | Store (seed) | Login email | Password |
 | --- | --- | --- |
-| Lotus Asian Market | `linh@lotus-market.test` | `OwnerPass123!` |
-| Crescent Halal Grocer | `abdullah@crescent-halal.test` | `OwnerPass123!` |
-| Three Rivers Organic Produce | `maria@3rivers-produce.test` | `OwnerPass123!` |
-| Tokyo Mart Shadyside | `jiyeon@tokyo-mart.test` | `OwnerPass123!` |
-| River Halal Hub | `omar@river-halal.test` | `OwnerPass123!` |
-| East End Organic Pantry | `evelyn@eastend-organic.test` | `OwnerPass123!` |
+| Lotus Asian Market | `linh.tran@example.com` | `OwnerPass123!` |
+| Crescent Halal Grocer | `akhan.halal@example.com` | `OwnerPass123!` |
+| Three Rivers Organic Produce | `msantos.organic@example.com` | `OwnerPass123!` |
+| Tokyo Mart Shadyside | `jpark.pgh@example.com` | `OwnerPass123!` |
+| River Halal Hub | `ohassan.market@example.com` | `OwnerPass123!` |
+| East End Organic Pantry | `evelyn.brooks@example.com` | `OwnerPass123!` |
+| The Press Juice Co. | `m.webb.pgh@example.com` | `OwnerPass123!` |
 
-Owners in the seed **without** a linked store (useful for onboarding flows): `newowner@no-store.test`, `backupowner@no-store.test` — same password **`OwnerPass123!`**.
+Owners in the seed **without** a linked store (useful for onboarding flows): `casey.morris@example.com`, `robin.kim@example.com` — same password **`OwnerPass123!`**.
 
 ### Seeded shopper logins (testing)
 
@@ -255,20 +256,20 @@ After `npm run db:seed`, every seeded shopper shares the same fixture password. 
 
 | Display name (seed) | Login email | Password |
 | --- | --- | --- |
-| Nina Shopper | `nina.shopper@testmail.com` | `ShopperPass123!` |
-| Jordan Shopper | `jordan.shopper@testmail.com` | `ShopperPass123!` |
-| Alex Shopper | `alex.shopper@testmail.com` | `ShopperPass123!` |
-| Taylor Shopper | `taylor.shopper@testmail.com` | `ShopperPass123!` |
-| Sam Shopper | `sam.shopper@testmail.com` | `ShopperPass123!` |
-| Riley Shopper | `riley.shopper@testmail.com` | `ShopperPass123!` |
-| Morgan Shopper | `morgan.shopper@testmail.com` | `ShopperPass123!` |
-| Jamie Shopper | `jamie.shopper@testmail.com` | `ShopperPass123!` |
-| Drew Shopper | `drew.shopper@testmail.com` | `ShopperPass123!` |
-| Casey Shopper | `casey.shopper2@testmail.com` | `ShopperPass123!` |
-| Cameron Shopper | `cameron.shopper@testmail.com` | `ShopperPass123!` |
-| Peyton Shopper | `peyton.shopper@testmail.com` | `ShopperPass123!` |
+| Nina Patel | `nina.patel@example.com` | `ShopperPass123!` |
+| Jordan Chen | `j.chen.pgh@example.com` | `ShopperPass123!` |
+| Alex Martinez | `alex.martinez@example.com` | `ShopperPass123!` |
+| Taylor Williams | `t.williams@example.com` | `ShopperPass123!` |
+| Sam Rodriguez | `sam.rodriguez@example.com` | `ShopperPass123!` |
+| Riley Thompson | `riley.thompson@example.com` | `ShopperPass123!` |
+| Morgan Lee | `morgan.lee@example.com` | `ShopperPass123!` |
+| Jamie Davis | `jamiedavis@example.com` | `ShopperPass123!` |
+| Drew Anderson | `d.anderson.pgh@example.com` | `ShopperPass123!` |
+| Casey Nguyen | `caseynguyen@example.com` | `ShopperPass123!` |
+| Cameron Foster | `cam.foster@example.com` | `ShopperPass123!` |
+| Peyton Clark | `peyton.clark@example.com` | `ShopperPass123!` |
 
-Nina and Jordan have sample **alerts** in the seed data (useful for checking `/api/alerts` after logging in as a shopper).
+Nina Patel and Jordan Chen have sample **alerts** in the seed data (useful for checking `/api/alerts` after logging in as a shopper).
 
 > These credentials are for **local/demo databases only**. Do not reuse these passwords in production.
 
