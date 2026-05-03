@@ -53,11 +53,16 @@ export default function VendorDashboardClient({ ownerStore }: VendorDashboardCli
     [listings],
   );
 
-  // Only show listings that belong to this owner's store; empty when no store is linked.
+  // Show listings that match by storeId (current format) or, for legacy
+  // listings that predate the storeId field, fall back to shopName matching.
   const ownedListings = useMemo(
     () =>
       ownerStore
-        ? allSorted.filter((l) => l.storeId === ownerStore.id)
+        ? allSorted.filter(
+            (l) =>
+              l.storeId === ownerStore.id ||
+              (!l.storeId && l.shopName === ownerStore.name),
+          )
         : [],
     [allSorted, ownerStore],
   );
