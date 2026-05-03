@@ -52,24 +52,86 @@ export const ids = {
     shopper12: "55555555-5555-5555-5555-555555555566",
   },
   items: {
+    // Lotus Asian Market (original 3)
     bokChoy: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1",
     bokChoiTypo: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2",
+    ramen: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb6",
+    // Crescent Halal Grocer (original 2)
     halalLambShoulder: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb3",
+    cilantro: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb7",
+    // Three Rivers Organic (original 2)
     spinach: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb4",
     oatMilk: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb5",
-    ramen: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb6",
-    cilantro: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb7",
+    // Tokyo Mart (original 2)
     napaCabbage: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb8",
     gochujang: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb9",
+    // River Halal Hub (original 2)
     halalChickenThighs: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb10",
     datesMedjool: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb11",
+    // East End Organic Pantry (original 3)
     kale: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb12",
     sourdough: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb13",
     tomatoeSauceTypo: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb14",
+    // The Press Juice Co. (original 2)
     pressJuice64oz: "99999999-9999-9999-9999-999999999991",
     pressHoneycrispCider: "99999999-9999-9999-9999-999999999992",
+
+    // Lotus Asian Market — new items
+    jasmineRice: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb15",
+    fishSauce: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb16",
+    galbi: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb17",
+    phoNoodles: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb18",
+    sambalOelek: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb19",
+    thaiBAsil: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb20",
+
+    // Crescent Halal Grocer — new items
+    halalGroundBeef: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb21",
+    basmatiRice: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb22",
+    driedChickpeas: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb23",
+    halalMerguez: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb24",
+    pitaBread: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb25",
+    harissa: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb26",
+
+    // Three Rivers Organic Produce — new items
+    rainbowCarrots: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb27",
+    heirloomTomatoes: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb28",
+    organicApples: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb29",
+    babyArugula: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb30",
+    sweetPotatoes: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb31",
+    pastureEggs: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb32",
+
+    // Tokyo Mart Shadyside — new items
+    soySauce: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb33",
+    mirin: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb34",
+    nori: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb35",
+    freshUdon: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb36",
+    sesameOil: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb37",
+    firmTofu: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb38",
+    houseKimchi: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb39",
+
+    // River Halal Hub — new items
+    halalGoat: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb40",
+    roseWater: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb41",
+    pomMolasses: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb42",
+    halalChickenBreast: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb43",
+    sumac: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb44",
+    driedApricots: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb45",
+
+    // East End Organic Pantry — new items
+    grassFedButter: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb46",
+    rawHoney: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb47",
+    organicBlueberries: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb48",
+    stoneGroundGrits: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb49",
+    organicGarlic: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb50",
+
+    // The Press Juice Co. — new items
+    watermelonMintJuice: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb51",
+    carrotGingerJuice: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb52",
+    greenDetoxJuice: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb53",
+    seasonalFruitBasket: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb54",
   },
   freshUpdates: {
+    // original
     lotusRecent: "cccccccc-cccc-cccc-cccc-ccccccccccc1",
     crescentRecent: "cccccccc-cccc-cccc-cccc-ccccccccccc2",
     threeRiversStale: "cccccccc-cccc-cccc-cccc-ccccccccccc3",
@@ -81,6 +143,17 @@ export const ids = {
     pressRecentJuice: "cccccccc-cccc-cccc-cccc-cccccccccc01",
     pressRecentCider: "cccccccc-cccc-cccc-cccc-cccccccccc02",
     pressOrganicNote: "cccccccc-cccc-cccc-cccc-cccccccccc03",
+    // new
+    lotusGalbi: "cccccccc-cccc-cccc-cccc-cccccccccc04",
+    lotusThaiBAsil: "cccccccc-cccc-cccc-cccc-cccccccccc05",
+    crescentPita: "cccccccc-cccc-cccc-cccc-cccccccccc06",
+    threeRiversTomatoes: "cccccccc-cccc-cccc-cccc-cccccccccc07",
+    threeRiversEggs: "cccccccc-cccc-cccc-cccc-cccccccccc08",
+    eastEndHoney: "cccccccc-cccc-cccc-cccc-cccccccccc09",
+    eastEndBlueberries: "cccccccc-cccc-cccc-cccc-cccccccccc10",
+    pressWatermelon: "cccccccc-cccc-cccc-cccc-cccccccccc11",
+    riverHalalGoat: "cccccccc-cccc-cccc-cccc-cccccccccc12",
+    tokyoKimchi: "cccccccc-cccc-cccc-cccc-cccccccccc13",
   },
   deals: {
     lotusActive: "dddddddd-dddd-dddd-dddd-ddddddddddd1",
@@ -97,6 +170,14 @@ export const ids = {
     riverHalalSoftDeleted: "dddddddd-dddd-dddd-dddd-dddddddddd12",
     pressWeekendGallon: "dddddddd-dddd-dddd-dddd-dddddddddd13",
     pressCider2for1: "dddddddd-dddd-dddd-dddd-dddddddddd14",
+    // new
+    lotusRicePromo: "dddddddd-dddd-dddd-dddd-dddddddddd15",
+    crescentChickpeaSale: "dddddddd-dddd-dddd-dddd-dddddddddd16",
+    threeRiversEggBundle: "dddddddd-dddd-dddd-dddd-dddddddddd17",
+    tokyoUdonDeal: "dddddddd-dddd-dddd-dddd-dddddddddd18",
+    riverHalalGoatWeekend: "dddddddd-dddd-dddd-dddd-dddddddddd19",
+    eastEndHoneyPromo: "dddddddd-dddd-dddd-dddd-dddddddddd20",
+    pressGreenJuice: "dddddddd-dddd-dddd-dddd-dddddddddd21",
   },
   alerts: {
     ninaStoreFollowLotus: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee1",
@@ -362,6 +443,9 @@ export const shoppers = [
 ];
 
 export const items = [
+  // -----------------------------------------------------------------------
+  // Lotus Asian Market
+  // -----------------------------------------------------------------------
   {
     id: ids.items.bokChoy,
     storeId: ids.stores.lotus,
@@ -387,6 +471,58 @@ export const items = [
     lastUpdated: atHours(-6),
   },
   {
+    id: ids.items.jasmineRice,
+    storeId: ids.stores.lotus,
+    name: "Jasmine Rice 5lb",
+    description: "Long-grain fragrant Thai jasmine rice, great for everyday cooking",
+    inStock: true,
+    lastUpdated: atHours(-10),
+  },
+  {
+    id: ids.items.fishSauce,
+    storeId: ids.stores.lotus,
+    name: "Fish Sauce (Tiparos) 23oz",
+    description: "Classic Thai fish sauce, essential for marinades, dips, and stir-fries",
+    inStock: true,
+    lastUpdated: atDays(-1),
+  },
+  {
+    id: ids.items.galbi,
+    storeId: ids.stores.lotus,
+    name: "Galbi (Korean Short Ribs)",
+    description: "Thin-cut bone-in short ribs, pre-marinated and ready to grill",
+    inStock: true,
+    lastUpdated: atHours(-4),
+  },
+  {
+    id: ids.items.phoNoodles,
+    storeId: ids.stores.lotus,
+    name: "Pho Noodles (rice sticks) 16oz",
+    description: "Dried flat rice noodles, the right width for authentic pho",
+    inStock: true,
+    lastUpdated: atDays(-3),
+  },
+  {
+    id: ids.items.sambalOelek,
+    storeId: ids.stores.lotus,
+    name: "Sambal Oelek Chili Paste",
+    description: "Fresh ground chili paste with no garlic — versatile heat for any dish",
+    inStock: true,
+    lastUpdated: atHours(-26),
+  },
+  {
+    id: ids.items.thaiBAsil,
+    storeId: ids.stores.lotus,
+    name: "Thai Basil",
+    description: "Fresh bunches with a slightly anise-forward flavor, great for curries",
+    inStock: true,
+    lastUpdated: atHours(-5),
+  },
+
+  // -----------------------------------------------------------------------
+  // Crescent Halal Grocer
+  // -----------------------------------------------------------------------
+  {
     id: ids.items.halalLambShoulder,
     storeId: ids.stores.crescent,
     name: "Halal Lamb Shoulder",
@@ -402,6 +538,58 @@ export const items = [
     inStock: true,
     lastUpdated: atHours(-5),
   },
+  {
+    id: ids.items.halalGroundBeef,
+    storeId: ids.stores.crescent,
+    name: "Halal Ground Beef 1lb",
+    description: "80/20 lean-to-fat blend, freshly ground and halal-certified",
+    inStock: true,
+    lastUpdated: atHours(-3),
+  },
+  {
+    id: ids.items.basmatiRice,
+    storeId: ids.stores.crescent,
+    name: "Basmati Rice 10lb",
+    description: "Aged long-grain basmati, imported from Pakistan — light and fluffy",
+    inStock: true,
+    lastUpdated: atDays(-1),
+  },
+  {
+    id: ids.items.driedChickpeas,
+    storeId: ids.stores.crescent,
+    name: "Dried Chickpeas 2lb",
+    description: "Whole dried chickpeas, great for hummus, chana masala, or soups",
+    inStock: true,
+    lastUpdated: atDays(-2),
+  },
+  {
+    id: ids.items.halalMerguez,
+    storeId: ids.stores.crescent,
+    name: "Halal Merguez Sausage",
+    description: "Spiced North African lamb sausage, halal-certified — sold by the link",
+    inStock: false,
+    lastUpdated: atDays(-1),
+  },
+  {
+    id: ids.items.pitaBread,
+    storeId: ids.stores.crescent,
+    name: "Fresh Pita Bread (6-pack)",
+    description: "Baked fresh daily — soft pocket pitas, great for dipping or wraps",
+    inStock: true,
+    lastUpdated: atHours(-7),
+  },
+  {
+    id: ids.items.harissa,
+    storeId: ids.stores.crescent,
+    name: "Harissa Paste",
+    description: "Tunisian chili paste with caraway and coriander, medium heat",
+    inStock: true,
+    lastUpdated: atDays(-3),
+  },
+
+  // -----------------------------------------------------------------------
+  // Three Rivers Organic Produce
+  // -----------------------------------------------------------------------
   {
     id: ids.items.spinach,
     storeId: ids.stores.threeRivers,
@@ -419,6 +607,58 @@ export const items = [
     lastUpdated: atHours(-7),
   },
   {
+    id: ids.items.rainbowCarrots,
+    storeId: ids.stores.threeRivers,
+    name: "Rainbow Carrots (bunch)",
+    description: "Purple, orange, and yellow carrots — sweet, firm, and locally grown",
+    inStock: true,
+    lastUpdated: atHours(-9),
+  },
+  {
+    id: ids.items.heirloomTomatoes,
+    storeId: ids.stores.threeRivers,
+    name: "Heirloom Tomatoes",
+    description: "Mixed varieties from a family farm in Butler County, sold by the pound",
+    inStock: true,
+    lastUpdated: atHours(-4),
+  },
+  {
+    id: ids.items.organicApples,
+    storeId: ids.stores.threeRivers,
+    name: "Organic Fuji Apples (3lb bag)",
+    description: "Crisp and sweet, certified organic from a Pennsylvania orchard",
+    inStock: true,
+    lastUpdated: atHours(-11),
+  },
+  {
+    id: ids.items.babyArugula,
+    storeId: ids.stores.threeRivers,
+    name: "Baby Arugula",
+    description: "Peppery micro-greens, harvested young — great for salads and flatbreads",
+    inStock: true,
+    lastUpdated: atHours(-6),
+  },
+  {
+    id: ids.items.sweetPotatoes,
+    storeId: ids.stores.threeRivers,
+    name: "Organic Sweet Potatoes",
+    description: "Garnet variety, certified organic — sold loose by the pound",
+    inStock: true,
+    lastUpdated: atDays(-2),
+  },
+  {
+    id: ids.items.pastureEggs,
+    storeId: ids.stores.threeRivers,
+    name: "Pasture-Raised Eggs (dozen)",
+    description: "From a small family flock in Westmoreland County, rich orange yolks",
+    inStock: true,
+    lastUpdated: atHours(-8),
+  },
+
+  // -----------------------------------------------------------------------
+  // Tokyo Mart Shadyside
+  // -----------------------------------------------------------------------
+  {
     id: ids.items.napaCabbage,
     storeId: ids.stores.tokyoMart,
     name: "Napa Cabbage",
@@ -435,6 +675,66 @@ export const items = [
     lastUpdated: atHours(-9),
   },
   {
+    id: ids.items.soySauce,
+    storeId: ids.stores.tokyoMart,
+    name: "Kikkoman Soy Sauce 64oz",
+    description: "Naturally brewed soy sauce — the restaurant-size jug",
+    inStock: true,
+    lastUpdated: atDays(-1),
+  },
+  {
+    id: ids.items.mirin,
+    storeId: ids.stores.tokyoMart,
+    name: "Hon Mirin (sweet rice wine) 25oz",
+    description: "Authentic Japanese mirin for sauces, glazes, and marinades",
+    inStock: true,
+    lastUpdated: atDays(-2),
+  },
+  {
+    id: ids.items.nori,
+    storeId: ids.stores.tokyoMart,
+    name: "Nori Seaweed Sheets (50-pack)",
+    description: "Roasted seaweed sheets for sushi, onigiri, or snacking",
+    inStock: true,
+    lastUpdated: atHours(-20),
+  },
+  {
+    id: ids.items.freshUdon,
+    storeId: ids.stores.tokyoMart,
+    name: "Fresh Udon Noodles",
+    description: "Thick and chewy fresh-packed udon — cook in 2 minutes",
+    inStock: true,
+    lastUpdated: atHours(-5),
+  },
+  {
+    id: ids.items.sesameOil,
+    storeId: ids.stores.tokyoMart,
+    name: "Toasted Sesame Oil 16oz",
+    description: "Deep, nutty flavor — a finishing oil for noodles, stir-fries, and dressings",
+    inStock: true,
+    lastUpdated: atDays(-3),
+  },
+  {
+    id: ids.items.firmTofu,
+    storeId: ids.stores.tokyoMart,
+    name: "Firm Tofu (2-pack)",
+    description: "Water-packed firm tofu, versatile for frying, grilling, or soups",
+    inStock: false,
+    lastUpdated: atDays(-1),
+  },
+  {
+    id: ids.items.houseKimchi,
+    storeId: ids.stores.tokyoMart,
+    name: "House-Made Kimchi 1lb jar",
+    description: "Fermented in-house with napa cabbage and house seasoning — medium spice",
+    inStock: true,
+    lastUpdated: atHours(-10),
+  },
+
+  // -----------------------------------------------------------------------
+  // River Halal Hub
+  // -----------------------------------------------------------------------
+  {
     id: ids.items.halalChickenThighs,
     storeId: ids.stores.riverHalalHub,
     name: "Halal Chicken Thighs",
@@ -450,6 +750,58 @@ export const items = [
     inStock: true,
     lastUpdated: atHours(-11),
   },
+  {
+    id: ids.items.halalGoat,
+    storeId: ids.stores.riverHalalHub,
+    name: "Halal Goat Leg",
+    description: "Bone-in goat leg, halal-certified — available whole or cut on request",
+    inStock: true,
+    lastUpdated: atHours(-6),
+  },
+  {
+    id: ids.items.roseWater,
+    storeId: ids.stores.riverHalalHub,
+    name: "Rose Water 10oz",
+    description: "Pure distilled rose water for desserts, drinks, and skincare",
+    inStock: true,
+    lastUpdated: atDays(-4),
+  },
+  {
+    id: ids.items.pomMolasses,
+    storeId: ids.stores.riverHalalHub,
+    name: "Pomegranate Molasses",
+    description: "Thick and tangy reduction, essential for muhammara and salad dressings",
+    inStock: true,
+    lastUpdated: atDays(-2),
+  },
+  {
+    id: ids.items.halalChickenBreast,
+    storeId: ids.stores.riverHalalHub,
+    name: "Halal Chicken Breast",
+    description: "Boneless skinless chicken breast, halal-certified — sold by the pound",
+    inStock: true,
+    lastUpdated: atHours(-3),
+  },
+  {
+    id: ids.items.sumac,
+    storeId: ids.stores.riverHalalHub,
+    name: "Sumac (ground) 4oz",
+    description: "Tangy crimson spice for fattoush, kebabs, and dips",
+    inStock: true,
+    lastUpdated: atDays(-5),
+  },
+  {
+    id: ids.items.driedApricots,
+    storeId: ids.stores.riverHalalHub,
+    name: "Dried Apricots 1lb",
+    description: "Unsulfured whole dried apricots, naturally sweet without preservatives",
+    inStock: true,
+    lastUpdated: atHours(-14),
+  },
+
+  // -----------------------------------------------------------------------
+  // East End Organic Pantry
+  // -----------------------------------------------------------------------
   {
     id: ids.items.kale,
     storeId: ids.stores.eastEndOrganic,
@@ -475,6 +827,50 @@ export const items = [
     lastUpdated: atDays(-3),
   },
   {
+    id: ids.items.grassFedButter,
+    storeId: ids.stores.eastEndOrganic,
+    name: "Grass-Fed Butter (salted & unsalted)",
+    description: "Cultured from pasture-raised cows, rich flavor and golden color",
+    inStock: true,
+    lastUpdated: atHours(-16),
+  },
+  {
+    id: ids.items.rawHoney,
+    storeId: ids.stores.eastEndOrganic,
+    name: "Local Raw Honey 12oz",
+    description: "Unfiltered wildflower honey from a Pittsburgh-area beekeeper",
+    inStock: true,
+    lastUpdated: atHours(-5),
+  },
+  {
+    id: ids.items.organicBlueberries,
+    storeId: ids.stores.eastEndOrganic,
+    name: "Organic Blueberries (pint)",
+    description: "Certified organic, in season — sweet and plump from a local farm",
+    inStock: true,
+    lastUpdated: atHours(-4),
+  },
+  {
+    id: ids.items.stoneGroundGrits,
+    storeId: ids.stores.eastEndOrganic,
+    name: "Stone-Ground Grits 2lb",
+    description: "Coarse-ground white corn grits from a Virginia stone mill — slow-cook variety",
+    inStock: true,
+    lastUpdated: atDays(-5),
+  },
+  {
+    id: ids.items.organicGarlic,
+    storeId: ids.stores.eastEndOrganic,
+    name: "Organic Garlic (loose)",
+    description: "Locally grown organic hardneck garlic, sold by the head",
+    inStock: true,
+    lastUpdated: atHours(-12),
+  },
+
+  // -----------------------------------------------------------------------
+  // The Press Juice Co.
+  // -----------------------------------------------------------------------
+  {
     id: ids.items.pressJuice64oz,
     storeId: ids.stores.pressJuice,
     name: "Fresh Pressed Apple Juice 64oz",
@@ -490,9 +886,44 @@ export const items = [
     inStock: true,
     lastUpdated: atHours(-8),
   },
+  {
+    id: ids.items.watermelonMintJuice,
+    storeId: ids.stores.pressJuice,
+    name: "Watermelon Mint Juice 32oz",
+    description: "Cold-pressed watermelon with fresh mint — refreshing and lightly sweet",
+    inStock: true,
+    lastUpdated: atHours(-6),
+  },
+  {
+    id: ids.items.carrotGingerJuice,
+    storeId: ids.stores.pressJuice,
+    name: "Carrot Ginger Juice 32oz",
+    description: "Fresh pressed with Pennsylvania carrots and raw ginger, no added sweetener",
+    inStock: true,
+    lastUpdated: atHours(-7),
+  },
+  {
+    id: ids.items.greenDetoxJuice,
+    storeId: ids.stores.pressJuice,
+    name: "Green Detox Juice 32oz",
+    description: "Kale, celery, cucumber, green apple, and lemon — cold-pressed daily",
+    inStock: false,
+    lastUpdated: atDays(-1),
+  },
+  {
+    id: ids.items.seasonalFruitBasket,
+    storeId: ids.stores.pressJuice,
+    name: "Seasonal Fruit Basket",
+    description: "Curated mix of in-season fruits from local farms — contents vary weekly",
+    inStock: true,
+    lastUpdated: atHours(-9),
+  },
 ];
 
 export const freshUpdates = [
+  // -----------------------------------------------------------------------
+  // Lotus Asian Market
+  // -----------------------------------------------------------------------
   {
     id: ids.freshUpdates.lotusRecent,
     storeId: ids.stores.lotus,
@@ -500,24 +931,6 @@ export const freshUpdates = [
     itemName: "Baby Bok Choy",
     note: "Fresh delivery arrived this morning — very crisp today.",
     createdAt: atHours(-8),
-    deletedAt: null,
-  },
-  {
-    id: ids.freshUpdates.crescentRecent,
-    storeId: ids.stores.crescent,
-    itemId: ids.items.halalLambShoulder,
-    itemName: "Halal Lamb Shoulder",
-    note: "Halal-certified cuts available today, freshly butchered.",
-    createdAt: atHours(-20),
-    deletedAt: null,
-  },
-  {
-    id: ids.freshUpdates.threeRiversStale,
-    storeId: ids.stores.threeRivers,
-    itemId: ids.items.spinach,
-    itemName: "Organic Spinach",
-    note: "Restocked Tuesday from our local farm partner — call ahead if you need a large quantity.",
-    createdAt: atDays(-4),
     deletedAt: null,
   },
   {
@@ -530,30 +943,87 @@ export const freshUpdates = [
     deletedAt: atHours(-2),
   },
   {
+    id: ids.freshUpdates.lotusGalbi,
+    storeId: ids.stores.lotus,
+    itemId: ids.items.galbi,
+    itemName: "Galbi (Korean Short Ribs)",
+    note: "Fresh galbi came in from our supplier today — marinated and ready to grill.",
+    createdAt: atHours(-4),
+    deletedAt: null,
+  },
+  {
+    id: ids.freshUpdates.lotusThaiBAsil,
+    storeId: ids.stores.lotus,
+    itemId: ids.items.thaiBAsil,
+    itemName: "Thai Basil",
+    note: "Thai basil back in stock — picked up fresh this morning.",
+    createdAt: atHours(-5),
+    deletedAt: null,
+  },
+
+  // -----------------------------------------------------------------------
+  // Crescent Halal Grocer
+  // -----------------------------------------------------------------------
+  {
+    id: ids.freshUpdates.crescentRecent,
+    storeId: ids.stores.crescent,
+    itemId: ids.items.halalLambShoulder,
+    itemName: "Halal Lamb Shoulder",
+    note: "Halal-certified cuts available today, freshly butchered.",
+    createdAt: atHours(-20),
+    deletedAt: null,
+  },
+  {
+    id: ids.freshUpdates.crescentPita,
+    storeId: ids.stores.crescent,
+    itemId: ids.items.pitaBread,
+    itemName: "Fresh Pita Bread (6-pack)",
+    note: "Pita baked fresh this morning — soft and warm, great for wraps.",
+    createdAt: atHours(-7),
+    deletedAt: null,
+  },
+
+  // -----------------------------------------------------------------------
+  // Three Rivers Organic Produce
+  // -----------------------------------------------------------------------
+  {
+    id: ids.freshUpdates.threeRiversStale,
+    storeId: ids.stores.threeRivers,
+    itemId: ids.items.spinach,
+    itemName: "Organic Spinach",
+    note: "Restocked Tuesday from our local farm partner — call ahead if you need a large quantity.",
+    createdAt: atDays(-4),
+    deletedAt: null,
+  },
+  {
+    id: ids.freshUpdates.threeRiversTomatoes,
+    storeId: ids.stores.threeRivers,
+    itemId: ids.items.heirloomTomatoes,
+    itemName: "Heirloom Tomatoes",
+    note: "Beautiful heirlooms just in from Butler County — mix of Cherokee Purple and Brandywine.",
+    createdAt: atHours(-4),
+    deletedAt: null,
+  },
+  {
+    id: ids.freshUpdates.threeRiversEggs,
+    storeId: ids.stores.threeRivers,
+    itemId: ids.items.pastureEggs,
+    itemName: "Pasture-Raised Eggs (dozen)",
+    note: "Egg delivery this morning — seriously the best yolks. Go fast every week.",
+    createdAt: atHours(-9),
+    deletedAt: null,
+  },
+
+  // -----------------------------------------------------------------------
+  // Tokyo Mart Shadyside
+  // -----------------------------------------------------------------------
+  {
     id: ids.freshUpdates.tokyoRecent,
     storeId: ids.stores.tokyoMart,
     itemId: ids.items.napaCabbage,
     itemName: "Napa Cabbage",
     note: "Fresh heads in from this morning's shipment — come early for best selection.",
     createdAt: atHours(-6),
-    deletedAt: null,
-  },
-  {
-    id: ids.freshUpdates.riverHalalRecent,
-    storeId: ids.stores.riverHalalHub,
-    itemId: ids.items.datesMedjool,
-    itemName: "Medjool Dates",
-    note: "New batch arrived at opening — perfectly ripe.",
-    createdAt: atHours(-14),
-    deletedAt: null,
-  },
-  {
-    id: ids.freshUpdates.eastEndStale,
-    storeId: ids.stores.eastEndOrganic,
-    itemId: ids.items.tomatoeSauceTypo,
-    itemName: "Tomatoe Sauce",
-    note: "Small batch came in earlier this week — a few jars still available.",
-    createdAt: atDays(-5),
     deletedAt: null,
   },
   {
@@ -565,6 +1035,72 @@ export const freshUpdates = [
     createdAt: atHours(-25),
     deletedAt: atHours(-4),
   },
+  {
+    id: ids.freshUpdates.tokyoKimchi,
+    storeId: ids.stores.tokyoMart,
+    itemId: ids.items.houseKimchi,
+    itemName: "House-Made Kimchi 1lb jar",
+    note: "New batch ready — this week's kimchi is extra tangy, fermented a full five days.",
+    createdAt: atHours(-10),
+    deletedAt: null,
+  },
+
+  // -----------------------------------------------------------------------
+  // River Halal Hub
+  // -----------------------------------------------------------------------
+  {
+    id: ids.freshUpdates.riverHalalRecent,
+    storeId: ids.stores.riverHalalHub,
+    itemId: ids.items.datesMedjool,
+    itemName: "Medjool Dates",
+    note: "New batch arrived at opening — perfectly ripe.",
+    createdAt: atHours(-14),
+    deletedAt: null,
+  },
+  {
+    id: ids.freshUpdates.riverHalalGoat,
+    storeId: ids.stores.riverHalalHub,
+    itemId: ids.items.halalGoat,
+    itemName: "Halal Goat Leg",
+    note: "Goat leg in today — whole or cut to order. Halal-certified, very fresh.",
+    createdAt: atHours(-6),
+    deletedAt: null,
+  },
+
+  // -----------------------------------------------------------------------
+  // East End Organic Pantry
+  // -----------------------------------------------------------------------
+  {
+    id: ids.freshUpdates.eastEndStale,
+    storeId: ids.stores.eastEndOrganic,
+    itemId: ids.items.tomatoeSauceTypo,
+    itemName: "Tomatoe Sauce",
+    note: "Small batch came in earlier this week — a few jars still available.",
+    createdAt: atDays(-5),
+    deletedAt: null,
+  },
+  {
+    id: ids.freshUpdates.eastEndHoney,
+    storeId: ids.stores.eastEndOrganic,
+    itemId: ids.items.rawHoney,
+    itemName: "Local Raw Honey 12oz",
+    note: "New honey in from our beekeeper in Allegheny County — light and floral.",
+    createdAt: atHours(-5),
+    deletedAt: null,
+  },
+  {
+    id: ids.freshUpdates.eastEndBlueberries,
+    storeId: ids.stores.eastEndOrganic,
+    itemId: ids.items.organicBlueberries,
+    itemName: "Organic Blueberries (pint)",
+    note: "Blueberries are in season! Got a great batch today — try to come in before the weekend.",
+    createdAt: atHours(-4),
+    deletedAt: null,
+  },
+
+  // -----------------------------------------------------------------------
+  // The Press Juice Co.
+  // -----------------------------------------------------------------------
   {
     id: ids.freshUpdates.pressRecentJuice,
     storeId: ids.stores.pressJuice,
@@ -592,9 +1128,21 @@ export const freshUpdates = [
     createdAt: atHours(-42),
     deletedAt: null,
   },
+  {
+    id: ids.freshUpdates.pressWatermelon,
+    storeId: ids.stores.pressJuice,
+    itemId: ids.items.watermelonMintJuice,
+    itemName: "Watermelon Mint Juice 32oz",
+    note: "Watermelon mint is back for the season — pressed this morning, very refreshing.",
+    createdAt: atHours(-6),
+    deletedAt: null,
+  },
 ];
 
 export const deals = [
+  // -----------------------------------------------------------------------
+  // Lotus Asian Market
+  // -----------------------------------------------------------------------
   {
     id: ids.deals.lotusActive,
     storeId: ids.stores.lotus,
@@ -623,6 +1171,24 @@ export const deals = [
     createdAt: atHours(-12),
     deletedAt: null,
   },
+  {
+    id: ids.deals.lotusRicePromo,
+    storeId: ids.stores.lotus,
+    itemId: ids.items.jasmineRice,
+    sourceDealId: null,
+    title: "Jasmine rice 2 bags for $8",
+    description: "Stock your pantry — mix and match the 5lb and 10lb bags.",
+    price: new Prisma.Decimal("4.49"),
+    discountPct: 10,
+    expiresAt: atDays(5),
+    isExpired: false,
+    createdAt: atHours(-15),
+    deletedAt: null,
+  },
+
+  // -----------------------------------------------------------------------
+  // Crescent Halal Grocer
+  // -----------------------------------------------------------------------
   {
     id: ids.deals.crescentExpired,
     storeId: ids.stores.crescent,
@@ -666,6 +1232,24 @@ export const deals = [
     deletedAt: null,
   },
   {
+    id: ids.deals.crescentChickpeaSale,
+    storeId: ids.stores.crescent,
+    itemId: ids.items.driedChickpeas,
+    sourceDealId: null,
+    title: "Dried chickpeas — 3 bags for $7",
+    description: "Great for hummus, stews, or chana masala — buy in bulk and save.",
+    price: new Prisma.Decimal("2.49"),
+    discountPct: 12,
+    expiresAt: atDays(6),
+    isExpired: false,
+    createdAt: atHours(-24),
+    deletedAt: null,
+  },
+
+  // -----------------------------------------------------------------------
+  // Three Rivers Organic Produce
+  // -----------------------------------------------------------------------
+  {
     id: ids.deals.threeRiversSoftDeleted,
     storeId: ids.stores.threeRivers,
     itemId: ids.items.oatMilk,
@@ -679,6 +1263,24 @@ export const deals = [
     createdAt: atHours(-10),
     deletedAt: atHours(-3),
   },
+  {
+    id: ids.deals.threeRiversEggBundle,
+    storeId: ids.stores.threeRivers,
+    itemId: ids.items.pastureEggs,
+    sourceDealId: null,
+    title: "Pasture eggs — 2 dozen for $11",
+    description: "Fresh from a local flock — grab two dozen while they last.",
+    price: new Prisma.Decimal("5.99"),
+    discountPct: 8,
+    expiresAt: atDays(2),
+    isExpired: false,
+    createdAt: atHours(-9),
+    deletedAt: null,
+  },
+
+  // -----------------------------------------------------------------------
+  // Tokyo Mart Shadyside
+  // -----------------------------------------------------------------------
   {
     id: ids.deals.tokyoActive,
     storeId: ids.stores.tokyoMart,
@@ -708,6 +1310,24 @@ export const deals = [
     deletedAt: null,
   },
   {
+    id: ids.deals.tokyoUdonDeal,
+    storeId: ids.stores.tokyoMart,
+    itemId: ids.items.freshUdon,
+    sourceDealId: null,
+    title: "Fresh udon 3-pack for $5",
+    description: "Perfect for a quick weeknight meal — grab a few packs.",
+    price: new Prisma.Decimal("1.79"),
+    discountPct: 14,
+    expiresAt: atDays(3),
+    isExpired: false,
+    createdAt: atHours(-12),
+    deletedAt: null,
+  },
+
+  // -----------------------------------------------------------------------
+  // River Halal Hub
+  // -----------------------------------------------------------------------
+  {
     id: ids.deals.riverHalalExpired,
     storeId: ids.stores.riverHalalHub,
     itemId: ids.items.halalChickenThighs,
@@ -721,6 +1341,38 @@ export const deals = [
     createdAt: atDays(-3),
     deletedAt: null,
   },
+  {
+    id: ids.deals.riverHalalSoftDeleted,
+    storeId: ids.stores.riverHalalHub,
+    itemId: ids.items.datesMedjool,
+    sourceDealId: null,
+    title: "Medjool dates Ramadan special",
+    description: "Special pricing on premium imported dates through the weekend.",
+    price: new Prisma.Decimal("8.49"),
+    discountPct: 12,
+    expiresAt: atDays(2),
+    isExpired: false,
+    createdAt: atHours(-16),
+    deletedAt: atHours(-6),
+  },
+  {
+    id: ids.deals.riverHalalGoatWeekend,
+    storeId: ids.stores.riverHalalHub,
+    itemId: ids.items.halalGoat,
+    sourceDealId: null,
+    title: "Goat leg — $2 off per pound this weekend",
+    description: "Fresh halal goat, great for slow-cook stews. Weekend special only.",
+    price: new Prisma.Decimal("8.99"),
+    discountPct: 18,
+    expiresAt: atDays(2),
+    isExpired: false,
+    createdAt: atHours(-6),
+    deletedAt: null,
+  },
+
+  // -----------------------------------------------------------------------
+  // East End Organic Pantry
+  // -----------------------------------------------------------------------
   {
     id: ids.deals.eastEndHistorical,
     storeId: ids.stores.eastEndOrganic,
@@ -750,19 +1402,23 @@ export const deals = [
     deletedAt: null,
   },
   {
-    id: ids.deals.riverHalalSoftDeleted,
-    storeId: ids.stores.riverHalalHub,
-    itemId: ids.items.datesMedjool,
+    id: ids.deals.eastEndHoneyPromo,
+    storeId: ids.stores.eastEndOrganic,
+    itemId: ids.items.rawHoney,
     sourceDealId: null,
-    title: "Medjool dates Ramadan special",
-    description: "Special pricing on premium imported dates through the weekend.",
-    price: new Prisma.Decimal("8.49"),
-    discountPct: 12,
-    expiresAt: atDays(2),
+    title: "Local honey — buy 2 get 10% off",
+    description: "Stock up on raw wildflower honey before this batch runs out.",
+    price: new Prisma.Decimal("9.99"),
+    discountPct: 10,
+    expiresAt: atDays(7),
     isExpired: false,
-    createdAt: atHours(-16),
-    deletedAt: atHours(-6),
+    createdAt: atHours(-5),
+    deletedAt: null,
   },
+
+  // -----------------------------------------------------------------------
+  // The Press Juice Co.
+  // -----------------------------------------------------------------------
   {
     id: ids.deals.pressWeekendGallon,
     storeId: ids.stores.pressJuice,
@@ -789,6 +1445,20 @@ export const deals = [
     expiresAt: atHours(36),
     isExpired: false,
     createdAt: atHours(-8),
+    deletedAt: null,
+  },
+  {
+    id: ids.deals.pressGreenJuice,
+    storeId: ids.stores.pressJuice,
+    itemId: ids.items.greenDetoxJuice,
+    sourceDealId: null,
+    title: "Green Detox Juice — intro price $6",
+    description: "Try our new green blend at a special intro price this week.",
+    price: new Prisma.Decimal("6.00"),
+    discountPct: 14,
+    expiresAt: atDays(5),
+    isExpired: false,
+    createdAt: atHours(-10),
     deletedAt: null,
   },
 ];
