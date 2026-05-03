@@ -31,8 +31,8 @@ describe("sanitizeDescription", () => {
     );
   });
 
-  it("returns an empty string unchanged (not treated as seed copy)", () => {
-    expect(sanitizeDescription("")).toBe("");
+  it("returns null for an empty string (treated as no description)", () => {
+    expect(sanitizeDescription("")).toBeNull();
   });
 });
 
@@ -67,5 +67,25 @@ describe("DealCard", () => {
   it("always renders the deal title", () => {
     render(<DealCard deal={baseDeal} />);
     expect(screen.getByText("Fresh Apples")).toBeInTheDocument();
+  });
+
+  it("shows the store name when showStore is true and storeName is set", () => {
+    render(
+      <DealCard
+        deal={{ ...baseDeal, storeName: "Lotus Market" }}
+        showStore={true}
+      />,
+    );
+    expect(screen.getByText("Lotus Market")).toBeInTheDocument();
+  });
+
+  it("hides the store name when showStore is false", () => {
+    render(
+      <DealCard
+        deal={{ ...baseDeal, storeName: "Lotus Market" }}
+        showStore={false}
+      />,
+    );
+    expect(screen.queryByText("Lotus Market")).not.toBeInTheDocument();
   });
 });
