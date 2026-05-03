@@ -120,6 +120,8 @@ export default function VendorDashboardClient({ ownerStore }: VendorDashboardCli
     );
   };
 
+  // Hard-block: no ownerStore means no verified store for this owner.
+  // Showing all listings as a fallback would be a cross-tenant data leak.
   if (!ownerStore) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8 text-center">

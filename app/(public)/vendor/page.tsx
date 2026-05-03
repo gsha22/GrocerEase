@@ -28,9 +28,11 @@ export default async function VendorPage() {
     redirect("/shopper/account?notice=owner-only");
   }
 
+  // Verify the store belongs to this owner — prevents a tampered storeId
+  // in the JWT from granting access to another owner's store.
   const ownerStore = session.storeId
-    ? await prisma.store.findUnique({
-        where: { id: session.storeId },
+    ? await prisma.store.findFirst({
+        where: { id: session.storeId, ownerId: session.user.id },
         select: { id: true, name: true, address: true },
       })
     : null;
