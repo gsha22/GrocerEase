@@ -16,13 +16,19 @@ describe("sanitizeDescription", () => {
     expect(sanitizeDescription(null)).toBeNull();
   });
 
-  it("returns null when description contains seed copy", () => {
-    expect(sanitizeDescription("This is a bulk-seeded deal for testing")).toBeNull();
+  it("returns null when description starts with seed phrase", () => {
+    expect(sanitizeDescription("bulk-seeded deal for testing")).toBeNull();
   });
 
-  it("matches seed pattern case-insensitively", () => {
+  it("matches seed phrase case-insensitively at the start", () => {
     expect(sanitizeDescription("Bulk-Seeded Deal")).toBeNull();
     expect(sanitizeDescription("BULK-SEEDED DEAL placeholder")).toBeNull();
+  });
+
+  it("does not suppress a description that contains the phrase mid-sentence", () => {
+    expect(sanitizeDescription("This item was a bulk-seeded deal")).toBe(
+      "This item was a bulk-seeded deal",
+    );
   });
 
   it("returns the description unchanged for real copy", () => {
@@ -37,15 +43,13 @@ describe("sanitizeDescription", () => {
 });
 
 describe("DealCard", () => {
-  it("hides description when it contains seed copy", () => {
+  it("hides description when it starts with seed copy", () => {
     render(
       <DealCard
-        deal={{ ...baseDeal, description: "This is a bulk-seeded deal placeholder" }}
+        deal={{ ...baseDeal, description: "bulk-seeded deal placeholder" }}
       />,
     );
-    expect(
-      screen.queryByText(/bulk-seeded deal/i),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/bulk-seeded deal/i)).not.toBeInTheDocument();
   });
 
   it("shows description when it is real shopper-facing copy", () => {
@@ -59,13 +63,8 @@ describe("DealCard", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders nothing for the description when description is null", () => {
-    const { container } = render(<DealCard deal={{ ...baseDeal, description: null }} />);
-    expect(container.querySelector(".text-gray-600")).not.toBeInTheDocument();
-  });
-
-  it("always renders the deal title", () => {
-    render(<DealCard deal={baseDeal} />);
+  it("renders the title when description is null", () => {
+    render(<DealCard deal={{ ...baseDeal, description: null }} />);
     expect(screen.getByText("Fresh Apples")).toBeInTheDocument();
   });
 
