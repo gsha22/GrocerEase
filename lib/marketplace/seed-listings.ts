@@ -5,6 +5,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   // ── Lotus Asian Market ──────────────────────────────────────────────────────
   {
     id: "mp-seed-001",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
     shopName: "Lotus Asian Market",
     shopAddress: "5899 Forbes Ave, Pittsburgh, PA 15217",
     itemName: "Baby Bok Choy",
@@ -18,6 +19,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-002",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
     shopName: "Lotus Asian Market",
     shopAddress: "5899 Forbes Ave, Pittsburgh, PA 15217",
     itemName: "Shin Ramyun 4-Pack",
@@ -31,6 +33,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-007",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
     shopName: "Lotus Asian Market",
     shopAddress: "5899 Forbes Ave, Pittsburgh, PA 15217",
     itemName: "Jasmine Rice 5lb",
@@ -44,6 +47,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-008",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
     shopName: "Lotus Asian Market",
     shopAddress: "5899 Forbes Ave, Pittsburgh, PA 15217",
     itemName: "Fish Sauce (Tiparos) 23oz",
@@ -57,6 +61,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-009",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
     shopName: "Lotus Asian Market",
     shopAddress: "5899 Forbes Ave, Pittsburgh, PA 15217",
     itemName: "Thai Basil (bunch)",
@@ -72,6 +77,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   // ── Crescent Halal Grocer ───────────────────────────────────────────────────
   {
     id: "mp-seed-003",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
     shopName: "Crescent Halal Grocer",
     shopAddress: "202 Brownsville Rd, Pittsburgh, PA 15210",
     itemName: "Halal Lamb Shoulder",
@@ -85,6 +91,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-010",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
     shopName: "Crescent Halal Grocer",
     shopAddress: "202 Brownsville Rd, Pittsburgh, PA 15210",
     itemName: "Halal Ground Beef 1lb",
@@ -98,6 +105,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-011",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
     shopName: "Crescent Halal Grocer",
     shopAddress: "202 Brownsville Rd, Pittsburgh, PA 15210",
     itemName: "Basmati Rice 10lb",
@@ -111,6 +119,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-012",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
     shopName: "Crescent Halal Grocer",
     shopAddress: "202 Brownsville Rd, Pittsburgh, PA 15210",
     itemName: "Harissa Paste",
@@ -124,6 +133,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-013",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
     shopName: "Crescent Halal Grocer",
     shopAddress: "202 Brownsville Rd, Pittsburgh, PA 15210",
     itemName: "Fresh Pita Bread (6-pack)",
@@ -139,6 +149,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   // ── Three Rivers Organic Produce ────────────────────────────────────────────
   {
     id: "mp-seed-006",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3",
     shopName: "Three Rivers Organic Produce",
     shopAddress: "2401 Smallman St, Pittsburgh, PA 15222",
     itemName: "Oat Milk Unsweetened",
@@ -152,6 +163,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-014",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3",
     shopName: "Three Rivers Organic Produce",
     shopAddress: "2401 Smallman St, Pittsburgh, PA 15222",
     itemName: "Organic Spinach",
@@ -165,6 +177,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-015",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3",
     shopName: "Three Rivers Organic Produce",
     shopAddress: "2401 Smallman St, Pittsburgh, PA 15222",
     itemName: "Heirloom Tomatoes",
@@ -178,6 +191,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-016",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3",
     shopName: "Three Rivers Organic Produce",
     shopAddress: "2401 Smallman St, Pittsburgh, PA 15222",
     itemName: "Rainbow Carrots (bunch)",
@@ -191,6 +205,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-017",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3",
     shopName: "Three Rivers Organic Produce",
     shopAddress: "2401 Smallman St, Pittsburgh, PA 15222",
     itemName: "Pasture-Raised Eggs (dozen)",
@@ -206,6 +221,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   // ── Tokyo Mart Shadyside ────────────────────────────────────────────────────
   {
     id: "mp-seed-005",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4",
     shopName: "Tokyo Mart Shadyside",
     shopAddress: "5525 Walnut St, Pittsburgh, PA 15232",
     itemName: "Gochujang Paste",
@@ -219,6 +235,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-018",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4",
     shopName: "Tokyo Mart Shadyside",
     shopAddress: "5525 Walnut St, Pittsburgh, PA 15232",
     itemName: "Kikkoman Soy Sauce 64oz",
@@ -232,6 +249,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-019",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4",
     shopName: "Tokyo Mart Shadyside",
     shopAddress: "5525 Walnut St, Pittsburgh, PA 15232",
     itemName: "Fresh Udon Noodles",
@@ -245,6 +263,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-020",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4",
     shopName: "Tokyo Mart Shadyside",
     shopAddress: "5525 Walnut St, Pittsburgh, PA 15232",
     itemName: "Nori Seaweed Sheets (50-pack)",
@@ -258,6 +277,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-021",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4",
     shopName: "Tokyo Mart Shadyside",
     shopAddress: "5525 Walnut St, Pittsburgh, PA 15232",
     itemName: "House-Made Kimchi 1lb jar",
@@ -273,6 +293,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   // ── River Halal Hub ─────────────────────────────────────────────────────────
   {
     id: "mp-seed-022",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5",
     shopName: "River Halal Hub",
     shopAddress: "3115 Banksville Rd, Pittsburgh, PA 15216",
     itemName: "Halal Chicken Thighs",
@@ -286,6 +307,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-023",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5",
     shopName: "River Halal Hub",
     shopAddress: "3115 Banksville Rd, Pittsburgh, PA 15216",
     itemName: "Halal Chicken Breast",
@@ -299,6 +321,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-024",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5",
     shopName: "River Halal Hub",
     shopAddress: "3115 Banksville Rd, Pittsburgh, PA 15216",
     itemName: "Medjool Dates (1lb)",
@@ -312,6 +335,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-025",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5",
     shopName: "River Halal Hub",
     shopAddress: "3115 Banksville Rd, Pittsburgh, PA 15216",
     itemName: "Dried Apricots 1lb",
@@ -325,6 +349,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-026",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5",
     shopName: "River Halal Hub",
     shopAddress: "3115 Banksville Rd, Pittsburgh, PA 15216",
     itemName: "Sumac (ground) 4oz",
@@ -340,6 +365,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   // ── East End Organic Pantry ─────────────────────────────────────────────────
   {
     id: "mp-seed-004",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6",
     shopName: "East End Organic Pantry",
     shopAddress: "6400 Penn Ave, Pittsburgh, PA 15206",
     itemName: "Organic Kale",
@@ -353,6 +379,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-027",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6",
     shopName: "East End Organic Pantry",
     shopAddress: "6400 Penn Ave, Pittsburgh, PA 15206",
     itemName: "Whole Grain Sourdough",
@@ -366,6 +393,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-028",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6",
     shopName: "East End Organic Pantry",
     shopAddress: "6400 Penn Ave, Pittsburgh, PA 15206",
     itemName: "Local Raw Honey 12oz",
@@ -379,6 +407,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-029",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6",
     shopName: "East End Organic Pantry",
     shopAddress: "6400 Penn Ave, Pittsburgh, PA 15206",
     itemName: "Organic Blueberries (pint)",
@@ -392,6 +421,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-030",
+    storeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6",
     shopName: "East End Organic Pantry",
     shopAddress: "6400 Penn Ave, Pittsburgh, PA 15206",
     itemName: "Grass-Fed Butter (salted)",
@@ -407,6 +437,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   // ── The Press Juice Co. ─────────────────────────────────────────────────────
   {
     id: "mp-seed-031",
+    storeId: "88888888-8888-8888-8888-888888888888",
     shopName: "The Press Juice Co.",
     shopAddress: "5883 Wilkins Ave, Pittsburgh, PA 15217",
     itemName: "Fresh Pressed Apple Juice 64oz",
@@ -420,6 +451,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-032",
+    storeId: "88888888-8888-8888-8888-888888888888",
     shopName: "The Press Juice Co.",
     shopAddress: "5883 Wilkins Ave, Pittsburgh, PA 15217",
     itemName: "Green Detox Juice 32oz",
@@ -433,6 +465,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-033",
+    storeId: "88888888-8888-8888-8888-888888888888",
     shopName: "The Press Juice Co.",
     shopAddress: "5883 Wilkins Ave, Pittsburgh, PA 15217",
     itemName: "Carrot Ginger Juice 32oz",
@@ -446,6 +479,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-034",
+    storeId: "88888888-8888-8888-8888-888888888888",
     shopName: "The Press Juice Co.",
     shopAddress: "5883 Wilkins Ave, Pittsburgh, PA 15217",
     itemName: "Watermelon Mint Juice 32oz",
@@ -459,6 +493,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "mp-seed-035",
+    storeId: "88888888-8888-8888-8888-888888888888",
     shopName: "The Press Juice Co.",
     shopAddress: "5883 Wilkins Ave, Pittsburgh, PA 15217",
     itemName: "Seasonal Fruit Basket",

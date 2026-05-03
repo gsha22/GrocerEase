@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import VendorDashboardClient from "@/components/marketplace/VendorDashboardClient";
 
 export const metadata: Metadata = {
@@ -27,9 +28,26 @@ export default async function VendorPage() {
     redirect("/shopper/account?notice=owner-only");
   }
 
+  const storeSelect = { id: true, name: true, address: true } as const;
+
+  // Fast path: verify the JWT storeId belongs to this owner.
+  // Fallback to ownerId when storeId is absent or stale — ownerId is
+  // @unique on Store so findUnique is deterministic (one store per owner).
+  const ownerStore =
+    (session.storeId
+      ? await prisma.store.findFirst({
+          where: { id: session.storeId, ownerId: session.user.id },
+          select: storeSelect,
+        })
+      : null) ??
+    (await prisma.store.findUnique({
+      where: { ownerId: session.user.id },
+      select: storeSelect,
+    }));
+
   return (
     <Suspense fallback={<VendorFallback />}>
-      <VendorDashboardClient />
+      <VendorDashboardClient ownerStore={ownerStore} />
     </Suspense>
   );
 }
