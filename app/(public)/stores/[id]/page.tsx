@@ -12,8 +12,10 @@ import {
   FRESH_UPDATE_PUBLIC_WINDOW_MS,
   mapEnrichedFreshUpdatesToFeedItems,
 } from "@/lib/fresh-updates";
+import { getStoreCoverImageUrl, heroEmoji } from "@/lib/store-hero-images";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import ItemAvailabilitySearch from "@/components/ItemAvailabilitySearch";
 import StoreAlertSubscribe from "@/components/StoreAlertSubscribe";
@@ -169,11 +171,25 @@ export default async function StoreProfilePage({
       </div>
 
       {/* Profile hero */}
-      <div className="bg-gradient-to-br from-green-50 to-white rounded-3xl border border-gray-200 p-8 flex flex-col sm:flex-row items-start gap-6 mb-6">
-        <div className="text-[56px] w-20 h-20 rounded-2xl bg-green-50 flex items-center justify-center shrink-0 border-2 border-green-100">
-          🏪
+      <div className="overflow-hidden rounded-3xl border border-gray-200 mb-6 shadow-sm">
+        {/* Cover image */}
+        <div className="relative h-52 sm:h-64 w-full bg-stone-200">
+          <Image
+            src={getStoreCoverImageUrl(store.id, store.categories)}
+            alt={`${store.name} cover photo`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 1100px) 100vw, 1100px"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/10 to-transparent" aria-hidden />
+          {/* Emoji badge */}
+          <span className="absolute bottom-4 left-5 flex size-12 items-center justify-center rounded-2xl border border-white/35 bg-white/90 text-[24px] shadow-md backdrop-blur-[2px]">
+            {heroEmoji(store.categories)}
+          </span>
         </div>
-        <div>
+        {/* Store info row */}
+        <div className="bg-white px-6 py-5">
           <h1 className="font-display text-[26px] font-semibold text-gray-800">
             {store.name}
           </h1>

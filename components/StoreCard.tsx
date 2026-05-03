@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { getStoreCoverImageUrl } from "@/lib/store-hero-images";
+import { getStoreCoverImageUrl, heroEmoji } from "@/lib/store-hero-images";
+
+export { heroEmoji } from "@/lib/store-hero-images";
 
 export interface StoreData {
   id: string;
@@ -13,22 +15,6 @@ export interface StoreData {
   categories: string[];
   hours: unknown;
   distanceMiles?: number | null;
-}
-
-const CATEGORY_EMOJI: Record<string, string> = {
-  asian: "\u{1F962}",
-  halal: "\u262A",
-  organic: "\u{1F33F}",
-  produce: "\u{1F966}",
-  ebt: "\u{1F4B3}",
-};
-
-export function heroEmoji(categories: string[]): string {
-  for (const cat of categories) {
-    const emoji = CATEGORY_EMOJI[cat.toLowerCase()];
-    if (emoji) return emoji;
-  }
-  return "\u{1F6D2}";
 }
 
 interface StoreCardProps {

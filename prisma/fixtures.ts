@@ -1,7 +1,10 @@
 import bcrypt from "bcryptjs";
 import { Prisma } from "../app/generated/prisma/client";
 
-const BASE_TIME = new Date("2026-04-14T12:00:00.000Z");
+// Set SEED_BASE_TIME=<ISO string> for deterministic CI seeding; defaults to now.
+const BASE_TIME = process.env.SEED_BASE_TIME
+  ? new Date(process.env.SEED_BASE_TIME)
+  : new Date();
 const BCRYPT_SALT = "$2b$10$CwTycUXWue0Thq9StjUM0u";
 
 const atHours = (deltaHours: number) =>
@@ -11,7 +14,7 @@ const atDays = (deltaDays: number) => atHours(deltaDays * 24);
 
 export const fixtureMeta = {
   baseTime: BASE_TIME,
-  publicNowHint: "2026-04-14T12:00:00.000Z",
+  publicNowHint: BASE_TIME.toISOString(),
   ownerPlaintextPassword: "OwnerPass123!",
   shopperPlaintextPassword: "ShopperPass123!",
 };
@@ -154,6 +157,10 @@ export const ids = {
     pressWatermelon: "cccccccc-cccc-cccc-cccc-cccccccccc11",
     riverHalalGoat: "cccccccc-cccc-cccc-cccc-cccccccccc12",
     tokyoKimchi: "cccccccc-cccc-cccc-cccc-cccccccccc13",
+    crescentHarissa: "cccccccc-cccc-cccc-cccc-cccccccccc14",
+    crescentGroundBeef: "cccccccc-cccc-cccc-cccc-cccccccccc15",
+    riverHalalChicken: "cccccccc-cccc-cccc-cccc-cccccccccc16",
+    riverHalalApricots: "cccccccc-cccc-cccc-cccc-cccccccccc17",
   },
   deals: {
     lotusActive: "dddddddd-dddd-dddd-dddd-ddddddddddd1",
@@ -178,12 +185,21 @@ export const ids = {
     riverHalalGoatWeekend: "dddddddd-dddd-dddd-dddd-dddddddddd19",
     eastEndHoneyPromo: "dddddddd-dddd-dddd-dddd-dddddddddd20",
     pressGreenJuice: "dddddddd-dddd-dddd-dddd-dddddddddd21",
+    threeRiversApplesPromo: "dddddddd-dddd-dddd-dddd-dddddddddd22",
+    riverHalalChickenDeal: "dddddddd-dddd-dddd-dddd-dddddddddd23",
   },
   alerts: {
     ninaStoreFollowLotus: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee1",
     ninaItemRestockLamb: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee2",
     jordanStoreFollowTokyo: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee3",
     jordanItemRestockKale: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee4",
+    alexFollowThreeRivers: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee5",
+    taylorFollowRiverHalal: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee6",
+    samFollowLotus: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee7",
+    morganFollowEastEnd: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee8",
+    rileyFollowTokyo: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee9",
+    cameronFollowPress: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeea",
+    drewRestockChicken: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeeb",
   },
   ratings: {
     ninaLotus: "ffffffff-ffff-ffff-ffff-fffffffffff1",
@@ -194,6 +210,21 @@ export const ids = {
     taylorRiverHalal: "ffffffff-ffff-ffff-ffff-fffffffffff6",
     samLotus: "ffffffff-ffff-ffff-ffff-fffffffffff7",
     morganEastEnd: "ffffffff-ffff-ffff-ffff-fffffffffff8",
+    rileyLotus: "ffffffff-ffff-ffff-ffff-fffffffffff9",
+    drewLotus: "ffffffff-ffff-ffff-ffff-fffffffffffa",
+    samCrescent: "ffffffff-ffff-ffff-ffff-fffffffffffb",
+    cameronCrescent: "ffffffff-ffff-ffff-ffff-fffffffffffc",
+    rileyThreeRivers: "ffffffff-ffff-ffff-ffff-fffffffffffd",
+    jordanThreeRivers: "ffffffff-ffff-ffff-ffff-fffffffffffe",
+    ninaTokyoMart: "ffffffff-ffff-ffff-ffff-ffffffffffff",
+    alexTokyoMart: "ffffffff-ffff-ffff-ffff-ff0000000001",
+    samRiverHalal: "ffffffff-ffff-ffff-ffff-ff0000000002",
+    cameronRiverHalal: "ffffffff-ffff-ffff-ffff-ff0000000003",
+    drewEastEnd: "ffffffff-ffff-ffff-ffff-ff0000000004",
+    ninaPressJuice: "ffffffff-ffff-ffff-ffff-ff0000000005",
+    taylorPressJuice: "ffffffff-ffff-ffff-ffff-ff0000000006",
+    jordanPressJuice: "ffffffff-ffff-ffff-ffff-ff0000000007",
+    cameronPressJuice: "ffffffff-ffff-ffff-ffff-ff0000000008",
   },
 } as const;
 
@@ -982,6 +1013,24 @@ export const freshUpdates = [
     createdAt: atHours(-7),
     deletedAt: null,
   },
+  {
+    id: ids.freshUpdates.crescentHarissa,
+    storeId: ids.stores.crescent,
+    itemId: ids.items.harissa,
+    itemName: "House Harissa",
+    note: "Fresh batch of our house harissa in — mild and hot versions available.",
+    createdAt: atHours(-15),
+    deletedAt: null,
+  },
+  {
+    id: ids.freshUpdates.crescentGroundBeef,
+    storeId: ids.stores.crescent,
+    itemId: ids.items.halalGroundBeef,
+    itemName: "Halal Ground Beef",
+    note: "Ground beef back after the weekend rush — freshly ground this morning, lean and extra lean available.",
+    createdAt: atHours(-3),
+    deletedAt: null,
+  },
 
   // -----------------------------------------------------------------------
   // Three Rivers Organic Produce
@@ -1064,6 +1113,24 @@ export const freshUpdates = [
     itemName: "Halal Goat Leg",
     note: "Goat leg in today — whole or cut to order. Halal-certified, very fresh.",
     createdAt: atHours(-6),
+    deletedAt: null,
+  },
+  {
+    id: ids.freshUpdates.riverHalalChicken,
+    storeId: ids.stores.riverHalalHub,
+    itemId: ids.items.halalChickenBreast,
+    itemName: "Halal Chicken Breast",
+    note: "Boneless halal chicken breast restocked this morning — skinless, great for grilling or stews.",
+    createdAt: atHours(-12),
+    deletedAt: null,
+  },
+  {
+    id: ids.freshUpdates.riverHalalApricots,
+    storeId: ids.stores.riverHalalHub,
+    itemId: ids.items.driedApricots,
+    itemName: "Sun-Dried Apricots",
+    note: "New stock of unsulfured sun-dried apricots just came in — great for snacking, tagines, and baking.",
+    createdAt: atHours(-7),
     deletedAt: null,
   },
 
@@ -1277,6 +1344,20 @@ export const deals = [
     createdAt: atHours(-9),
     deletedAt: null,
   },
+  {
+    id: ids.deals.threeRiversApplesPromo,
+    storeId: ids.stores.threeRivers,
+    itemId: ids.items.organicApples,
+    sourceDealId: null,
+    title: "Organic apples — 3lb bag for $4",
+    description: "Local apples from our farm partner — mix of varieties. Great for snacking or pressing. Ends Sunday.",
+    price: new Prisma.Decimal("4.00"),
+    discountPct: 11,
+    expiresAt: atDays(4),
+    isExpired: false,
+    createdAt: atHours(-6),
+    deletedAt: null,
+  },
 
   // -----------------------------------------------------------------------
   // Tokyo Mart Shadyside
@@ -1367,6 +1448,20 @@ export const deals = [
     expiresAt: atDays(2),
     isExpired: false,
     createdAt: atHours(-6),
+    deletedAt: null,
+  },
+  {
+    id: ids.deals.riverHalalChickenDeal,
+    storeId: ids.stores.riverHalalHub,
+    itemId: ids.items.halalChickenBreast,
+    sourceDealId: null,
+    title: "Halal chicken breast — 10% off this week",
+    description: "Boneless halal chicken breast at a weekly discount. Great for grilling, stews, or stocking the freezer.",
+    price: new Prisma.Decimal("7.49"),
+    discountPct: 10,
+    expiresAt: atDays(5),
+    isExpired: false,
+    createdAt: atHours(-10),
     deletedAt: null,
   },
 
@@ -1500,6 +1595,69 @@ export const alerts = [
     isActive: true,
     createdAt: atHours(-4),
   },
+  {
+    id: ids.alerts.alexFollowThreeRivers,
+    shopperId: ids.shoppers.shopper03,
+    storeId: ids.stores.threeRivers,
+    itemId: null,
+    type: "store_follow" as const,
+    isActive: true,
+    createdAt: atDays(-6),
+  },
+  {
+    id: ids.alerts.taylorFollowRiverHalal,
+    shopperId: ids.shoppers.shopper04,
+    storeId: ids.stores.riverHalalHub,
+    itemId: null,
+    type: "store_follow" as const,
+    isActive: true,
+    createdAt: atDays(-4),
+  },
+  {
+    id: ids.alerts.samFollowLotus,
+    shopperId: ids.shoppers.shopper05,
+    storeId: ids.stores.lotus,
+    itemId: null,
+    type: "store_follow" as const,
+    isActive: true,
+    createdAt: atDays(-3),
+  },
+  {
+    id: ids.alerts.morganFollowEastEnd,
+    shopperId: ids.shoppers.shopper07,
+    storeId: ids.stores.eastEndOrganic,
+    itemId: null,
+    type: "store_follow" as const,
+    isActive: true,
+    createdAt: atDays(-5),
+  },
+  {
+    id: ids.alerts.rileyFollowTokyo,
+    shopperId: ids.shoppers.shopper06,
+    storeId: ids.stores.tokyoMart,
+    itemId: null,
+    type: "store_follow" as const,
+    isActive: true,
+    createdAt: atDays(-2),
+  },
+  {
+    id: ids.alerts.cameronFollowPress,
+    shopperId: ids.shoppers.shopper11,
+    storeId: ids.stores.pressJuice,
+    itemId: null,
+    type: "store_follow" as const,
+    isActive: true,
+    createdAt: atDays(-1),
+  },
+  {
+    id: ids.alerts.drewRestockChicken,
+    shopperId: ids.shoppers.shopper09,
+    storeId: ids.stores.crescent,
+    itemId: ids.items.halalChickenBreast,
+    type: "item_restock" as const,
+    isActive: true,
+    createdAt: atHours(-30),
+  },
 ];
 
 export const storeRatings = [
@@ -1574,6 +1732,147 @@ export const storeRatings = [
     note: "My go-to for organic staples in East Liberty. The kale is always harvested fresh.",
     createdAt: atDays(-1),
     updatedAt: atDays(-1),
+  },
+  // -----------------------------------------------------------------------
+  // Additional ratings — more shoppers across all stores
+  // -----------------------------------------------------------------------
+  {
+    id: ids.ratings.rileyLotus,
+    storeId: ids.stores.lotus,
+    shopperId: ids.shoppers.shopper06,
+    score: 4,
+    note: "Consistently fresh produce and a great pantry section. The galbi and bok choy are always top quality.",
+    createdAt: atDays(-2),
+    updatedAt: atDays(-2),
+  },
+  {
+    id: ids.ratings.drewLotus,
+    storeId: ids.stores.lotus,
+    shopperId: ids.shoppers.shopper09,
+    score: 5,
+    note: "Best Asian grocery in Pittsburgh. Friendly staff and everything is always well stocked.",
+    createdAt: atDays(-4),
+    updatedAt: atDays(-4),
+  },
+  {
+    id: ids.ratings.samCrescent,
+    storeId: ids.stores.crescent,
+    shopperId: ids.shoppers.shopper05,
+    score: 5,
+    note: "Halal selection is excellent — fresh lamb every time. Wouldn't shop anywhere else for halal cuts.",
+    createdAt: atDays(-3),
+    updatedAt: atDays(-3),
+  },
+  {
+    id: ids.ratings.cameronCrescent,
+    storeId: ids.stores.crescent,
+    shopperId: ids.shoppers.shopper11,
+    score: 4,
+    note: "Really reliable halal source in the South Side. The pita is always fresh and the chickpeas are a great deal.",
+    createdAt: atDays(-5),
+    updatedAt: atDays(-5),
+  },
+  {
+    id: ids.ratings.rileyThreeRivers,
+    storeId: ids.stores.threeRivers,
+    shopperId: ids.shoppers.shopper06,
+    score: 4,
+    note: "Love the commitment to local sourcing. The eggs are always from nearby farms and the produce is genuinely fresh.",
+    createdAt: atDays(-3),
+    updatedAt: atDays(-3),
+  },
+  {
+    id: ids.ratings.jordanThreeRivers,
+    storeId: ids.stores.threeRivers,
+    shopperId: ids.shoppers.jordan,
+    score: 5,
+    note: "My favorite organic grocer in Pittsburgh. The heirloom tomatoes and rainbow carrots are worth the trip.",
+    createdAt: atDays(-2),
+    updatedAt: atDays(-2),
+  },
+  {
+    id: ids.ratings.ninaTokyoMart,
+    storeId: ids.stores.tokyoMart,
+    shopperId: ids.shoppers.nina,
+    score: 4,
+    note: "Great selection of Japanese and Korean staples. The house kimchi is a must-try and the fresh udon is excellent.",
+    createdAt: atDays(-3),
+    updatedAt: atDays(-3),
+  },
+  {
+    id: ids.ratings.alexTokyoMart,
+    storeId: ids.stores.tokyoMart,
+    shopperId: ids.shoppers.shopper03,
+    score: 5,
+    note: "I drive from Oakland just for the fresh udon and the Japanese pantry section. Nothing else in Pittsburgh comes close.",
+    createdAt: atDays(-6),
+    updatedAt: atDays(-6),
+  },
+  {
+    id: ids.ratings.samRiverHalal,
+    storeId: ids.stores.riverHalalHub,
+    shopperId: ids.shoppers.shopper05,
+    score: 4,
+    note: "Friendly staff and always fresh halal cuts. The goat is especially good and the dates are always premium quality.",
+    createdAt: atDays(-4),
+    updatedAt: atDays(-4),
+  },
+  {
+    id: ids.ratings.cameronRiverHalal,
+    storeId: ids.stores.riverHalalHub,
+    shopperId: ids.shoppers.shopper11,
+    score: 5,
+    note: "Best place to shop for Ramadan — dates, goat, lamb, all top quality and halal certified. Very knowledgeable staff.",
+    createdAt: atDays(-2),
+    updatedAt: atDays(-2),
+  },
+  {
+    id: ids.ratings.drewEastEnd,
+    storeId: ids.stores.eastEndOrganic,
+    shopperId: ids.shoppers.shopper09,
+    score: 5,
+    note: "The sourdough is incredible and the local honey is the best I've found. A real neighborhood gem.",
+    createdAt: atDays(-3),
+    updatedAt: atDays(-3),
+  },
+  // -----------------------------------------------------------------------
+  // The Press Juice Co.
+  // -----------------------------------------------------------------------
+  {
+    id: ids.ratings.ninaPressJuice,
+    storeId: ids.stores.pressJuice,
+    shopperId: ids.shoppers.nina,
+    score: 5,
+    note: "The honeycrisp cider is unreal. I come every week without fail. Best pressed juice spot in Pittsburgh.",
+    createdAt: atDays(-2),
+    updatedAt: atDays(-2),
+  },
+  {
+    id: ids.ratings.taylorPressJuice,
+    storeId: ids.stores.pressJuice,
+    shopperId: ids.shoppers.shopper04,
+    score: 4,
+    note: "Fresh pressed and actually delicious — nothing like the commercial stuff. The watermelon mint is refreshing.",
+    createdAt: atDays(-4),
+    updatedAt: atDays(-4),
+  },
+  {
+    id: ids.ratings.jordanPressJuice,
+    storeId: ids.stores.pressJuice,
+    shopperId: ids.shoppers.jordan,
+    score: 5,
+    note: "The apple juice is pressed on-site, you can literally taste the difference. Watermelon mint is my go-to in summer.",
+    createdAt: atDays(-1),
+    updatedAt: atDays(-1),
+  },
+  {
+    id: ids.ratings.cameronPressJuice,
+    storeId: ids.stores.pressJuice,
+    shopperId: ids.shoppers.shopper11,
+    score: 4,
+    note: "Really quality juices with interesting seasonal flavors. The green detox is surprisingly good.",
+    createdAt: atDays(-5),
+    updatedAt: atDays(-5),
   },
 ];
 
