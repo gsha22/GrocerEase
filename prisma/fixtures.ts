@@ -1,7 +1,10 @@
 import bcrypt from "bcryptjs";
 import { Prisma } from "../app/generated/prisma/client";
 
-const BASE_TIME = new Date();
+// Set SEED_BASE_TIME=<ISO string> for deterministic CI seeding; defaults to now.
+const BASE_TIME = process.env.SEED_BASE_TIME
+  ? new Date(process.env.SEED_BASE_TIME)
+  : new Date();
 const BCRYPT_SALT = "$2b$10$CwTycUXWue0Thq9StjUM0u";
 
 const atHours = (deltaHours: number) =>
@@ -1833,7 +1836,7 @@ export const storeRatings = [
     updatedAt: atDays(-3),
   },
   // -----------------------------------------------------------------------
-  // The Press Juice Co. — no ratings yet in initial seed
+  // The Press Juice Co.
   // -----------------------------------------------------------------------
   {
     id: ids.ratings.ninaPressJuice,
