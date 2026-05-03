@@ -13,6 +13,7 @@ import {
   shoppers,
   storeItemSearchesSeed,
   storeProfileViewsSeed,
+  storeRatings,
   stores,
 } from "./fixtures";
 
@@ -47,6 +48,7 @@ async function resetAndSeed() {
   await prisma.freshUpdate.createMany({ data: freshUpdates });
   await prisma.deal.createMany({ data: deals });
   await prisma.alert.createMany({ data: alerts });
+  await prisma.storeRating.createMany({ data: storeRatings });
   await prisma.storeProfileView.createMany({ data: storeProfileViewsSeed });
   await prisma.storeItemSearch.createMany({ data: storeItemSearchesSeed });
 }
