@@ -22,6 +22,7 @@ import StoreAlertSubscribe from "@/components/StoreAlertSubscribe";
 import StoreFreshUpdatesFeed from "@/components/StoreFreshUpdatesFeed";
 import StoreRatingsPanel from "@/components/StoreRatingsPanel";
 import StoreReportButton from "@/components/StoreReportButton";
+import StoreMarketplaceListings from "@/components/StoreMarketplaceListings";
 
 export const dynamic = "force-dynamic";
 
@@ -282,6 +283,9 @@ export default async function StoreProfilePage({
         initialSummary={ratingsSummary}
         initialOwnRating={initialOwnRating}
       />
+
+      {/* Marketplace listings — Zustand/localStorage local feed */}
+      <StoreMarketplaceListings storeId={store.id} storeAddress={store.address} />
 
       {/* Fresh Today — Story 1 */}
       <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-4">

@@ -12,6 +12,7 @@ const sections = [
       { href: "/dashboard/posts", label: "Fresh Updates", icon: "📝" },
       { href: "/dashboard/deals", label: "Deals", icon: "🏷" },
       { href: "/dashboard/reports", label: "Reports", icon: "🚩" },
+      { href: "/vendor", label: "Local Feed / Vendor", icon: "🛒" },
     ],
   },
 ];
