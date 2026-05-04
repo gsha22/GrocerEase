@@ -193,14 +193,23 @@ export default function MarketplaceBrowseClient({
                   >
                     Get directions
                   </a>
-                  <a
-                    href={mapsSearchUrl(`${item.shopName} ${item.shopAddress}`)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex flex-1 items-center justify-center rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-center text-sm font-semibold text-stone-800 transition hover:bg-white"
-                  >
-                    Visit store
-                  </a>
+                  {item.storeId ? (
+                    <Link
+                      href={`/stores/${item.storeId}`}
+                      className="inline-flex flex-1 items-center justify-center rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-center text-sm font-semibold text-stone-800 transition hover:bg-white"
+                    >
+                      Visit store
+                    </Link>
+                  ) : (
+                    <a
+                      href={mapsSearchUrl(`${item.shopName} ${item.shopAddress}`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex flex-1 items-center justify-center rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-center text-sm font-semibold text-stone-800 transition hover:bg-white"
+                    >
+                      Visit store
+                    </a>
+                  )}
                 </div>
               </div>
             </li>
