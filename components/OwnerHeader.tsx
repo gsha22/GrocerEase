@@ -5,6 +5,8 @@ import { signOut, useSession } from "next-auth/react";
 
 const publicLinks = [
   { href: "/", label: "Discover Stores" },
+  { href: "/browse", label: "Local feed" },
+  { href: "/vendor", label: "Vendor" },
   { href: "/map", label: "Map" },
   { href: "/deals", label: "Deals" },
 ] as const;
