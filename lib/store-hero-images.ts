@@ -16,23 +16,23 @@ const STORE_PHOTO: Record<string, string> = {
 
 const CATEGORY_COVER: Record<string, string> = {
   asian:
-    "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1562802378-063ec186a863?w=1200&q=80&auto=format&fit=crop",
   halal:
-    "https://images.unsplash.com/photo-1603048588665-791ca8aea617?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1547592180-85f173990554?w=1200&q=80&auto=format&fit=crop",
   organic:
-    "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1488900128323-21503983a07e?w=1200&q=80&auto=format&fit=crop",
   produce:
-    "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=1200&q=80&auto=format&fit=crop",
   ebt:
-    "https://images.unsplash.com/photo-1579113800032-c38bd7635818?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1543168256-418811576931?w=1200&q=80&auto=format&fit=crop",
 };
 
 const FALLBACK_COVERS = [
   "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=1200&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1588964895597-cfccd6bf2d18?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=1200&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1606787366850-de63301240b52?w=1200&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1490818387543-1baba5e638af?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1495195134817-aeb325a55b65?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1573246123716-6b1782bfc499?w=1200&q=80&auto=format&fit=crop",
 ];
 
 function hashIndex(key: string, modulo: number): number {
