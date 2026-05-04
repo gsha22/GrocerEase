@@ -84,7 +84,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
     description: "Fresh halal-certified cuts for the weekend grill.",
     price: 12.99,
     imageUrl:
-      "https://images.unsplash.com/photo-1603048588665-791ca8aea617?w=800&q=80",
+      "https://images.unsplash.com/photo-1558030137-a56c1b004fa3?w=800&q=80",
     isFreshToday: true,
     isSpecialDeal: false,
     updatedAt: "2026-05-03T08:00:00.000Z",
@@ -112,7 +112,7 @@ export const seedMarketplaceListings: MarketplaceListing[] = [
     description: "Long-grain aged basmati — fluffy texture, subtle nutty aroma.",
     price: 11.99,
     imageUrl:
-      "https://images.unsplash.com/photo-1604542031658-5799ca5d7936?w=800&q=80",
+      "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=800&q=80",
     isFreshToday: false,
     isSpecialDeal: true,
     updatedAt: "2026-05-02T16:00:00.000Z",
